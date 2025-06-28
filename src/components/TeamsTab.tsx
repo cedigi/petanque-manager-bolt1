@@ -56,9 +56,8 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
-            .team { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
-            .team-name { font-weight: bold; font-size: 18px; margin-bottom: 10px; }
-            .player { margin: 5px 0; padding: 8px; background: #f5f5f5; border-radius: 4px; }
+            .team { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+            .team-name { font-weight: bold; font-size: 18px; }
             @media print { body { margin: 0; } }
           </style>
         </head>
@@ -68,16 +67,9 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
             .map(
               (team) => `
             <div class="team">
-              <div class="team-name">${team.name}</div>
-              ${team.players
-                .map(
-                  (player) => `
-                <div class="player">
-                  ${player.name} ${player.label ? `[${player.label}]` : ''}
-                </div>
-              `
-                )
-                .join('')}
+              <div class="team-name">${team.name} : ${team.players
+                .map(player => `${player.name}${player.label ? ` [${player.label}]` : ''}`)
+                .join(' - ')}</div>
             </div>
           `
             )
