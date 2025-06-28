@@ -10,7 +10,7 @@ import { RotateCcw } from 'lucide-react';
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
-  const [theme, setTheme] = useState<'default' | 'cyber'>('default');
+  const [theme, setTheme] = useState<'default' | 'cyber'>('cyber');
   const [activeTab, setActiveTab] = useState('teams');
   const {
     tournament,
@@ -32,7 +32,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const saved = (localStorage.getItem('theme') as 'default' | 'cyber') || 'default';
+    const saved = (localStorage.getItem('theme') as 'default' | 'cyber') || 'cyber';
     setTheme(saved);
   }, []);
 
