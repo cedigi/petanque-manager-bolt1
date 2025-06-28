@@ -32,12 +32,12 @@ export function MatchesTab({
     return team?.name || (isSolo ? 'Joueur inconnu' : 'Équipe inconnue');
   };
 
-  const getTeamPlayers = (teamId: string) => {
+  const getTeamPlayers = (teamId: string, separator = ', ') => {
     const team = teams.find(t => t.id === teamId);
     if (!team) return '';
     return team.players
       .map(player => (player.label ? `[${player.label}] ${player.name}` : player.name))
-      .join(', ');
+      .join(separator);
   };
 
   const getGroupLabel = (ids: string[]) => {
@@ -112,12 +112,11 @@ export function MatchesTab({
                 <tr>
                   <td>${match.isBye ? '-' : match.court}</td>
                   <td>
-                    ${match.team1Ids ? getGroupLabel(match.team1Ids) : getTeamName(match.team1Id)}
-                    ${!match.team1Ids ? `<br/><small>${getTeamPlayers(match.team1Id)}</small>` : ''}
+                    ${match.team1Ids ? getGroupLabel(match.team1Ids) : `${getTeamName(match.team1Id)} : ${getTeamPlayers(match.team1Id, ' - ')}`}
                   </td>
                   <td class="score">${match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}</td>
                   <td>
-                    ${match.isBye ? 'BYE' : match.team2Ids ? getGroupLabel(match.team2Ids) : `${getTeamName(match.team2Id)}<br/><small>${getTeamPlayers(match.team2Id)}</small>`}
+                    ${match.isBye ? 'BYE' : match.team2Ids ? getGroupLabel(match.team2Ids) : `${getTeamName(match.team2Id)} : ${getTeamPlayers(match.team2Id, ' - ')}`}
                   </td>
                 </tr>
               `).join('')}
