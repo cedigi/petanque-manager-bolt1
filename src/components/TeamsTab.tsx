@@ -127,7 +127,7 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
               </span>
               {players.length > 0 && (
                 <div className="flex space-x-2">
-                  {players.map((player, index) => (
+                  {players.map(player => (
                     <div key={player.id} className="w-3 h-3 bg-blue-400 rounded-full"></div>
                   ))}
                   {Array.from({ length: getPlayersPerTeam() - players.length }, (_, index) => (
