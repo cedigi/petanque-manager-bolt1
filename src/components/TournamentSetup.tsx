@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TournamentType } from '../types/tournament';
-import { Users, Target, Trophy } from 'lucide-react';
+import { Users, Target, Trophy, Shield } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface TournamentSetupProps {
@@ -17,44 +17,74 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
   };
 
   const tournamentTypes = [
-    { value: 'tete-a-tete', label: 'Tête-à-tête', icon: Target, players: '1 joueur par équipe' },
-    { value: 'doublette', label: 'Doublette', icon: Users, players: '2 joueurs par équipe' },
-    { value: 'triplette', label: 'Triplette', icon: Users, players: '3 joueurs par équipe' },
-    { value: 'quadrette', label: 'Quadrette', icon: Users, players: '4 joueurs par équipe' },
-    { value: 'melee', label: 'Mêlée', icon: Trophy, players: 'Joueurs individuels' },
+    { 
+      value: 'tete-a-tete', 
+      label: 'Tête à tête', 
+      icon: Target, 
+      players: '1 joueur par équipe',
+      description: 'Duel individuel'
+    },
+    { 
+      value: 'doublette', 
+      label: 'Doublette', 
+      icon: Users, 
+      players: '2 joueurs par équipe',
+      description: 'Jeu en binôme'
+    },
+    { 
+      value: 'triplette', 
+      label: 'Triplette', 
+      icon: Users, 
+      players: '3 joueurs par équipe',
+      description: 'Formation classique'
+    },
+    { 
+      value: 'quadrette', 
+      label: 'Quadrette', 
+      icon: Users, 
+      players: '4 joueurs par équipe',
+      description: 'Grande équipe'
+    },
+    { 
+      value: 'melee', 
+      label: 'Mêlée', 
+      icon: Trophy, 
+      players: 'Joueurs individuels',
+      description: 'Tournoi libre'
+    },
   ] as const;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="max-w-3xl w-full">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4">
-            <Logo className="w-16 h-16" />
+          <div className="relative w-24 h-24 mx-auto mb-6">
+            <Logo className="w-24 h-24 drop-shadow-2xl" />
+            <div className="absolute inset-0 w-24 h-24 rounded-full bg-white/30 blur-2xl animate-pulse"></div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Nouveau Tournoi de Pétanque
+          <h1 className="text-4xl font-bold text-white mb-4 tracking-wider">
+            Nouveau Tournoi
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Configurez votre tournoi et commencez à organiser les matchs
+          <p className="text-white/80 text-lg font-medium tracking-wide">
+            Configurez votre tournoi de pétanque
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="glass-card p-8">
+            <label className="block text-xl font-bold text-white mb-6 tracking-wide">
               Type de tournoi
             </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {tournamentTypes.map((tournamentType) => {
                 const Icon = tournamentType.icon;
                 return (
                   <label
                     key={tournamentType.value}
-                    className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                    className={`glass-card flex flex-col p-6 cursor-pointer transition-all duration-300 ${
                       type === tournamentType.value
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                        ? 'bg-blue-500/30 border-white/40'
+                        : 'hover:bg-white/10'
                     }`}
                   >
                     <input
@@ -65,14 +95,17 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
                       onChange={(e) => setType(e.target.value as TournamentType)}
                       className="sr-only"
                     />
-                    <Icon className="w-5 h-5 text-blue-600 mr-3" />
-                    <div>
-                      <div className="font-medium text-gray-900 dark:text-white">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <Icon className="w-8 h-8 text-white" />
+                      <div className="font-bold text-white text-lg tracking-wide">
                         {tournamentType.label}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {tournamentType.players}
-                      </div>
+                    </div>
+                    <div className="text-sm text-white/70 font-medium mb-2">
+                      {tournamentType.players}
+                    </div>
+                    <div className="text-xs text-white/60 italic">
+                      {tournamentType.description}
                     </div>
                   </label>
                 );
@@ -80,26 +113,31 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <div className="glass-card p-6">
+            <label className="block text-lg font-bold text-white mb-4 tracking-wide">
               Nombre de terrains
             </label>
             <select
               value={courts}
               onChange={(e) => setCourts(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="glass-select w-full px-4 py-3 text-lg font-medium tracking-wide focus:outline-none"
             >
-              {Array.from({ length: 150 }, (_, i) => i + 1).map(num => (
-                <option key={num} value={num}>{num} terrain{num > 1 ? 's' : ''}</option>
+              {Array.from({ length: 50 }, (_, i) => i + 1).map(num => (
+                <option key={num} value={num} className="bg-slate-800">
+                  {num} terrain{num > 1 ? 's' : ''}
+                </option>
               ))}
-              </select>
+            </select>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="glass-button w-full py-4 px-6 text-xl font-bold tracking-wider hover:scale-105 transition-all duration-300"
           >
-            Créer le tournoi
+            <div className="flex items-center justify-center space-x-3">
+              <Shield className="w-6 h-6" />
+              <span>Créer le tournoi</span>
+            </div>
           </button>
         </form>
       </div>

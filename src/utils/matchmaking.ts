@@ -22,12 +22,7 @@ function generateStandardMatches(tournament: Tournament): Match[] {
   const newMatches: Match[] = [];
 
   if (round === 1) {
-    // For the very first round we want to avoid the typical 1 vs 2, 3 vs 4
-    // pattern which can feel predictable.  Instead we pair teams using an
-    // offset (1 vs 3, 2 vs 4, 5 vs 7, 6 vs 8, ...).  Any leftover teams are
-    // matched sequentially.
-
-    // Handle BYE if the number of teams is odd. The last team simply sits out.
+    // Handle BYE if the number of teams is odd
     if (remainingTeams.length % 2 === 1) {
       const byeTeam = remainingTeams.pop() as Team;
       newMatches.push({
@@ -40,6 +35,8 @@ function generateStandardMatches(tournament: Tournament): Match[] {
         team2Score: 7,
         completed: true,
         isBye: true,
+        battleIntensity: 0,
+        hackingAttempts: 0,
       });
     }
 
@@ -58,6 +55,8 @@ function generateStandardMatches(tournament: Tournament): Match[] {
         team2Id: t2.id,
         completed: false,
         isBye: false,
+        battleIntensity: Math.floor(Math.random() * 50) + 25,
+        hackingAttempts: 0,
       });
 
       const t3 = remainingTeams[i + 1];
@@ -70,6 +69,8 @@ function generateStandardMatches(tournament: Tournament): Match[] {
         team2Id: t4.id,
         completed: false,
         isBye: false,
+        battleIntensity: Math.floor(Math.random() * 50) + 25,
+        hackingAttempts: 0,
       });
     }
 
@@ -85,6 +86,8 @@ function generateStandardMatches(tournament: Tournament): Match[] {
         team2Id: t2.id,
         completed: false,
         isBye: false,
+        battleIntensity: Math.floor(Math.random() * 50) + 25,
+        hackingAttempts: 0,
       });
     }
 
@@ -93,7 +96,6 @@ function generateStandardMatches(tournament: Tournament): Match[] {
 
   // Handle BYE if odd number of teams
   if (remainingTeams.length % 2 === 1) {
-    // Worst performing team gets the BYE in subsequent rounds
     const byeTeam = remainingTeams[remainingTeams.length - 1];
 
     newMatches.push({
@@ -106,6 +108,8 @@ function generateStandardMatches(tournament: Tournament): Match[] {
       team2Score: 7,
       completed: true,
       isBye: true,
+      battleIntensity: 0,
+      hackingAttempts: 0,
     });
 
     remainingTeams.splice(remainingTeams.findIndex(t => t.id === byeTeam.id), 1);
@@ -129,13 +133,13 @@ function generateStandardMatches(tournament: Tournament): Match[] {
     newMatches.push({
       id: crypto.randomUUID(),
       round,
-      // Court numbers continue sequentially. Matches with a court number higher
-      // than the available courts represent waiting games ("Libre").
       court: courtIndex,
       team1Id: team1.id,
       team2Id: team2.id,
       completed: false,
       isBye: false,
+      battleIntensity: Math.floor(Math.random() * 75) + 25,
+      hackingAttempts: 0,
     });
 
     courtIndex++;
@@ -148,7 +152,6 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
   const { teams, currentRound, courts } = tournament;
   const round = currentRound + 1;
 
-  // Quadrette schedule for 7 rounds
   const schedule: { [key: number]: string[][] } = {
     1: [['ABC'], ['D']],
     2: [['AB'], ['CD']],
@@ -164,13 +167,12 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
   const roundSchedule = schedule[round];
   const newMatches: Match[] = [];
 
-  // Group teams by original quadrette teams
   const quadretteTeams: { [teamId: string]: { [label: string]: string } } = {};
   
   teams.forEach(team => {
     team.players.forEach(player => {
       if (player.label) {
-        const baseTeamId = team.id.split('-')[0]; // Assuming sub-teams have IDs like "teamId-pattern"
+        const baseTeamId = team.id.split('-')[0];
         if (!quadretteTeams[baseTeamId]) {
           quadretteTeams[baseTeamId] = {};
         }
@@ -187,7 +189,6 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
       const pattern = patterns[0];
       
       if (pattern.length > 1) {
-        // Create matches between sub-teams
         const subTeamIds = pattern.split('').map(label => teamLabels[label]).filter(Boolean);
         
         for (let i = 0; i < subTeamIds.length - 1; i += 2) {
@@ -200,6 +201,8 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
               team2Id: subTeamIds[i + 1],
               completed: false,
               isBye: false,
+              battleIntensity: Math.floor(Math.random() * 100) + 50,
+              hackingAttempts: 0,
             });
             courtIndex++;
           }
@@ -215,27 +218,20 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
   const { teams, matches, currentRound, courts } = tournament;
   const round = currentRound + 1;
 
-  /**
-   * Determine how many doublettes and triplettes are needed so that
-   * everyone plays if possible. We start with only doublettes and then
-   * convert some into triplettes when there are not enough courts.
-   */
   const playerCount = teams.length;
   let doublettes = Math.floor(playerCount / 2);
   let triplettes = playerCount % 2;
   if (triplettes === 1) {
-    doublettes -= 1; // one triplette uses three players
+    doublettes -= 1;
   }
 
   let teamCount = doublettes + triplettes;
   while (teamCount > 2 * courts && doublettes >= 3) {
-    // Convert three doublettes (6 players) into two triplettes
     doublettes -= 3;
     triplettes += 2;
     teamCount = doublettes + triplettes;
   }
 
-  // Ensure an even number of teams so no one gets a BYE
   while (teamCount % 2 === 1 && doublettes >= 3) {
     doublettes -= 3;
     triplettes += 2;
@@ -246,12 +242,9 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
   for (let i = 0; i < doublettes; i++) groupSizes.push(2);
   for (let i = 0; i < triplettes; i++) groupSizes.push(3);
 
-  // Shuffle the individual players (each team is a single player in mêlée)
   const shuffled = [...teams].sort(() => Math.random() - 0.5);
-
   const groups: string[][] = [];
 
-  // Build groups according to the computed sizes while avoiding prior teammates
   for (const size of groupSizes) {
     const group: string[] = [];
     while (group.length < size && shuffled.length > 0) {
@@ -264,8 +257,6 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
     groups.push(group);
   }
 
-  // Any remaining players (when groups couldn't be perfectly filled) join the
-  // last group.
   while (shuffled.length > 0 && groups.length > 0) {
     groups[groups.length - 1].push(shuffled.shift()!.id);
   }
@@ -273,8 +264,6 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
   const matchesResult: Match[] = [];
   let courtIndex = 1;
 
-  // If exactly two doublettes are present while all others are triplettes,
-  // make them play each other to avoid mismatched team sizes.
   const doubletteIndexes = groups
     .map((g, idx) => (g.length === 2 ? idx : -1))
     .filter(idx => idx !== -1);
@@ -288,7 +277,6 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
     );
 
     if (!alreadyPlayed) {
-      // Remove groups starting from the highest index
       const first = Math.max(idxA, idxB);
       const second = Math.min(idxA, idxB);
       groups.splice(first, 1);
@@ -304,6 +292,8 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
         team2Ids: groupB,
         completed: false,
         isBye: false,
+        battleIntensity: Math.floor(Math.random() * 100) + 50,
+        hackingAttempts: Math.floor(Math.random() * 3),
       });
 
       courtIndex++;
@@ -325,8 +315,6 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
     matchesResult.push({
       id: crypto.randomUUID(),
       round,
-      // Court numbers above the available courts represent waiting ("Libre")
-      // matches. They will be shown as such in the UI.
       court: courtIndex,
       team1Id: team1Ids[0],
       team2Id: team2Ids[0],
@@ -334,6 +322,8 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
       team2Ids,
       completed: false,
       isBye: false,
+      battleIntensity: Math.floor(Math.random() * 100) + 50,
+      hackingAttempts: Math.floor(Math.random() * 5),
     });
 
     courtIndex++;
@@ -344,7 +334,6 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
     matchesResult.push({
       id: crypto.randomUUID(),
       round,
-      // Put unmatched teams on a waiting court rather than giving a BYE
       court: courtIndex,
       team1Id: teamIds[0],
       team2Id: teamIds[0],
@@ -352,6 +341,8 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
       team2Ids: teamIds,
       completed: false,
       isBye: false,
+      battleIntensity: 0,
+      hackingAttempts: 0,
     });
     courtIndex++;
   }

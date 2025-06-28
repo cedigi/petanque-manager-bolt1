@@ -9,8 +9,7 @@ import { useTournament } from './hooks/useTournament';
 import { RotateCcw } from 'lucide-react';
 
 function App() {
-  const [darkMode, setDarkMode] = useState(false);
-  const [theme, setTheme] = useState<'default' | 'cyber'>('cyber');
+  const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState('teams');
   const {
     tournament,
@@ -24,53 +23,27 @@ function App() {
   } = useTournament();
 
   useEffect(() => {
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(savedDarkMode);
-    if (savedDarkMode) {
-      document.documentElement.classList.add('dark');
-    }
+    document.documentElement.classList.add('dark');
   }, []);
-
-  useEffect(() => {
-    const saved = (localStorage.getItem('theme') as 'default' | 'cyber') || 'cyber';
-    setTheme(saved);
-  }, []);
-
-  useEffect(() => {
-    const link = document.getElementById('theme-style') as HTMLLinkElement | null;
-    if (link) {
-      link.href = theme === 'cyber' ? '/theme-cyber-blue.css' : '/theme-default.css';
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
 
   const toggleDarkMode = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', String(newDarkMode));
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    setDarkMode(!darkMode);
+    document.documentElement.classList.toggle('dark');
   };
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'default' ? 'cyber' : 'default'));
-  };
-
+  const isSolo = tournament && (tournament.type === 'melee' || tournament.type === 'tete-a-tete');
 
   const content = !tournament ? (
     <TournamentSetup onCreateTournament={createTournament} />
   ) : (
     <>
-      <div className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="px-6 py-4 flex justify-between items-center">
+      <div className="glass-card shadow-xl mx-6 mt-6">
+        <div className="px-6 py-6 flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-white tracking-wide">
               {tournament.name}
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-white/80 font-medium tracking-wide">
               {tournament.type.charAt(0).toUpperCase() +
                 tournament.type.slice(1)} • {tournament.courts} terrain
               {tournament.courts > 1 ? 's' : ''} • Tour {tournament.currentRound}
@@ -78,17 +51,17 @@ function App() {
           </div>
           <button
             onClick={resetTournament}
-            className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            className="glass-button-secondary flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105"
             title="Nouveau tournoi"
           >
             <RotateCcw className="w-4 h-4" />
-            <span>Nouveau tournoi</span>
+            <span>NOUVEAU TOURNOI</span>
           </button>
         </div>
         <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
-      <main>
+      <main className="min-h-screen">
         {activeTab === 'teams' && (
           <TeamsTab
             teams={tournament.teams}
@@ -116,16 +89,19 @@ function App() {
   );
 
   return (
-    <div className={darkMode ? 'dark' : ''}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Header
-          darkMode={darkMode}
-          onToggleDarkMode={toggleDarkMode}
-          theme={theme}
-          onToggleTheme={toggleTheme}
-        />
-        {content}
+    <div className="min-h-screen relative">
+      {/* Floating petanque balls background */}
+      <div className="floating-petanque-balls">
+        <div className="petanque-ball"></div>
+        <div className="petanque-ball"></div>
+        <div className="petanque-ball"></div>
+        <div className="petanque-ball"></div>
+        <div className="petanque-ball"></div>
+        <div className="petanque-ball"></div>
       </div>
+      
+      <Header darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
+      {content}
     </div>
   );
 }

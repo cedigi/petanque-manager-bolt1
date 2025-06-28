@@ -86,57 +86,14 @@ export function MatchesTab({
         <head>
           <title>Tour ${round}</title>
           <style>
-            body {
-              font-family: Arial, sans-serif;
-              margin: 10px;
-              color: #333;
-            }
-            h1 {
-              text-align: center;
-              margin-bottom: 10px;
-            }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 10px;
-            }
-            th, td {
-              padding: 8px;
-              text-align: center;
-            }
-            th:first-child,
-            td:first-child {
-              text-align: left;
-              width: 60px;
-            }
-            tbody tr {
-              border-bottom: 1px solid #000;
-            }
-            tbody tr:last-child {
-              border-bottom: none;
-            }
-            th { 
-              background: #f1f5f9; 
-              font-weight: bold;
-            }
-            tr:nth-child(even) { 
-              background: #f8fafc;
-            }
-            .score {
-              font-size: 18px;
-              font-weight: bold;
-              text-align: center;
-            }
-            .team-right {
-              padding-left: 20px;
-              text-align: center;
-            }
-            .team {
-              text-align: center;
-            }
-            @media print {
-              body { margin: 0; }
-            }
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { text-align: center; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { padding: 12px; text-align: left; border: 1px solid #ddd; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .score { font-size: 18px; font-weight: bold; text-align: center; }
+            @media print { body { margin: 0; } }
           </style>
         </head>
         <body>
@@ -145,21 +102,21 @@ export function MatchesTab({
             <thead>
               <tr>
                 <th>Terrain</th>
-                <th class="team">${isSolo ? 'Joueur' : 'Équipe'}</th>
+                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
                 <th>Score</th>
-                <th class="team">${isSolo ? 'Joueur' : 'Équipe'}</th>
+                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
               </tr>
             </thead>
             <tbody>
               ${roundMatches.map(match => `
                 <tr>
-                  <td>${match.isBye ? '-' : (match.court <= courts ? match.court : 'Libre ' + (match.court - courts))}</td>
-                  <td class="team">
+                  <td>${match.isBye ? '-' : match.court}</td>
+                  <td>
                     ${match.team1Ids ? getGroupLabel(match.team1Ids) : getTeamName(match.team1Id)}
                     ${!match.team1Ids ? `<br/><small>${getTeamPlayers(match.team1Id)}</small>` : ''}
                   </td>
                   <td class="score">${match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}</td>
-                  <td class="team-right team">
+                  <td>
                     ${match.isBye ? 'BYE' : match.team2Ids ? getGroupLabel(match.team2Ids) : `${getTeamName(match.team2Id)}<br/><small>${getTeamPlayers(match.team2Id)}</small>`}
                   </td>
                 </tr>
@@ -177,44 +134,43 @@ export function MatchesTab({
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Matchs</h2>
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-3xl font-bold text-white tracking-wider">Matchs</h2>
         <button
           onClick={onGenerateRound}
-          className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+          className="glass-button flex items-center space-x-2 px-6 py-3 font-bold tracking-wide hover:scale-105 transition-all duration-300"
           disabled={teams.length < 2}
         >
-          <Play className="w-4 h-4" />
+          <Play className="w-5 h-5" />
           <span>Générer tour {currentRound + 1}</span>
         </button>
       </div>
 
       {teams.length < 2 && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
-          <p className="text-yellow-800 dark:text-yellow-200">
+        <div className="glass-card p-6 mb-8 bg-orange-500/20 border-orange-400/40">
+          <p className="text-orange-200 font-medium text-lg">
             Vous devez inscrire au moins 2 {isSolo ? 'joueurs' : 'équipes'} pour générer des matchs.
           </p>
         </div>
       )}
 
-      {/* Menu déroulant pour sélectionner le tour */}
       {sortedRounds.length > 0 && (
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <div className="mb-8">
+          <label className="block text-lg font-bold text-white mb-4 tracking-wide">
             Sélectionner un tour à afficher :
           </label>
           <div className="relative inline-block">
             <select
               value={selectedRound || ''}
               onChange={(e) => setSelectedRound(e.target.value ? Number(e.target.value) : null)}
-              className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 pr-8 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="glass-select appearance-none px-4 py-3 pr-10 font-medium tracking-wide"
             >
               <option value="">Tous les tours</option>
               {sortedRounds.map(round => (
-                <option key={round} value={round}>Tour {round}</option>
+                <option key={round} value={round} className="bg-slate-800">Tour {round}</option>
               ))}
             </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white pointer-events-none" />
           </div>
         </div>
       )}
@@ -223,81 +179,81 @@ export function MatchesTab({
         {sortedRounds
           .filter(round => selectedRound === null || round === selectedRound)
           .map(round => (
-          <div key={round} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+          <div key={round} className="glass-card overflow-hidden">
+            <div className="px-6 py-4 border-b border-white/20 flex justify-between items-center bg-white/5">
+              <h3 className="text-xl font-bold text-white tracking-wide">
                 Tour {round}
               </h3>
               <button
                 onClick={() => handlePrintRound(round)}
-                className="flex items-center space-x-2 bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+                className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300"
               >
                 <Printer className="w-4 h-4" />
                 <span>Imprimer</span>
               </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-700">
+              <table className="glass-table w-full">
+                <thead>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left font-bold tracking-wider">
                       Terrain
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-center font-bold tracking-wider">
                       {isSolo ? 'Joueur' : 'Équipe'}
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 py-4 text-center font-bold tracking-wider">
                       Score
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-center font-bold tracking-wider">
                       {isSolo ? 'Joueur' : 'Équipe'}
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 py-4 text-center font-bold tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody>
                   {groupedMatches[round].map((match) => (
-                    <tr key={match.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <tr key={match.id} className="hover:bg-white/5 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         {match.isBye ? (
-                          <span className="text-gray-500 dark:text-gray-400">-</span>
+                          <span className="text-white/50">-</span>
                         ) : (
-                          <div className="flex items-center space-x-1">
-                            <MapPin className="w-4 h-4 text-gray-400" />
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-white" />
                             {match.court > courts ? (
                               <select
                                 value={match.court}
                                 onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
-                                className="text-sm border-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:ring-0"
+                                className="glass-select text-sm border-0 font-medium"
                               >
                                 <option value={match.court}>{`Libre ${match.court - courts}`}</option>
                                 {Array.from({ length: courts }, (_, i) => i + 1).map(court => (
-                                  <option key={court} value={court}>{court}</option>
+                                  <option key={court} value={court} className="bg-slate-800">{court}</option>
                                 ))}
                               </select>
                             ) : (
                               <select
                                 value={match.court}
                                 onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
-                                className="text-sm border-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:ring-0"
+                                className="glass-select text-sm border-0 font-medium"
                               >
                                 {Array.from({ length: courts }, (_, i) => i + 1).map(court => (
-                                  <option key={court} value={court}>{court}</option>
+                                  <option key={court} value={court} className="bg-slate-800">{court}</option>
                                 ))}
                               </select>
                             )}
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white text-center">
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
                         {match.team1Ids ? (
-                          getGroupLabel(match.team1Ids)
+                          <span className="font-bold text-white">{getGroupLabel(match.team1Ids)}</span>
                         ) : (
                           <>
-                            {getTeamName(match.team1Id)}
-                            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            <span className="font-bold text-white">{getTeamName(match.team1Id)}</span>
+                            <div className="mt-1 text-xs text-white/70">
                               {getTeamPlayers(match.team1Id)}
                             </div>
                           </>
@@ -312,33 +268,33 @@ export function MatchesTab({
                               max="13"
                               value={editScores.team1}
                               onChange={(e) => setEditScores({ ...editScores, team1: Number(e.target.value) })}
-                              className="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              className="glass-input w-16 px-2 py-1 text-center font-bold"
                             />
-                            <span className="text-gray-500 dark:text-gray-400">-</span>
+                            <span className="text-white font-bold">-</span>
                             <input
                               type="number"
                               min="0"
                               max="13"
                               value={editScores.team2}
                               onChange={(e) => setEditScores({ ...editScores, team2: Number(e.target.value) })}
-                              className="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              className="glass-input w-16 px-2 py-1 text-center font-bold"
                             />
                           </div>
                         ) : (
-                          <span className="text-lg font-medium text-gray-900 dark:text-white">
+                          <span className="text-2xl font-bold text-white">
                             {match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}
                           </span>
                         )}
                       </td>
-                      <td className="pl-8 pr-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white text-center">
+                      <td className="pl-8 pr-6 py-4 whitespace-nowrap text-center">
                         {match.isBye ? (
-                          <span className="text-gray-500 dark:text-gray-400 italic">BYE</span>
+                          <span className="text-white/50 italic font-bold">BYE</span>
                         ) : match.team2Ids ? (
-                          getGroupLabel(match.team2Ids)
+                          <span className="font-bold text-white">{getGroupLabel(match.team2Ids)}</span>
                         ) : (
                           <>
-                            {getTeamName(match.team2Id)}
-                            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            <span className="font-bold text-white">{getTeamName(match.team2Id)}</span>
+                            <div className="mt-1 text-xs text-white/70">
                               {getTeamPlayers(match.team2Id)}
                             </div>
                           </>
@@ -351,14 +307,14 @@ export function MatchesTab({
                               <>
                                 <button
                                   onClick={() => handleSaveScore(match.id)}
-                                  className="text-green-600 hover:text-green-800 transition-colors"
+                                  className="text-green-400 hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-400/10"
                                   title="Sauvegarder"
                                 >
-                                  <Trophy className="w-4 h-4" />
+                                  <Trophy className="w-5 h-5" />
                                 </button>
                                 <button
                                   onClick={handleCancelEdit}
-                                  className="text-gray-500 hover:text-gray-700 transition-colors"
+                                  className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10 text-xl font-bold"
                                   title="Annuler"
                                 >
                                   ×
@@ -367,10 +323,10 @@ export function MatchesTab({
                             ) : (
                               <button
                                 onClick={() => handleEditScore(match)}
-                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                                className="text-white hover:text-white/80 transition-colors p-2 rounded-lg hover:bg-white/10"
                                 title="Modifier le score"
                               >
-                                <Edit3 className="w-4 h-4" />
+                                <Edit3 className="w-5 h-5" />
                               </button>
                             )}
                           </div>
@@ -386,12 +342,12 @@ export function MatchesTab({
       </div>
 
       {matches.length === 0 && (
-        <div className="text-center py-12">
-          <Play className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+        <div className="text-center py-16">
+          <Play className="w-16 h-16 text-white/50 mx-auto mb-6" />
+          <h3 className="text-2xl font-bold text-white mb-4 tracking-wide">
             Aucun match généré
           </h3>
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-white/60 text-lg font-medium">
             Générez le premier tour pour commencer le tournoi
           </p>
         </div>

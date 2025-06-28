@@ -33,6 +33,8 @@ export function useTournament() {
       currentRound: 0,
       completed: false,
       createdAt: new Date(),
+      securityLevel: 1,
+      networkStatus: 'online',
     };
     saveTournament(newTournament);
   };
@@ -55,6 +57,8 @@ export function useTournament() {
       pointsFor: 0,
       pointsAgainst: 0,
       performance: 0,
+      teamRating: 100,
+      synchroLevel: 100,
     };
 
     const updatedTournament = {
@@ -106,6 +110,8 @@ export function useTournament() {
           team1Score,
           team2Score,
           completed: true,
+          battleIntensity: 50,
+          hackingAttempts: 0,
         };
       }
       return match;

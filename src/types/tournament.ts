@@ -1,9 +1,24 @@
 export type TournamentType = 'tete-a-tete' | 'doublette' | 'triplette' | 'quadrette' | 'melee';
 
+export interface CyberImplant {
+  id: string;
+  name: string;
+  type: 'neural' | 'ocular' | 'motor' | 'tactical';
+  level: number;
+  boost: number;
+  description: string;
+  color: string;
+}
+
 export interface Player {
   id: string;
   name: string;
-  label?: string; // For quadrette (A, B, C, D)
+  label?: string;
+  cyberImplants: CyberImplant[];
+  neuralScore: number;
+  combatRating: number;
+  hackingLevel: number;
+  augmentationLevel: number;
 }
 
 export interface Team {
@@ -14,7 +29,9 @@ export interface Team {
   losses: number;
   pointsFor: number;
   pointsAgainst: number;
-  performance: number; // Point differential
+  performance: number;
+  teamRating: number;
+  synchroLevel: number;
 }
 
 export interface Match {
@@ -23,18 +40,14 @@ export interface Match {
   court: number;
   team1Id: string;
   team2Id: string;
-  /**
-   * When matches are generated for formats that group players on the fly
-   * (such as "mêlée"), the player identifiers for each side are stored in
-   * these arrays. They remain optional so that standard formats using
-   * permanent teams can continue relying on `team1Id` and `team2Id` only.
-   */
   team1Ids?: string[];
   team2Ids?: string[];
   team1Score?: number;
   team2Score?: number;
   completed: boolean;
   isBye: boolean;
+  battleIntensity: number;
+  hackingAttempts: number;
 }
 
 export interface Tournament {
@@ -47,4 +60,6 @@ export interface Tournament {
   currentRound: number;
   completed: boolean;
   createdAt: Date;
+  securityLevel: number;
+  networkStatus: 'online' | 'offline' | 'compromised';
 }
