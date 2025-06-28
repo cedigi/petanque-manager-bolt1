@@ -122,7 +122,7 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
               onChange={(e) => setCourts(Number(e.target.value))}
               className="glass-select w-full px-4 py-3 text-lg font-medium tracking-wide focus:outline-none"
             >
-              {Array.from({ length: 50 }, (_, i) => i + 1).map(num => (
+              {Array.from({ length: 150 }, (_, i) => i + 1).map(num => (
                 <option key={num} value={num} className="bg-slate-800">
                   {num} terrain{num > 1 ? 's' : ''}
                 </option>
