@@ -74,9 +74,9 @@ To start the application in development mode run `npm run dev` as shown above.
 The header provides a moon/sun button that switches between light and dark
 themes. This preference is saved in the browser so it persists across reloads.
 
-An additional palette icon lets you enable the **Cyber Blue** look. When
-activated it swaps the `theme-style` link in `index.html` to load
-`public/theme-cyber-blue.css` and stores the choice in local storage so your
-browser remembers the style. The default stylesheet is
-`public/theme-default.css`.
+An additional palette icon lets you switch between the **Cyber Blue** look and
+the classic theme. When activated it swaps the `theme-style` link in
+`index.html` to load `public/theme-cyber-blue.css` and stores the choice in
+local storage so your browser remembers the style. The default stylesheet is
+`public/theme-cyber-blue.css`.
 
