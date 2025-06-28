@@ -142,20 +142,18 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
               </button>
             </div>
 
-            <div className="space-y-3">
-              {team.players.map((player: Player) => (
-                <div key={player.id} className="glass-card p-4">
-                  <div className="flex items-center space-x-3">
-                    {player.label && (
-                      <span className="w-8 h-8 bg-blue-400/20 border border-blue-400 text-blue-400 rounded-full flex items-center justify-center text-sm font-bold">
-                        {player.label}
-                      </span>
-                    )}
-                    <span className="font-bold text-white text-lg">{player.name}</span>
-                  </div>
+              <div className="space-y-3">
+                <div className="glass-card p-4">
+                  <p className="text-white font-medium">
+                    {team.players
+                      .map(
+                        (player: Player) =>
+                          `${player.name}${player.label ? ` [${player.label}]` : ''}`
+                      )
+                      .join(' - ')}
+                  </p>
                 </div>
-              ))}
-            </div>
+              </div>
           </div>
         ))}
       </div>

@@ -89,7 +89,7 @@ export function MatchesTab({
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { padding: 12px; text-align: left; border: 1px solid #ddd; }
+            th, td { padding: 12px; text-align: center; border: 1px solid #ddd; }
             th { background-color: #f2f2f2; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
             .score { font-size: 18px; font-weight: bold; text-align: center; }
