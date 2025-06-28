@@ -250,17 +250,10 @@ export function MatchesTab({
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        {match.team1Ids ? (
-                          <span className="font-bold text-white">{getGroupLabel(match.team1Ids)}</span>
-                        ) : (
-                          <>
-                            <span className="font-bold text-white">{getTeamName(match.team1Id)}</span>
-                            <div className="mt-1 text-xs text-white/70">
-                              {getTeamPlayers(match.team1Id)}
-                            </div>
-                          </>
-                        )}
+                      <td className="px-4 py-2">
+                        {match.team1Ids
+                          ? getGroupLabel(match.team1Ids)
+                          : `${getTeamName(match.team1Id)} : ${getTeamPlayers(match.team1Id)}`}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-center">
                         {editingMatch === match.id ? (
@@ -289,19 +282,12 @@ export function MatchesTab({
                           </span>
                         )}
                       </td>
-                      <td className="pl-8 pr-6 py-4 whitespace-nowrap text-center">
-                        {match.isBye ? (
-                          <span className="text-white/50 italic font-bold">BYE</span>
-                        ) : match.team2Ids ? (
-                          <span className="font-bold text-white">{getGroupLabel(match.team2Ids)}</span>
-                        ) : (
-                          <>
-                            <span className="font-bold text-white">{getTeamName(match.team2Id)}</span>
-                            <div className="mt-1 text-xs text-white/70">
-                              {getTeamPlayers(match.team2Id)}
-                            </div>
-                          </>
-                        )}
+                      <td className="px-4 py-2">
+                        {match.isBye
+                          ? 'BYE'
+                          : match.team2Ids
+                          ? getGroupLabel(match.team2Ids)
+                          : `${getTeamName(match.team2Id)} : ${getTeamPlayers(match.team2Id)}`}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-center">
                         {!match.isBye && (
