@@ -1,0 +1,143 @@
+/* theme-cyber-blue.css
+   Thème “Soft‐Futuriste” : dégradé rouge→bleu + cadres néon bleu
+   Place ce fichier dans public/theme-cyber-blue.css */
+
+:root {
+  /* 1) Fond principal en dégradé diagonal */
+  --bg-main: linear-gradient(
+    135deg,
+    #8e0e00 0%,
+    #1f1c2c 50%,
+    #004e92 100%
+  );
+
+  /* 2) Couleurs secondaires */
+  --bg-panel: rgba(255, 255, 255, 0.85);
+  --text-main: #1B1D21;
+
+  /* 3) Accent néon bleu */
+  --accent: #00D6FF;
+
+  /* 4) Fine bordure pour cadres */
+  --border: 1px solid rgba(0, 214, 255, 0.6);
+
+  /* 5) Rayon des arrondis */
+  --radius: 12px;
+}
+
+/* Corps de page */
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Conteneurs principaux (cards, panels, sections) */
+.section, .panel, .card {
+  background-color: var(--bg-panel);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Boutons génériques */
+.btn {
+  display: inline-block;
+  background-color: var(--bg-panel);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background-color: white;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* En-tête / Header */
+header, .header {
+  background-color: var(--bg-panel);
+  border-bottom: var(--border);
+  padding: 0.75rem 1rem;
+}
+
+/* Onglets */
+.tab, .tab-item {
+  background-color: var(--bg-panel);
+  border: var(--border);
+  border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tab:hover {
+  background-color: white;
+}
+
+.tab-active {
+  background-color: white;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Tableaux */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th, .table td {
+  border: var(--border);
+  padding: 0.5rem;
+  text-align: left;
+}
+.table th {
+  background-color: var(--bg-panel);
+}
+
+/* Inputs */
+input, select, textarea {
+  background-color: var(--bg-panel);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem;
+  transition: border-color 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Scrollbar (WebKit) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-panel);
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 214, 255, 0.4);
+  border-radius: var(--radius);
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent);
+}
+
+/* Liens */
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
