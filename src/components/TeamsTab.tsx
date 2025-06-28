@@ -201,7 +201,7 @@ function TeamForm({ playersPerTeam, tournamentType, onAddTeam, onCancel }: TeamF
   };
 
   return (
-    <div className="glass-card p-8">
+    <div className="glass-card p-4">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold text-white tracking-wider">
           {isSolo ? 'Nouveau joueur' : 'Nouvelle équipe'}
@@ -214,7 +214,7 @@ function TeamForm({ playersPerTeam, tournamentType, onAddTeam, onCancel }: TeamF
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {playerNames.map((name, idx) => (
           <div key={idx}>
             <label className="block text-lg font-bold text-white mb-3 tracking-wide">
