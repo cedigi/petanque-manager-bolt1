@@ -119,15 +119,18 @@
     overflow: hidden;
   }
   
+  .glass-table th,
+  .glass-table td {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
   .glass-table th {
     background: rgba(255, 255, 255, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
     font-weight: 700;
   }
-  
+
   .glass-table td {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.9);
   }
   
