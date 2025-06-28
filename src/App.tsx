@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { TournamentSetup } from './components/TournamentSetup';
 import { TabNavigation } from './components/TabNavigation';
@@ -9,7 +9,6 @@ import { useTournament } from './hooks/useTournament';
 import { RotateCcw } from 'lucide-react';
 
 function App() {
-  const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState('teams');
   const {
     tournament,
@@ -21,17 +20,6 @@ function App() {
     updateMatchCourt,
     resetTournament,
   } = useTournament();
-
-  useEffect(() => {
-    document.documentElement.classList.add('dark');
-  }, []);
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
-  };
-
-  const isSolo = tournament && (tournament.type === 'melee' || tournament.type === 'tete-a-tete');
 
   const content = !tournament ? (
     <TournamentSetup onCreateTournament={createTournament} />
@@ -100,7 +88,7 @@ function App() {
         <div className="petanque-ball"></div>
       </div>
       
-      <Header darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
+      <Header />
       {content}
     </div>
   );

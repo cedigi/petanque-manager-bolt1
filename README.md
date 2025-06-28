@@ -68,9 +68,3 @@ src/
 ```
 
 To start the application in development mode run `npm run dev` as shown above.
-
-## Theme toggle
-
-The header provides a moon/sun button that switches between light and dark
-themes. This preference is saved in the browser so it persists across reloads.
-
