@@ -67,10 +67,7 @@ export function StandingsTab({ teams }: StandingsTabProps) {
               ${sortedTeams.map((team, index) => `
                 <tr class="${index < 3 ? 'podium' : ''}">
                   <td class="position">${index + 1}</td>
-                  <td>
-                    ${team.name}
-                    <br/><small>${team.players.map(player => `${player.label ? `[${player.label}] ` : ''}${player.name}`).join(', ')}</small>
-                  </td>
+                  <td>${team.name} : ${team.players.map(player => `${player.label ? `[${player.label}] ` : ''}${player.name}`).join(' - ')}</td>
                   <td style="text-align: center;">${team.wins}</td>
                   <td style="text-align: center;">${team.losses}</td>
                   <td style="text-align: center;">${team.pointsFor}</td>
