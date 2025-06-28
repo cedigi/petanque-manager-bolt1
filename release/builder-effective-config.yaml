@@ -1,0 +1,17 @@
+directories:
+  output: release
+  buildResources: build
+appId: com.cedigi.petanque-manager
+productName: Pétanque Manager
+files:
+  - filter:
+      - dist/**/*
+      - electron/main.cjs
+      - electron/preload.js
+win:
+  icon: public/logo.ico
+  target:
+    - nsis
+    - portable
+  forceCodeSigning: false
+electronVersion: 36.5.0
