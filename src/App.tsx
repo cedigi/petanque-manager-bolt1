@@ -10,6 +10,7 @@ import { RotateCcw } from 'lucide-react';
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
+  const [theme, setTheme] = useState<'default' | 'cyber'>('default');
   const [activeTab, setActiveTab] = useState('teams');
   const {
     tournament,
@@ -30,6 +31,19 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    const saved = (localStorage.getItem('theme') as 'default' | 'cyber') || 'default';
+    setTheme(saved);
+  }, []);
+
+  useEffect(() => {
+    const link = document.getElementById('theme-style') as HTMLLinkElement | null;
+    if (link) {
+      link.href = theme === 'cyber' ? '/theme-cyber-blue.css' : '/theme-default.css';
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
@@ -39,6 +53,10 @@ function App() {
     } else {
       document.documentElement.classList.remove('dark');
     }
+  };
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'default' ? 'cyber' : 'default'));
   };
 
 
@@ -100,7 +118,12 @@ function App() {
   return (
     <div className={darkMode ? 'dark' : ''}>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Header darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
+        <Header
+          darkMode={darkMode}
+          onToggleDarkMode={toggleDarkMode}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
         {content}
       </div>
     </div>
