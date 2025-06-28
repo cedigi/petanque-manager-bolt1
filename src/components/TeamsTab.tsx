@@ -123,28 +123,28 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
       )}
 
       <div className="space-y-4">
-        {teams.map((team) => (
-          <div
-            key={team.id}
-            className="glass-card p-4 hover:scale-[1.02] transition-all duration-300"
-          >
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-white font-medium">{team.name}</h3>
-              <button
-                onClick={() => onRemoveTeam(team.id)}
-                className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10"
-                title={isSolo ? 'Supprimer le joueur' : "Supprimer l'équipe"}
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
+        {teams.map(team => {
+          const playerList = team.players.map(p => p.name).join(' - ');
+          return (
+            <div
+              key={team.id}
+              className="glass-card p-4 hover:scale-[1.02] transition-all duration-300"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-white font-medium">
+                  {isSolo ? team.name : `${team.name} - ${playerList}`}
+                </h3>
+                <button
+                  onClick={() => onRemoveTeam(team.id)}
+                  className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10"
+                  title={isSolo ? 'Supprimer le joueur' : "Supprimer l'équipe"}
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-            <p className="text-white font-medium">
-              {team.players
-                .map((player: Player) => `${player.name}${player.label ? ` [${player.label}]` : ''}`)
-                .join(' - ')}
-            </p>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {teams.length === 0 && !showForm && (
