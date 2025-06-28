@@ -125,35 +125,23 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
 
       <div className="space-y-4">
         {teams.map((team) => (
-          <div key={team.id} className="glass-card p-6 hover:scale-[1.02] transition-all duration-300">
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex-1">
-                <div className="flex items-center space-x-3 mb-3">
-                  <Users className="w-6 h-6 text-white" />
-                  <h3 className="font-bold text-white text-xl tracking-wide">{team.name}</h3>
-                </div>
-              </div>
-              <button
-                onClick={() => onRemoveTeam(team.id)}
-                className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10"
-                title={isSolo ? 'Supprimer le joueur' : "Supprimer l'équipe"}
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-            </div>
-
-              <div className="space-y-3">
-                <div className="glass-card p-4">
-                  <p className="text-white font-medium">
-                    {team.players
-                      .map(
-                        (player: Player) =>
-                          `${player.name}${player.label ? ` [${player.label}]` : ''}`
-                      )
-                      .join(' - ')}
-                  </p>
-                </div>
-              </div>
+          <div
+            key={team.id}
+            className="glass-card p-4 flex justify-between items-center hover:scale-[1.02] transition-all duration-300"
+          >
+            <p className="text-white font-medium">
+              {team.name}:{' '}
+              {team.players
+                .map((player: Player) => `${player.name}${player.label ? ` [${player.label}]` : ''}`)
+                .join(' - ')}
+            </p>
+            <button
+              onClick={() => onRemoveTeam(team.id)}
+              className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10"
+              title={isSolo ? 'Supprimer le joueur' : "Supprimer l'équipe"}
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
           </div>
         ))}
       </div>
