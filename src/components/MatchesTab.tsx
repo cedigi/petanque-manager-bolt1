@@ -250,7 +250,7 @@ export function MatchesTab({
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-2">
+                      <td className="px-4 py-2 text-center">
                         {match.team1Ids
                           ? getGroupLabel(match.team1Ids)
                           : `${getTeamName(match.team1Id)} : ${getTeamPlayers(match.team1Id)}`}
@@ -282,7 +282,7 @@ export function MatchesTab({
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-2">
+                      <td className="px-4 py-2 text-center">
                         {match.isBye
                           ? 'BYE'
                           : match.team2Ids

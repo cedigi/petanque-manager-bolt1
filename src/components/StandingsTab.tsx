@@ -41,26 +41,35 @@ export function StandingsTab({ teams }: StandingsTabProps) {
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { padding: 12px; text-align: left; border: 1px solid #ddd; }
+            .glass-table {
+              width: 100%;
+              border-collapse: collapse;
+              border: 1px solid #ddd;
+              border-radius: 8px;
+              overflow: hidden;
+            }
+            .glass-table th, .glass-table td { border: 1px solid #ddd; }
+            th, td { padding: 12px; }
             th { background-color: #f2f2f2; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
+            .position { text-align: center; font-weight: bold; }
+            .center { text-align: center; }
             .podium { background-color: #fff3cd; }
-            .position { font-weight: bold; text-align: center; }
             @media print { body { margin: 0; } }
           </style>
         </head>
         <body>
           <h1>Classement</h1>
-          <table>
+          <table class="glass-table" >
             <thead>
               <tr>
-                <th style="text-align: center;">Position</th>
+                <th class="center">Position</th>
                 <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
-                <th style="text-align: center;">V</th>
-                <th style="text-align: center;">D</th>
-                <th style="text-align: center;">+</th>
-                <th style="text-align: center;">-</th>
-                <th style="text-align: center;">Différentiel</th>
+                <th class="center">V</th>
+                <th class="center">D</th>
+                <th class="center">+</th>
+                <th class="center">-</th>
+                <th class="center">Différentiel</th>
               </tr>
             </thead>
             <tbody>
@@ -68,11 +77,11 @@ export function StandingsTab({ teams }: StandingsTabProps) {
                 <tr class="${index < 3 ? 'podium' : ''}">
                   <td class="position">${index + 1}</td>
                   <td>${team.name} : ${team.players.map(player => `${player.label ? `[${player.label}] ` : ''}${player.name}`).join(' - ')}</td>
-                  <td style="text-align: center;">${team.wins}</td>
-                  <td style="text-align: center;">${team.losses}</td>
-                  <td style="text-align: center;">${team.pointsFor}</td>
-                  <td style="text-align: center;">${team.pointsAgainst}</td>
-                  <td style="text-align: center;">${team.performance > 0 ? '+' : ''}${team.performance}</td>
+                  <td class="center">${team.wins}</td>
+                  <td class="center">${team.losses}</td>
+                  <td class="center">${team.pointsFor}</td>
+                  <td class="center">${team.pointsAgainst}</td>
+                  <td class="center">${team.performance > 0 ? '+' : ''}${team.performance}</td>
                 </tr>
               `).join('')}
             </tbody>

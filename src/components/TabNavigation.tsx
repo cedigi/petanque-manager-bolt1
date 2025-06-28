@@ -8,9 +8,9 @@ interface TabNavigationProps {
 
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const tabs = [
-    { id: 'teams', label: 'Teams', icon: Users },
+    { id: 'teams', label: 'Équipes', icon: Users },
     { id: 'matches', label: 'Matches', icon: Gamepad2 },
-    { id: 'standings', label: 'Standings', icon: Trophy },
+    { id: 'standings', label: 'Résultats', icon: Trophy },
   ];
 
   return (
