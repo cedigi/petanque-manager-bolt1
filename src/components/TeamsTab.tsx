@@ -105,10 +105,32 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
 
       {showForm && (
         <div className="mb-8">
+        codex/refactor-teamstab-and-add-teamform-component
           <TeamForm
             playersPerTeam={getPlayersPerTeam()}
             tournamentType={tournamentType}
             onAddTeam={handleAddTeamInternal}
+
+          <div className="mb-4">
+            <div className="flex items-center space-x-4 mb-2">
+              <span className="text-white font-bold">
+                Joueur {currentPlayerIndex + 1}/{getPlayersPerTeam()}
+              </span>
+              {players.length > 0 && (
+                <div className="flex space-x-2">
+                  {players.map(player => (
+                    <div key={player.id} className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                  ))}
+                  {Array.from({ length: getPlayersPerTeam() - players.length }, (_, index) => (
+                    <div key={`empty-${index}`} className="w-3 h-3 border border-white/40 rounded-full"></div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <PlayerForm
+            onAddPlayer={handleAddPlayer}
+        main
             onCancel={handleCancel}
           />
         </div>
