@@ -71,7 +71,7 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="glass-card p-8">
+          <div className="glass-card p-4">
             <label className="block text-xl font-bold text-white mb-6 tracking-wide">
               Type de tournoi
             </label>
@@ -81,7 +81,7 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
                 return (
                   <label
                     key={tournamentType.value}
-                    className={`glass-card flex flex-col p-6 cursor-pointer transition-all duration-300 ${
+                    className={`glass-card flex flex-col p-3 cursor-pointer transition-all duration-300 ${
                       type === tournamentType.value
                         ? 'bg-blue-500/30 border-white/40'
                         : 'hover:bg-white/10'
@@ -113,7 +113,7 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
             </div>
           </div>
 
-          <div className="glass-card p-6">
+          <div className="glass-card p-3">
             <label className="block text-lg font-bold text-white mb-4 tracking-wide">
               Nombre de terrains
             </label>
