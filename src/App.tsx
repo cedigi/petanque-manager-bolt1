@@ -31,7 +31,6 @@ function App() {
     document.documentElement.classList.toggle('dark');
   };
 
-  const isSolo = tournament && (tournament.type === 'melee' || tournament.type === 'tete-a-tete');
 
   const content = !tournament ? (
     <TournamentSetup onCreateTournament={createTournament} />
