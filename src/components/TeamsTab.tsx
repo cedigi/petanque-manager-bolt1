@@ -10,9 +10,7 @@ interface TeamsTabProps {
 }
 
 export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: TeamsTabProps) {
-  const [players, setPlayers] = useState<Player[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
 
   const isSolo = tournamentType === 'melee' || tournamentType === 'tete-a-tete';
 
@@ -28,29 +26,16 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
   };
 
   const initializeForm = () => {
-    setPlayers([]);
-    setCurrentPlayerIndex(0);
     setShowForm(true);
   };
 
-  const handleAddPlayer = (player: Player) => {
-    const updatedPlayers = [...players, player];
-    setPlayers(updatedPlayers);
-
-    if (updatedPlayers.length === getPlayersPerTeam()) {
-      onAddTeam(updatedPlayers);
-      setShowForm(false);
-      setPlayers([]);
-      setCurrentPlayerIndex(0);
-    } else {
-      setCurrentPlayerIndex(currentPlayerIndex + 1);
-    }
+  const handleAddTeamInternal = (teamPlayers: Player[]) => {
+    onAddTeam(teamPlayers);
+    setShowForm(false);
   };
 
   const handleCancel = () => {
     setShowForm(false);
-    setPlayers([]);
-    setCurrentPlayerIndex(0);
   };
 
   const handlePrint = () => {
@@ -120,6 +105,12 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
 
       {showForm && (
         <div className="mb-8">
+        codex/refactor-teamstab-and-add-teamform-component
+          <TeamForm
+            playersPerTeam={getPlayersPerTeam()}
+            tournamentType={tournamentType}
+            onAddTeam={handleAddTeamInternal}
+
           <div className="mb-4">
             <div className="flex items-center space-x-4 mb-2">
               <span className="text-white font-bold">
@@ -139,8 +130,8 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
           </div>
           <PlayerForm
             onAddPlayer={handleAddPlayer}
+        main
             onCancel={handleCancel}
-            playerLabel={tournamentType === 'quadrette' ? ['A', 'B', 'C', 'D'][currentPlayerIndex] : undefined}
           />
         </div>
       )}
@@ -203,37 +194,50 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
 }
 
 // Formulaire simplifié sans les implants cybernétiques
-interface PlayerFormProps {
-  onAddPlayer: (player: Player) => void;
+interface TeamFormProps {
+  playersPerTeam: number;
+  tournamentType: TournamentType;
+  onAddTeam: (players: Player[]) => void;
   onCancel: () => void;
-  playerLabel?: string;
 }
 
-function PlayerForm({ onAddPlayer, onCancel, playerLabel }: PlayerFormProps) {
-  const [name, setName] = useState('');
+function TeamForm({ playersPerTeam, tournamentType, onAddTeam, onCancel }: TeamFormProps) {
+  const [playerNames, setPlayerNames] = useState<string[]>(
+    Array(playersPerTeam).fill('')
+  );
+
+  const isSolo = playersPerTeam === 1;
+
+  const handleChange = (index: number, value: string) => {
+    const names = [...playerNames];
+    names[index] = value;
+    setPlayerNames(names);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) {
-      const player: Player = {
-        id: crypto.randomUUID(),
-        name: name.trim(),
-        label: playerLabel,
-        cyberImplants: [],
-        neuralScore: 100,
-        combatRating: 100,
-        hackingLevel: 1,
-        augmentationLevel: 0
-      };
-      onAddPlayer(player);
-    }
+    if (playerNames.some(name => !name.trim())) return;
+
+    const labels = ['A', 'B', 'C', 'D'];
+    const players = playerNames.map((name, idx) => ({
+      id: crypto.randomUUID(),
+      name: name.trim(),
+      label: tournamentType === 'quadrette' ? labels[idx] : undefined,
+      cyberImplants: [],
+      neuralScore: 100,
+      combatRating: 100,
+      hackingLevel: 1,
+      augmentationLevel: 0,
+    }));
+
+    onAddTeam(players);
   };
 
   return (
     <div className="glass-card p-8">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold text-white tracking-wider">
-          Nouveau joueur {playerLabel && `[${playerLabel}]`}
+          {isSolo ? 'Nouveau joueur' : 'Nouvelle équipe'}
         </h3>
         <button
           onClick={onCancel}
@@ -244,26 +248,28 @@ function PlayerForm({ onAddPlayer, onCancel, playerLabel }: PlayerFormProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-lg font-bold text-white mb-3 tracking-wide">
-            Nom du joueur
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Entrez le nom du joueur"
-            className="glass-input w-full px-4 py-3 text-lg font-medium tracking-wide"
-            required
-          />
-        </div>
+        {playerNames.map((name, idx) => (
+          <div key={idx}>
+            <label className="block text-lg font-bold text-white mb-3 tracking-wide">
+              Nom du joueur {playersPerTeam > 1 ? idx + 1 : ''}
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => handleChange(idx, e.target.value)}
+              placeholder="Entrez le nom du joueur"
+              className="glass-input w-full px-4 py-3 text-lg font-medium tracking-wide"
+              required
+            />
+          </div>
+        ))}
 
         <div className="flex space-x-4">
           <button
             type="submit"
             className="glass-button flex-1 py-3 px-6 font-bold text-lg tracking-wider hover:scale-105 transition-all duration-300"
           >
-            Créer joueur
+            {isSolo ? 'Créer joueur' : 'Créer équipe'}
           </button>
           <button
             type="button"

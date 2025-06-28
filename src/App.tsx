@@ -21,6 +21,19 @@ function App() {
     resetTournament,
   } = useTournament();
 
+    codex/refactor-teamstab-and-add-teamform-component
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+  }, []);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+    document.documentElement.classList.toggle('dark');
+  };
+
+
+
+        main
   const content = !tournament ? (
     <TournamentSetup onCreateTournament={createTournament} />
   ) : (
