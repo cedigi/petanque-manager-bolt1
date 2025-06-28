@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { TournamentSetup } from './components/TournamentSetup';
 import { TabNavigation } from './components/TabNavigation';
@@ -21,19 +21,10 @@ function App() {
     resetTournament,
   } = useTournament();
 
-    codex/refactor-teamstab-and-add-teamform-component
   useEffect(() => {
     document.documentElement.classList.add('dark');
   }, []);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
-  };
-
-
-
-        main
   const content = !tournament ? (
     <TournamentSetup onCreateTournament={createTournament} />
   ) : (
@@ -100,7 +91,7 @@ function App() {
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
       </div>
-      
+
       <Header />
       {content}
     </div>

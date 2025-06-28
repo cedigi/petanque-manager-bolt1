@@ -16,12 +16,18 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
 
   const getPlayersPerTeam = () => {
     switch (tournamentType) {
-      case 'tete-a-tete': return 1;
-      case 'doublette': return 2;
-      case 'triplette': return 3;
-      case 'quadrette': return 4;
-      case 'melee': return 1;
-      default: return 2;
+      case 'tete-a-tete':
+        return 1;
+      case 'doublette':
+        return 2;
+      case 'triplette':
+        return 3;
+      case 'quadrette':
+        return 4;
+      case 'melee':
+        return 1;
+      default:
+        return 2;
     }
   };
 
@@ -58,23 +64,34 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
         </head>
         <body>
           <h1>Liste des ${isSolo ? 'Joueurs' : 'Équipes'}</h1>
-          ${teams.map(team => `
+          ${teams
+            .map(
+              (team) => `
             <div class="team">
               <div class="team-name">${team.name}</div>
-              ${team.players.map(player => `
+              ${team.players
+                .map(
+                  (player) => `
                 <div class="player">
                   ${player.name} ${player.label ? `[${player.label}]` : ''}
                 </div>
-              `).join('')}
+              `
+                )
+                .join('')}
             </div>
-          `).join('')}
+          `
+            )
+            .join('')}
+          <div style="text-align: center; margin-top: 20px;">
+            <button onclick="window.print()" style="padding: 8px 16px; font-size: 16px;">Imprimer</button>
+          </div>
         </body>
       </html>
     `;
 
     printWindow.document.write(printContent);
     printWindow.document.close();
-    printWindow.print();
+    // The user can review the preview window and click the button to print
   };
 
   return (
@@ -105,32 +122,10 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
 
       {showForm && (
         <div className="mb-8">
-        codex/refactor-teamstab-and-add-teamform-component
           <TeamForm
             playersPerTeam={getPlayersPerTeam()}
             tournamentType={tournamentType}
             onAddTeam={handleAddTeamInternal}
-
-          <div className="mb-4">
-            <div className="flex items-center space-x-4 mb-2">
-              <span className="text-white font-bold">
-                Joueur {currentPlayerIndex + 1}/{getPlayersPerTeam()}
-              </span>
-              {players.length > 0 && (
-                <div className="flex space-x-2">
-                  {players.map(player => (
-                    <div key={player.id} className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                  ))}
-                  {Array.from({ length: getPlayersPerTeam() - players.length }, (_, index) => (
-                    <div key={`empty-${index}`} className="w-3 h-3 border border-white/40 rounded-full"></div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          <PlayerForm
-            onAddPlayer={handleAddPlayer}
-        main
             onCancel={handleCancel}
           />
         </div>
@@ -157,10 +152,7 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
 
             <div className="space-y-3">
               {team.players.map((player: Player) => (
-                <div
-                  key={player.id}
-                  className="glass-card p-4"
-                >
+                <div key={player.id} className="glass-card p-4">
                   <div className="flex items-center space-x-3">
                     {player.label && (
                       <span className="w-8 h-8 bg-blue-400/20 border border-blue-400 text-blue-400 rounded-full flex items-center justify-center text-sm font-bold">
@@ -183,9 +175,7 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
             {isSolo ? 'Aucun joueur inscrit' : 'Aucune équipe inscrite'}
           </h3>
           <p className="text-white/60 text-lg font-medium">
-            {isSolo
-              ? 'Commencez par créer des joueurs'
-              : 'Commencez par créer des équipes'}
+            {isSolo ? 'Commencez par créer des joueurs' : 'Commencez par créer des équipes'}
           </p>
         </div>
       )}
@@ -202,9 +192,7 @@ interface TeamFormProps {
 }
 
 function TeamForm({ playersPerTeam, tournamentType, onAddTeam, onCancel }: TeamFormProps) {
-  const [playerNames, setPlayerNames] = useState<string[]>(
-    Array(playersPerTeam).fill('')
-  );
+  const [playerNames, setPlayerNames] = useState<string[]>(Array(playersPerTeam).fill(''));
 
   const isSolo = playersPerTeam === 1;
 
@@ -216,7 +204,7 @@ function TeamForm({ playersPerTeam, tournamentType, onAddTeam, onCancel }: TeamF
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (playerNames.some(name => !name.trim())) return;
+    if (playerNames.some((name) => !name.trim())) return;
 
     const labels = ['A', 'B', 'C', 'D'];
     const players = playerNames.map((name, idx) => ({

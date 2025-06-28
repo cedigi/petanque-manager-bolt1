@@ -80,13 +80,16 @@ export function StandingsTab({ teams }: StandingsTabProps) {
               `).join('')}
             </tbody>
           </table>
+          <div style="text-align: center; margin-top: 20px;">
+            <button onclick="window.print()" style="padding: 8px 16px; font-size: 16px;">Imprimer</button>
+          </div>
         </body>
       </html>
     `;
 
     printWindow.document.write(printContent);
     printWindow.document.close();
-    printWindow.print();
+    // The user can review the preview window and click the button to print
   };
 
   return (
