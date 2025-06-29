@@ -40,20 +40,16 @@ export function StandingsTab({ teams }: StandingsTabProps) {
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            .glass-table {
+            table {
               width: 100%;
               border-collapse: collapse;
-              border: 1px solid #ddd;
-              border-radius: 8px;
-              overflow: hidden;
+              margin-top: 20px;
+              border: 1px solid #000;
             }
-            .glass-table th, .glass-table td {
-              border: 1px solid #ddd;
-              border-left: 1px solid #ddd;
-              border-right: 1px solid #ddd;
+            th, td {
+              padding: 12px;
+              border: 1px solid #000;
             }
-            th, td { padding: 12px; }
             th { background-color: #f2f2f2; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
             .position { text-align: center; font-weight: bold; }
