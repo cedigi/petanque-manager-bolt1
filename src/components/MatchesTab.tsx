@@ -113,11 +113,21 @@ export function MatchesTab({
                 <tr>
                   <td>${match.isBye ? '-' : match.court}</td>
                   <td>
-                    ${match.team1Ids ? getGroupLabel(match.team1Ids) : `<strong>${getTeamName(match.team1Id)}</strong><div style="font-size: 0.9em;">${getTeamPlayers(match.team1Id, ' - ')}</div>`}
+                    ${match.team1Ids
+                      ? getGroupLabel(match.team1Ids)
+                      : isSolo
+                      ? `<strong>${getTeamName(match.team1Id)}</strong>`
+                      : `<strong>${getTeamName(match.team1Id)}</strong><div style="font-size: 0.9em;">${getTeamPlayers(match.team1Id, ' - ')}</div>`}
                   </td>
                   <td class="score">${match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}</td>
                   <td>
-                    ${match.isBye ? 'BYE' : match.team2Ids ? getGroupLabel(match.team2Ids) : `<strong>${getTeamName(match.team2Id)}</strong><div style="font-size: 0.9em;">${getTeamPlayers(match.team2Id, ' - ')}</div>`}
+                    ${match.isBye
+                      ? 'BYE'
+                      : match.team2Ids
+                      ? getGroupLabel(match.team2Ids)
+                      : isSolo
+                      ? `<strong>${getTeamName(match.team2Id)}</strong>`
+                      : `<strong>${getTeamName(match.team2Id)}</strong><div style="font-size: 0.9em;">${getTeamPlayers(match.team2Id, ' - ')}</div>`}
                   </td>
                 </tr>
               `).join('')}
@@ -253,6 +263,8 @@ export function MatchesTab({
                       <td className="px-4 py-2 text-center">
                         {match.team1Ids
                           ? getGroupLabel(match.team1Ids)
+                          : isSolo
+                          ? getTeamName(match.team1Id)
                           : `${getTeamName(match.team1Id)} : ${getTeamPlayers(match.team1Id)}`}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-center">
@@ -287,6 +299,8 @@ export function MatchesTab({
                           ? 'BYE'
                           : match.team2Ids
                           ? getGroupLabel(match.team2Ids)
+                          : isSolo
+                          ? getTeamName(match.team2Id)
                           : `${getTeamName(match.team2Id)} : ${getTeamPlayers(match.team2Id)}`}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-center">

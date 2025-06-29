@@ -76,7 +76,7 @@ export function StandingsTab({ teams }: StandingsTabProps) {
               ${sortedTeams.map((team, index) => `
                 <tr class="${index < 3 ? 'podium' : ''}">
                   <td class="position">${index + 1}</td>
-                  <td>${team.name} : ${team.players.map(player => `${player.label ? `[${player.label}] ` : ''}${player.name}`).join(' - ')}</td>
+                  <td>${isSolo ? team.name : `${team.name} : ${team.players.map(player => `${player.label ? `[${player.label}] ` : ''}${player.name}`).join(' - ')}`}</td>
                   <td class="center">${team.wins}</td>
                   <td class="center">${team.losses}</td>
                   <td class="center">${team.pointsFor}</td>
@@ -158,13 +158,13 @@ export function StandingsTab({ teams }: StandingsTabProps) {
                   </td>
                   <td className="px-6 py-2 whitespace-nowrap">
                     <span className="font-bold text-white text-lg">
-                      {team.name}
-                      {team.players.length > 0 && ' - '}
-                      {team.players
-                        .map((player) =>
-                          `${player.label ? `[${player.label}] ` : ''}${player.name}`
-                        )
-                        .join(', ')}
+                      {isSolo
+                        ? team.name
+                        : `${team.name} - ${team.players
+                            .map((player) =>
+                              `${player.label ? `[${player.label}] ` : ''}${player.name}`
+                            )
+                            .join(', ')}`}
                     </span>
                   </td>
                   <td className="px-6 py-2 whitespace-nowrap text-center">
