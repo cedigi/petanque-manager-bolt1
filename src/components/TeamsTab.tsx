@@ -55,8 +55,8 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
           <title>Équipes</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
-            h1 { text-align: center; margin-bottom: 20px; }
-            .team { text-align: center; margin: 4px 0; padding: 6px; border: 1px solid #ccc; }
+            h1 { text-align: left; margin-bottom: 20px; }
+            .team { text-align: left; margin: 4px 0; padding: 6px; border: 1px solid #ccc; }
             @media print { body { margin: 0; } }
           </style>
         </head>

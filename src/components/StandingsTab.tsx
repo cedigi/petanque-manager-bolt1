@@ -48,7 +48,11 @@ export function StandingsTab({ teams }: StandingsTabProps) {
               border-radius: 8px;
               overflow: hidden;
             }
-            .glass-table th, .glass-table td { border: 1px solid #ddd; }
+            .glass-table th, .glass-table td {
+              border: 1px solid #ddd;
+              border-left: 1px solid #ddd;
+              border-right: 1px solid #ddd;
+            }
             th, td { padding: 12px; }
             th { background-color: #f2f2f2; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
