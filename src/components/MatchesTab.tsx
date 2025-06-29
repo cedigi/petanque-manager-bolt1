@@ -32,7 +32,7 @@ export function MatchesTab({
     return team?.name || (isSolo ? 'Joueur inconnu' : 'Équipe inconnue');
   };
 
-  const getTeamPlayers = (teamId: string, separator = ', ') => {
+  const getTeamPlayers = (teamId: string, separator = ' - ') => {
     const team = teams.find(t => t.id === teamId);
     if (!team) return '';
     return team.players

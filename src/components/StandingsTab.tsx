@@ -164,7 +164,7 @@ export function StandingsTab({ teams }: StandingsTabProps) {
                             .map((player) =>
                               `${player.label ? `[${player.label}] ` : ''}${player.name}`
                             )
-                            .join(', ')}`}
+                            .join(' - ')}`}
                     </span>
                   </td>
                   <td className="px-6 py-2 whitespace-nowrap text-center">
