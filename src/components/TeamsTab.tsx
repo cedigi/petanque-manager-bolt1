@@ -112,7 +112,7 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
       </div>
 
       {showForm && (
-        <div className="mb-8">
+        <div className="mb-8 max-w-md mx-auto">
           <TeamForm
             playersPerTeam={getPlayersPerTeam()}
             tournamentType={tournamentType}
@@ -128,9 +128,9 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
           return (
             <div
               key={team.id}
-              className="glass-card p-4 hover:scale-[1.02] transition-all duration-300"
+              className="glass-card py-2 px-4 hover:scale-[1.02] transition-all duration-300"
             >
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between items-center mb-1">
                 <h3 className="text-white font-medium">
                   {isSolo ? team.name : `${team.name} - ${playerList}`}
                 </h3>
@@ -201,7 +201,7 @@ function TeamForm({ playersPerTeam, tournamentType, onAddTeam, onCancel }: TeamF
   };
 
   return (
-    <div className="glass-card p-4">
+    <div className="glass-card p-4 max-w-md mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold text-white tracking-wider">
           {isSolo ? 'Nouveau joueur' : 'Nouvelle équipe'}
