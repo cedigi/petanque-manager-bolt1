@@ -47,7 +47,7 @@ export function MatchesTab({
       const team = teams.find(t => t.id === id);
       return team?.name || team?.players[0]?.name || 'Inconnu';
     });
-    return labels.join(' + ');
+    return labels.join(' - ');
   };
 
   const handleEditScore = (match: Match) => {
