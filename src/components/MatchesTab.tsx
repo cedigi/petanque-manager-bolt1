@@ -79,8 +79,61 @@ export function MatchesTab({
 
   const handlePrintRound = (round: number) => {
     const roundMatches = groupedMatches[round];
+    const occupiedCourts = roundMatches
+      .filter(m => m.court > 0 && m.court <= courts)
+      .map(m => m.court);
+    const freeCourts = Array.from({ length: courts }, (_, i) => i + 1).filter(
+      c => !occupiedCourts.includes(c)
+    );
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
+
+    const matchRows = roundMatches
+      .map(
+        match => `
+                <tr>
+                  <td>${match.isBye ? '-' : match.court > courts ? `Libre ${
+            match.court - courts
+          }` : match.court}</td>
+                  <td>
+                    ${match.team1Ids
+                      ? getGroupLabel(match.team1Ids)
+                      : isSolo
+                      ? `<strong>${getTeamName(match.team1Id)}</strong>`
+                      : `<strong>${getTeamName(match.team1Id)}</strong><div style="font-size: 0.9em;">${getTeamPlayers(
+                          match.team1Id,
+                          ' - '
+                        )}</div>`}
+                  </td>
+                  <td class="score">${match.completed || match.isBye ? `${
+            match.team1Score
+          } - ${match.team2Score}` : '- - -'}</td>
+                  <td>
+                    ${match.isBye
+                      ? 'BYE'
+                      : match.team2Ids
+                      ? getGroupLabel(match.team2Ids)
+                      : isSolo
+                      ? `<strong>${getTeamName(match.team2Id)}</strong>`
+                      : `<strong>${getTeamName(match.team2Id)}</strong><div style="font-size: 0.9em;">${getTeamPlayers(
+                          match.team2Id,
+                          ' - '
+                        )}</div>`}
+                  </td>
+                </tr>
+              `
+      )
+      .join('');
+
+    const freeCourtRows = freeCourts
+      .map(
+        court => `
+                <tr>
+                  <td>${court}</td><td colspan="3">Terrain libre</td>
+                </tr>
+              `
+      )
+      .join('');
 
     const printContent = `
       <!DOCTYPE html>
@@ -111,28 +164,7 @@ export function MatchesTab({
               </tr>
             </thead>
             <tbody>
-              ${roundMatches.map(match => `
-                <tr>
-                  <td>${match.isBye ? '-' : match.court}</td>
-                  <td>
-                    ${match.team1Ids
-                      ? getGroupLabel(match.team1Ids)
-                      : isSolo
-                      ? `<strong>${getTeamName(match.team1Id)}</strong>`
-                      : `<strong>${getTeamName(match.team1Id)}</strong><div style="font-size: 0.9em;">${getTeamPlayers(match.team1Id, ' - ')}</div>`}
-                  </td>
-                  <td class="score">${match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}</td>
-                  <td>
-                    ${match.isBye
-                      ? 'BYE'
-                      : match.team2Ids
-                      ? getGroupLabel(match.team2Ids)
-                      : isSolo
-                      ? `<strong>${getTeamName(match.team2Id)}</strong>`
-                      : `<strong>${getTeamName(match.team2Id)}</strong><div style="font-size: 0.9em;">${getTeamPlayers(match.team2Id, ' - ')}</div>`}
-                  </td>
-                </tr>
-              `).join('')}
+              ${matchRows}${freeCourtRows}
             </tbody>
           </table>
           <div style="text-align: center; margin-top: 20px;">
