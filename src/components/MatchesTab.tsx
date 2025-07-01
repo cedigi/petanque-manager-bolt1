@@ -31,7 +31,14 @@ export function MatchesTab({
 
   const getTeamName = (teamId: string) => {
     const team = teams.find(t => t.id === teamId);
-    return team?.name || (isSolo ? 'Joueur inconnu' : 'Équipe inconnue');
+    if (!team) {
+      return isSolo ? 'Joueur inconnu' : 'Équipe inconnue';
+    }
+    const name = team.name;
+    if (!isSolo && name.toLowerCase().startsWith('équipe ')) {
+      return name.replace(/^Équipe\s+/i, '');
+    }
+    return name;
   };
 
   const getTeamPlayers = (teamId: string, separator = ' - ') => {
@@ -45,7 +52,12 @@ export function MatchesTab({
   const getGroupLabel = (ids: string[]) => {
     const labels = ids.map(id => {
       const team = teams.find(t => t.id === id);
-      return team?.name || team?.players[0]?.name || 'Inconnu';
+      if (!team) return 'Inconnu';
+      const name = team.name || team.players[0]?.name || 'Inconnu';
+      if (!isSolo && name.toLowerCase().startsWith('équipe ')) {
+        return name.replace(/^Équipe\s+/i, '');
+      }
+      return name;
     });
     return labels.join(' - ');
   };
