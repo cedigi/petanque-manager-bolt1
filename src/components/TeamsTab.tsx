@@ -65,6 +65,8 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
+    const columnCount = teams.length > 40 ? 3 : teams.length > 20 ? 2 : 1;
+
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -73,23 +75,37 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: left; margin-bottom: 20px; }
-            .team { text-align: left; margin: 4px 0; padding: 6px; border: 1px solid #ccc; }
+            .teams-container {
+              column-count: ${columnCount};
+              -webkit-column-count: ${columnCount};
+              -moz-column-count: ${columnCount};
+              column-gap: 20px;
+            }
+            .team {
+              text-align: left;
+              margin: 4px 0;
+              padding: 6px;
+              border: 1px solid #ccc;
+              break-inside: avoid;
+            }
             @media print { body { margin: 0; } }
           </style>
         </head>
         <body>
           <h1>Liste des ${isSolo ? 'Joueurs' : 'Équipes'}</h1>
-          ${teams
-            .map(
-              (team) => `
-            <div class="team">
-              ${team.name} : ${team.players
-                .map(player => `${player.name}${player.label ? ` [${player.label}]` : ''}`)
-                .join(' - ')}
-            </div>
-          `
-            )
-            .join('')}
+          <div class="teams-container">
+            ${teams
+              .map(
+                (team) => `
+              <div class="team">
+                ${team.name} : ${team.players
+                  .map(player => `${player.name}${player.label ? ` [${player.label}]` : ''}`)
+                  .join(' - ')}
+              </div>
+            `
+              )
+              .join('')}
+          </div>
           <div style="text-align: center; margin-top: 20px;">
             <button onclick="window.print()" style="padding: 8px 16px; font-size: 16px;">Imprimer</button>
           </div>
