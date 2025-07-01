@@ -18,6 +18,7 @@ function App() {
     generateRound,
     updateMatchScore,
     updateMatchCourt,
+    updateTeam,
     resetTournament,
   } = useTournament();
 
@@ -60,6 +61,7 @@ function App() {
             tournamentType={tournament.type}
             onAddTeam={addTeam}
             onRemoveTeam={removeTeam}
+            onUpdateTeam={updateTeam}
           />
         )}
         {activeTab === 'matches' && (
