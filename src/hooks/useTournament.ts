@@ -200,6 +200,27 @@ export function useTournament() {
     saveTournament(updatedTournament);
   };
 
+  const updateTeam = (teamId: string, players: Player[]) => {
+    if (!tournament) return;
+
+    const updatedTeams = tournament.teams.map((team, idx) => {
+      if (team.id === teamId) {
+        const name =
+          tournament.type === 'melee' || tournament.type === 'tete-a-tete'
+            ? `${idx + 1} - ${players[0].name}`
+            : team.name;
+        return { ...team, name, players };
+      }
+      return team;
+    });
+
+    const updatedTournament = {
+      ...tournament,
+      teams: updatedTeams,
+    };
+    saveTournament(updatedTournament);
+  };
+
   const resetTournament = () => {
     localStorage.removeItem(STORAGE_KEY);
     setTournament(null);
@@ -213,6 +234,7 @@ export function useTournament() {
     generateRound,
     updateMatchScore,
     updateMatchCourt,
+    updateTeam,
     resetTournament,
   };
 }
