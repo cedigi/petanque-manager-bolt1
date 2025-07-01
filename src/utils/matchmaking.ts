@@ -334,17 +334,18 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
     matchesResult.push({
       id: crypto.randomUUID(),
       round,
-      court: courtIndex,
+      court: 0,
       team1Id: teamIds[0],
       team2Id: teamIds[0],
       team1Ids: teamIds,
       team2Ids: teamIds,
-      completed: false,
-      isBye: false,
+      team1Score: 13,
+      team2Score: 7,
+      completed: true,
+      isBye: true,
       battleIntensity: 0,
       hackingAttempts: 0,
     });
-    courtIndex++;
   }
 
   return matchesResult;
