@@ -45,7 +45,7 @@ export function useTournament() {
     const teamNumber = tournament.teams.length + 1;
     const teamName =
       tournament.type === 'melee' || tournament.type === 'tete-a-tete'
-        ? `${teamNumber} - ${players[0].name}`
+        ? `${teamNumber}: ${players[0].name}`
         : `Équipe ${teamNumber}`;
 
     const team: Team = {
@@ -77,7 +77,7 @@ export function useTournament() {
       ...team,
       name:
         tournament.type === 'melee' || tournament.type === 'tete-a-tete'
-          ? `${index + 1} - ${team.players[0].name}`
+          ? `${index + 1}: ${team.players[0].name}`
           : `Équipe ${index + 1}`,
     }));
 
@@ -283,7 +283,7 @@ export function useTournament() {
       if (team.id === teamId) {
         const name =
           tournament.type === 'melee' || tournament.type === 'tete-a-tete'
-            ? `${idx + 1} - ${players[0].name}`
+            ? `${idx + 1}: ${players[0].name}`
             : team.name;
         return { ...team, name, players };
       }
