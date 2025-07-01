@@ -28,6 +28,14 @@ function App() {
     document.documentElement.classList.add('dark');
   }, []);
 
+  useEffect(() => {
+    if (animationPaused) {
+      document.body.classList.add('animation-paused');
+    } else {
+      document.body.classList.remove('animation-paused');
+    }
+  }, [animationPaused]);
+
   const toggleAnimation = () => {
     setAnimationPaused((prev) => !prev);
   };
