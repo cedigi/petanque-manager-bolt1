@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Match, Team } from '../types/tournament';
-import { Play, Edit3, MapPin, Trophy, Printer, ChevronDown } from 'lucide-react';
+import { Play, Edit3, MapPin, Trophy, Printer, ChevronDown, Trash2 } from 'lucide-react';
 
 interface MatchesTabProps {
   matches: Match[];
@@ -10,6 +10,7 @@ interface MatchesTabProps {
   onGenerateRound: () => void;
   onUpdateScore: (matchId: string, team1Score: number, team2Score: number) => void;
   onUpdateCourt: (matchId: string, court: number) => void;
+  onDeleteRound: (round: number) => void;
 }
 
 export function MatchesTab({
@@ -19,7 +20,8 @@ export function MatchesTab({
   courts,
   onGenerateRound,
   onUpdateScore,
-  onUpdateCourt
+  onUpdateCourt,
+  onDeleteRound
 }: MatchesTabProps) {
   const [editingMatch, setEditingMatch] = useState<string | null>(null);
   const [editScores, setEditScores] = useState<{ team1: number; team2: number }>({ team1: 0, team2: 0 });
@@ -145,6 +147,12 @@ export function MatchesTab({
     // The user can review the preview window and click the button to print
   };
 
+  const handleDeleteRound = (round: number) => {
+    if (confirm('Supprimer ce tour ?')) {
+      onDeleteRound(round);
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-8">
@@ -197,13 +205,22 @@ export function MatchesTab({
               <h3 className="text-xl font-bold text-white tracking-wide">
                 Tour {round}
               </h3>
-              <button
-                onClick={() => handlePrintRound(round)}
-                className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300"
-              >
-                <Printer className="w-4 h-4" />
-                <span>Imprimer</span>
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handlePrintRound(round)}
+                  className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Imprimer</span>
+                </button>
+                <button
+                  onClick={() => handleDeleteRound(round)}
+                  className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300 text-red-400"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Supprimer</span>
+                </button>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="glass-table w-full">

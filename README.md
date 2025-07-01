@@ -68,3 +68,8 @@ src/
 ```
 
 To start the application in development mode run `npm run dev` as shown above.
+
+## Usage
+
+Use the **Matchs** tab to generate rounds and enter scores.
+If a round was created by mistake, click the **Supprimer** button next to its header to delete it. The standings are recalculated as if the removed matches never happened.

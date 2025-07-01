@@ -18,6 +18,7 @@ function App() {
     generateRound,
     updateMatchScore,
     updateMatchCourt,
+    deleteRound,
     updateTeam,
     resetTournament,
   } = useTournament();
@@ -73,6 +74,7 @@ function App() {
             onGenerateRound={generateRound}
             onUpdateScore={updateMatchScore}
             onUpdateCourt={updateMatchCourt}
+            onDeleteRound={deleteRound}
           />
         )}
         {activeTab === 'standings' && (
