@@ -200,6 +200,82 @@ export function useTournament() {
     saveTournament(updatedTournament);
   };
 
+  const deleteRound = (round: number) => {
+    if (!tournament) return;
+
+    const remainingMatches = tournament.matches.filter(
+      match => match.round !== round
+    );
+
+    const updatedTeams = tournament.teams.map(team => {
+      const teamMatches = remainingMatches.filter(
+        match =>
+          match.completed &&
+          (
+            match.team1Id === team.id ||
+            match.team2Id === team.id ||
+            (match.team1Ids && match.team1Ids.includes(team.id)) ||
+            (match.team2Ids && match.team2Ids.includes(team.id))
+          )
+      );
+
+      let wins = 0;
+      let losses = 0;
+      let pointsFor = 0;
+      let pointsAgainst = 0;
+
+      teamMatches.forEach(match => {
+        if (match.isBye && (match.team1Id === team.id || match.team2Id === team.id)) {
+          wins += 1;
+          pointsFor += 13;
+          pointsAgainst += 7;
+          return;
+        }
+
+        const isTeam1 = match.team1Id === team.id || (match.team1Ids && match.team1Ids.includes(team.id));
+        const isTeam2 = match.team2Id === team.id || (match.team2Ids && match.team2Ids.includes(team.id));
+
+        if (isTeam1) {
+          pointsFor += match.team1Score || 0;
+          pointsAgainst += match.team2Score || 0;
+          if ((match.team1Score || 0) > (match.team2Score || 0)) {
+            wins += 1;
+          } else {
+            losses += 1;
+          }
+        } else if (isTeam2) {
+          pointsFor += match.team2Score || 0;
+          pointsAgainst += match.team1Score || 0;
+          if ((match.team2Score || 0) > (match.team1Score || 0)) {
+            wins += 1;
+          } else {
+            losses += 1;
+          }
+        }
+      });
+
+      return {
+        ...team,
+        wins,
+        losses,
+        pointsFor,
+        pointsAgainst,
+        performance: pointsFor - pointsAgainst,
+      };
+    });
+
+    const remainingRounds = remainingMatches.map(m => m.round);
+    const currentRound = remainingRounds.length ? Math.max(...remainingRounds) : 0;
+
+    const updatedTournament = {
+      ...tournament,
+      matches: remainingMatches,
+      teams: updatedTeams,
+      currentRound,
+    };
+    saveTournament(updatedTournament);
+  };
+
   const updateTeam = (teamId: string, players: Player[]) => {
     if (!tournament) return;
 
@@ -234,6 +310,7 @@ export function useTournament() {
     generateRound,
     updateMatchScore,
     updateMatchCourt,
+    deleteRound,
     updateTeam,
     resetTournament,
   };
