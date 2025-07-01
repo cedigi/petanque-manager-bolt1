@@ -1,6 +1,12 @@
 import { Logo } from './Logo';
+import { Pause, Play } from 'lucide-react';
 
-export function Header() {
+interface HeaderProps {
+  animationPaused: boolean;
+  onToggleAnimation: () => void;
+}
+
+export function Header({ animationPaused, onToggleAnimation }: HeaderProps) {
   return (
     <header className="glass-card border-b border-white/20 shadow-lg mx-6 mt-6">
       <div className="px-6 py-4 flex items-center justify-between">
@@ -18,6 +24,13 @@ export function Header() {
             </p>
           </div>
         </div>
+        <button
+          onClick={onToggleAnimation}
+          className="glass-button-secondary p-2 rounded-lg hover:scale-105 transition-all duration-300"
+          title={animationPaused ? 'Reprendre l\'animation' : 'Mettre en pause l\'animation'}
+        >
+          {animationPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+        </button>
       </div>
     </header>
   );

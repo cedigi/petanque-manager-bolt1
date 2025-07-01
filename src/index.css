@@ -175,6 +175,10 @@
     overflow: hidden;
   }
 
+  .floating-petanque-balls.paused .petanque-ball {
+    animation-play-state: paused;
+  }
+
   .petanque-ball {
     position: absolute;
     border-radius: 50%;

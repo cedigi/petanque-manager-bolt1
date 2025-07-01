@@ -10,6 +10,7 @@ import { RotateCcw } from 'lucide-react';
 
 function App() {
   const [activeTab, setActiveTab] = useState('teams');
+  const [animationPaused, setAnimationPaused] = useState(false);
   const {
     tournament,
     createTournament,
@@ -26,6 +27,10 @@ function App() {
   useEffect(() => {
     document.documentElement.classList.add('dark');
   }, []);
+
+  const toggleAnimation = () => {
+    setAnimationPaused((prev) => !prev);
+  };
 
   const content = !tournament ? (
     <TournamentSetup onCreateTournament={createTournament} />
@@ -87,7 +92,7 @@ function App() {
   return (
     <div className="min-h-screen relative">
       {/* Floating petanque balls background */}
-      <div className="floating-petanque-balls">
+      <div className={`floating-petanque-balls${animationPaused ? ' paused' : ''}`}>
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
@@ -96,7 +101,7 @@ function App() {
         <div className="petanque-ball"></div>
       </div>
 
-      <Header />
+      <Header animationPaused={animationPaused} onToggleAnimation={toggleAnimation} />
       {content}
     </div>
   );
