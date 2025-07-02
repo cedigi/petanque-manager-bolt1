@@ -34,9 +34,16 @@ export interface Team {
   synchroLevel: number;
 }
 
+export interface Pool {
+  id: string;
+  teamIds: string[];
+}
+
 export interface Match {
   id: string;
   round: number;
+  day?: number;
+  poolId?: string;
   court: number;
   team1Id: string;
   team2Id: string;
@@ -56,6 +63,7 @@ export interface Tournament {
   type: TournamentType;
   courts: number;
   teams: Team[];
+  pools: Pool[];
   matches: Match[];
   currentRound: number;
   completed: boolean;

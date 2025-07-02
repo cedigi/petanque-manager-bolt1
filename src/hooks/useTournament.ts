@@ -12,6 +12,7 @@ export function useTournament() {
     if (saved) {
       const parsed = JSON.parse(saved);
       parsed.createdAt = new Date(parsed.createdAt);
+      if (!parsed.pools) parsed.pools = [];
       setTournament(parsed);
     }
   }, []);
@@ -29,6 +30,7 @@ export function useTournament() {
       type,
       courts,
       teams: [],
+      pools: [],
       matches: [],
       currentRound: 0,
       completed: false,
