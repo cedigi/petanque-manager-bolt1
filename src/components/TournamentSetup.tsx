@@ -7,7 +7,7 @@ interface TournamentSetupProps {
   onCreateTournament: (
     type: TournamentType,
     courts: number,
-    pools?: number,
+    poolCount?: number,
     teamsPerPool?: number,
   ) => void;
 }
@@ -15,12 +15,12 @@ interface TournamentSetupProps {
 export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
   const [type, setType] = useState<TournamentType>('doublette');
   const [courts, setCourts] = useState(4);
-  const [pools, setPools] = useState(2);
+  const [poolCount, setPoolCount] = useState(2);
   const [teamsPerPool, setTeamsPerPool] = useState(3);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCreateTournament(type, courts, pools, teamsPerPool);
+    onCreateTournament(type, courts, poolCount, teamsPerPool);
   };
 
   const tournamentTypes = [
@@ -160,8 +160,8 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
                   <input
                     type="number"
                     min={1}
-                    value={pools}
-                    onChange={e => setPools(Number(e.target.value))}
+                    value={poolCount}
+                    onChange={e => setPoolCount(Number(e.target.value))}
                     className="glass-input w-full px-4 py-3 text-lg font-medium tracking-wide"
                   />
                 </div>

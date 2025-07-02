@@ -73,7 +73,7 @@ export interface Tournament {
   name: string;
   type: TournamentType;
   courts: number;
-  pools?: number;
+  poolCount?: number;
   teamsPerPool?: number;
   teams: Team[];
   pools: Pool[];

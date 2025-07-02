@@ -26,7 +26,7 @@ export function useTournament() {
   const createTournament = (
     type: TournamentType,
     courts: number,
-    pools?: number,
+    poolCount?: number,
     teamsPerPool?: number,
   ) => {
     const defaultName = `Tournoi ${new Date().toLocaleDateString()}`;
@@ -35,7 +35,7 @@ export function useTournament() {
       name: defaultName,
       type,
       courts,
-      pools,
+      poolCount,
       teamsPerPool,
       teams: [],
       pools: [],
