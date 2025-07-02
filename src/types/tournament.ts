@@ -4,12 +4,9 @@ export type TournamentType =
   | 'triplette'
   | 'quadrette'
   | 'melee'
-        codex/créer-fonction-generatepoolmatches-pour-round-robin
-  | 'pool';
-
+  | 'pool'
   | 'doublette-poule'
   | 'triplette-poule';
-        main
 
 export interface CyberImplant {
   id: string;
