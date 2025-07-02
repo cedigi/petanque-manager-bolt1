@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Tournament, TournamentType, Team, Player } from '../types/tournament';
+import { Tournament, TournamentType, Team, Player, Pool } from '../types/tournament';
 import { generateMatches } from '../utils/matchmaking';
+import { getTopTeamsFromPools, createKnockoutBracket } from '../utils/bracket';
 
 const STORAGE_KEY = 'petanque-tournament';
 
@@ -45,8 +46,55 @@ export function useTournament() {
       createdAt: new Date(),
       securityLevel: 1,
       networkStatus: 'online',
+      pools: [],
+      stage: 'pool',
     };
     saveTournament(newTournament);
+  };
+
+  const createPools = (numPools: number) => {
+    if (!tournament) return;
+
+    const shuffled = [...tournament.teams].sort(() => Math.random() - 0.5);
+    const pools: Pool[] = Array.from({ length: numPools }, (_, i) => ({
+      id: String.fromCharCode(65 + i),
+      teamIds: [],
+    }));
+
+    for (let i = 0; i < shuffled.length; i++) {
+      pools[i % numPools].teamIds.push(shuffled[i].id);
+    }
+
+    const updatedTournament = { ...tournament, pools };
+    saveTournament(updatedTournament);
+  };
+
+  const startKnockout = (qualifiersPerPool: number) => {
+    if (!tournament || !tournament.pools) return;
+
+    const qualifiers = getTopTeamsFromPools(
+      tournament.pools,
+      tournament.teams,
+      qualifiersPerPool
+    ).map(team => ({
+      ...team,
+      wins: 0,
+      losses: 0,
+      pointsFor: 0,
+      pointsAgainst: 0,
+      performance: 0,
+    }));
+
+    const matches = createKnockoutBracket(qualifiers, 1);
+
+    const updatedTournament = {
+      ...tournament,
+      teams: qualifiers,
+      matches,
+      currentRound: 1,
+      stage: 'knockout',
+    };
+    saveTournament(updatedTournament);
   };
 
   const addTeam = (players: Player[]) => {
@@ -356,6 +404,8 @@ export function useTournament() {
     updateMatchCourt,
     deleteRound,
     updateTeam,
+    createPools,
+    startKnockout,
     resetTournament,
   };
 }
