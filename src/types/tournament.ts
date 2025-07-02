@@ -4,9 +4,15 @@ export type TournamentType =
   | 'triplette'
   | 'quadrette'
   | 'melee'
+        codex/implémenter-fonction-createpoolsautomatically
+  | 'pool'
+  | 'doublette-poule'
+  | 'triplette-poule';
+
   | 'doublette-poule'
   | 'triplette-poule'
   | 'pool';
+        main
 
 export interface CyberImplant {
   id: string;
