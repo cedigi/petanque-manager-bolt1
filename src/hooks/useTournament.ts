@@ -12,6 +12,7 @@ export function useTournament() {
     if (saved) {
       const parsed = JSON.parse(saved);
       parsed.createdAt = new Date(parsed.createdAt);
+      if (!parsed.pools) parsed.pools = [];
       setTournament(parsed);
     }
   }, []);
@@ -21,14 +22,22 @@ export function useTournament() {
     setTournament(tournament);
   };
 
-  const createTournament = (type: TournamentType, courts: number) => {
+  const createTournament = (
+    type: TournamentType,
+    courts: number,
+    pools?: number,
+    teamsPerPool?: number,
+  ) => {
     const defaultName = `Tournoi ${new Date().toLocaleDateString()}`;
     const newTournament: Tournament = {
       id: crypto.randomUUID(),
       name: defaultName,
       type,
       courts,
+      pools,
+      teamsPerPool,
       teams: [],
+      pools: [],
       matches: [],
       currentRound: 0,
       completed: false,
