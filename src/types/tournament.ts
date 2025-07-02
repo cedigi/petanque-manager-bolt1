@@ -4,20 +4,9 @@ export type TournamentType =
   | 'triplette'
   | 'quadrette'
   | 'melee'
-        codex/mettre-à-jour-generatematches-pour--doublette-poule--et--tri
   | 'pool'
   | 'doublette-poule'
   | 'triplette-poule';
-        codex/implémenter-fonction-createpoolsautomatically
-  | 'pool'
-  | 'doublette-poule'
-  | 'triplette-poule';
-
-  | 'doublette-poule'
-  | 'triplette-poule'
-  | 'pool';
-        main
-        main
 
 export interface CyberImplant {
   id: string;
@@ -84,7 +73,7 @@ export interface Tournament {
   name: string;
   type: TournamentType;
   courts: number;
-  pools?: number;
+  poolCount?: number;
   teamsPerPool?: number;
   teams: Team[];
   pools: Pool[];
