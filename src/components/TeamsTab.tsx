@@ -21,8 +21,10 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
       case 'tete-a-tete':
         return 1;
       case 'doublette':
+      case 'doublette-poule':
         return 2;
       case 'triplette':
+      case 'triplette-poule':
         return 3;
       case 'quadrette':
         return 4;
