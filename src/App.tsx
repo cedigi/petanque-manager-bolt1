@@ -91,7 +91,7 @@ function App() {
           />
         )}
         {activeTab === 'standings' && (
-          <StandingsTab teams={tournament.teams} />
+          <StandingsTab teams={tournament.teams} pools={tournament.poolStandings} />
         )}
       </main>
     </>

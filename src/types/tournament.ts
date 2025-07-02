@@ -24,6 +24,8 @@ export interface Player {
 export interface Team {
   id: string;
   name: string;
+  /** Pool identifier (e.g. "A", "B" ...) */
+  pool?: string;
   players: Player[];
   wins: number;
   losses: number;
@@ -57,6 +59,8 @@ export interface Tournament {
   courts: number;
   teams: Team[];
   matches: Match[];
+  /** Standings grouped by pool */
+  poolStandings?: Record<string, Team[]>;
   currentRound: number;
   completed: boolean;
   createdAt: Date;

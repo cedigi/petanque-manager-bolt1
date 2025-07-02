@@ -4,9 +4,10 @@ import { Trophy, TrendingUp, TrendingDown, Printer } from 'lucide-react';
 
 interface StandingsTabProps {
   teams: Team[];
+  pools?: Record<string, Team[]>;
 }
 
-export function StandingsTab({ teams }: StandingsTabProps) {
+export function StandingsTab({ teams, pools }: StandingsTabProps) {
   const isSolo = teams.every(t => t.players.length === 1);
   const sortedTeams = [...teams].sort((a, b) => {
     if (b.wins !== a.wins) {
@@ -98,6 +99,10 @@ export function StandingsTab({ teams }: StandingsTabProps) {
     // The user can review the preview window and click the button to print
   };
 
+  const poolEntries = pools && Object.keys(pools).length > 0
+    ? Object.entries(pools)
+    : [['', sortedTeams]];
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-8">
@@ -118,14 +123,19 @@ export function StandingsTab({ teams }: StandingsTabProps) {
         </div>
       </div>
 
-      <div className="glass-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="glass-table w-full">
-            <thead>
-              <tr>
-                <th className="px-6 py-4 text-center font-bold tracking-wider">
-                  Position
-                </th>
+      {poolEntries.map(([poolId, poolTeams]) => (
+        <div key={poolId} className="mb-8">
+          {poolId && (
+            <h3 className="text-xl font-bold text-white mb-4 tracking-wide">Poule {poolId}</h3>
+          )}
+          <div className="glass-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="glass-table w-full">
+                <thead>
+                  <tr>
+                    <th className="px-6 py-4 text-center font-bold tracking-wider">
+                      Position
+                    </th>
                 <th className="px-6 py-4 text-left font-bold tracking-wider">
                   {isSolo ? 'Joueur' : 'Équipe'}
                 </th>
@@ -145,9 +155,9 @@ export function StandingsTab({ teams }: StandingsTabProps) {
                   Différentiel
                 </th>
               </tr>
-            </thead>
-            <tbody>
-              {sortedTeams.map((team, index) => (
+                </thead>
+              <tbody>
+              {poolTeams.map((team, index) => (
                 <tr key={team.id} className={`hover:bg-white/5 transition-colors ${
                   index < 3 ? 'bg-gradient-to-r from-yellow-400/10 to-transparent' : ''
                 }`}>
@@ -195,8 +205,10 @@ export function StandingsTab({ teams }: StandingsTabProps) {
               ))}
             </tbody>
           </table>
+            </div>
+          </div>
         </div>
-      </div>
+      ))}
 
       {teams.length === 0 && (
         <div className="text-center py-16">

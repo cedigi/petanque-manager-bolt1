@@ -30,6 +30,7 @@ export function useTournament() {
       courts,
       teams: [],
       matches: [],
+      poolStandings: {},
       currentRound: 0,
       completed: false,
       createdAt: new Date(),
@@ -175,10 +176,28 @@ export function useTournament() {
       };
     });
 
+    // Compute standings by pool using updated team stats
+    const poolStandings = updatedTeams.reduce<Record<string, Team[]>>((acc, t) => {
+      const pool = t.pool ?? 'A';
+      if (!acc[pool]) acc[pool] = [];
+      acc[pool].push(t);
+      return acc;
+    }, {});
+
+    Object.keys(poolStandings).forEach(pool => {
+      poolStandings[pool].sort((a, b) => {
+        if (b.wins !== a.wins) return b.wins - a.wins;
+        const diffA = a.pointsFor - a.pointsAgainst;
+        const diffB = b.pointsFor - b.pointsAgainst;
+        return diffB - diffA;
+      });
+    });
+
     const updatedTournament = {
       ...tournament,
       matches: updatedMatches,
       teams: updatedTeams,
+      poolStandings,
     };
     saveTournament(updatedTournament);
   };
@@ -267,10 +286,26 @@ export function useTournament() {
     const remainingRounds = remainingMatches.map(m => m.round);
     const currentRound = remainingRounds.length ? Math.max(...remainingRounds) : 0;
 
+    const poolStandings = updatedTeams.reduce<Record<string, Team[]>>((acc, t) => {
+      const pool = t.pool ?? 'A';
+      if (!acc[pool]) acc[pool] = [];
+      acc[pool].push(t);
+      return acc;
+    }, {});
+    Object.keys(poolStandings).forEach(pool => {
+      poolStandings[pool].sort((a, b) => {
+        if (b.wins !== a.wins) return b.wins - a.wins;
+        const diffA = a.pointsFor - a.pointsAgainst;
+        const diffB = b.pointsFor - b.pointsAgainst;
+        return diffB - diffA;
+      });
+    });
+
     const updatedTournament = {
       ...tournament,
       matches: remainingMatches,
       teams: updatedTeams,
+      poolStandings,
       currentRound,
     };
     saveTournament(updatedTournament);
