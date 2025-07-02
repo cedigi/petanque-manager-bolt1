@@ -2,6 +2,8 @@ import { Tournament, Match, Team } from '../types/tournament';
 
 export function generateMatches(tournament: Tournament): Match[] {
   switch (tournament.type) {
+    case 'pool':
+      return generatePoolMatches(tournament);
     case 'quadrette':
       return generateQuadretteMatches(tournament);
     case 'melee':
@@ -143,6 +145,84 @@ function generateStandardMatches(tournament: Tournament): Match[] {
     });
 
     courtIndex++;
+  }
+
+  return newMatches;
+}
+
+function generatePoolMatches(tournament: Tournament): Match[] {
+  const { teams, matches, currentRound } = tournament;
+  const round = currentRound + 1;
+
+  const teamsByPool: Record<string, Team[]> = {};
+  teams.forEach(team => {
+    const poolId = (team.poolId ?? 'A');
+    if (!teamsByPool[poolId]) {
+      teamsByPool[poolId] = [];
+    }
+    teamsByPool[poolId].push(team);
+  });
+
+  const newMatches: Match[] = [];
+  let courtIndex = 1;
+
+  for (const [poolId, poolTeams] of Object.entries(teamsByPool)) {
+    const previousDay = matches
+      .filter(m => m.poolId === poolId)
+      .reduce((max, m) => Math.max(max, m.day ?? 0), 0);
+    const day = previousDay + 1;
+
+    const ids = poolTeams.map(t => t.id);
+    if (ids.length % 2 === 1) ids.push('bye');
+
+    const n = ids.length;
+    const fixed = ids[0];
+    const rotating = ids.slice(1);
+
+    for (let i = 0; i < day - 1; i++) {
+      rotating.unshift(rotating.pop()!);
+    }
+
+    const arrangement = [fixed, ...rotating];
+    const half = n / 2;
+
+    for (let i = 0; i < half; i++) {
+      const t1 = arrangement[i];
+      const t2 = arrangement[n - 1 - i];
+
+      if (t1 === 'bye' || t2 === 'bye') {
+        const realId = t1 === 'bye' ? t2 : t1;
+        newMatches.push({
+          id: crypto.randomUUID(),
+          round,
+          court: 0,
+          poolId,
+          day,
+          team1Id: realId,
+          team2Id: realId,
+          team1Score: 13,
+          team2Score: 7,
+          completed: true,
+          isBye: true,
+          battleIntensity: 0,
+          hackingAttempts: 0,
+        });
+      } else {
+        newMatches.push({
+          id: crypto.randomUUID(),
+          round,
+          court: courtIndex++,
+          poolId,
+          day,
+          team1Id: t1,
+          team2Id: t2,
+          completed: false,
+          isBye: false,
+          battleIntensity: Math.floor(Math.random() * 75) + 25,
+          hackingAttempts: 0,
+        });
+      }
+    }
   }
 
   return newMatches;
