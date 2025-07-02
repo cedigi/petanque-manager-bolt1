@@ -50,6 +50,11 @@ export interface Match {
   hackingAttempts: number;
 }
 
+export interface Pool {
+  id: string;
+  teamIds: string[];
+}
+
 export interface Tournament {
   id: string;
   name: string;
@@ -62,4 +67,6 @@ export interface Tournament {
   createdAt: Date;
   securityLevel: number;
   networkStatus: 'online' | 'offline' | 'compromised';
+  pools?: Pool[];
+  stage?: 'pool' | 'knockout' | 'finished';
 }
