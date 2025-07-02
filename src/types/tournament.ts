@@ -1,4 +1,11 @@
-export type TournamentType = 'tete-a-tete' | 'doublette' | 'triplette' | 'quadrette' | 'melee';
+export type TournamentType =
+  | 'tete-a-tete'
+  | 'doublette'
+  | 'triplette'
+  | 'quadrette'
+  | 'melee'
+  | 'doublette-poule'
+  | 'triplette-poule';
 
 export interface CyberImplant {
   id: string;
@@ -55,6 +62,8 @@ export interface Tournament {
   name: string;
   type: TournamentType;
   courts: number;
+  pools?: number;
+  teamsPerPool?: number;
   teams: Team[];
   matches: Match[];
   currentRound: number;

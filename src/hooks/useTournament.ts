@@ -21,13 +21,20 @@ export function useTournament() {
     setTournament(tournament);
   };
 
-  const createTournament = (type: TournamentType, courts: number) => {
+  const createTournament = (
+    type: TournamentType,
+    courts: number,
+    pools?: number,
+    teamsPerPool?: number,
+  ) => {
     const defaultName = `Tournoi ${new Date().toLocaleDateString()}`;
     const newTournament: Tournament = {
       id: crypto.randomUUID(),
       name: defaultName,
       type,
       courts,
+      pools,
+      teamsPerPool,
       teams: [],
       matches: [],
       currentRound: 0,
