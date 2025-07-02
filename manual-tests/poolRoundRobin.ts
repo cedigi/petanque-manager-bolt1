@@ -1,5 +1,5 @@
 import { generateMatches } from '../src/utils/matchmaking.ts';
-import { Tournament, Team, Pool } from '../src/types/tournament';
+import { Tournament, Team } from '../src/types/tournament';
 
 function createTeam(id: string, poolId: string): Team {
   return {

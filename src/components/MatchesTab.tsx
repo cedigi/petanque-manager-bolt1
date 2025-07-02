@@ -79,28 +79,39 @@ export function MatchesTab({
     setEditingMatch(null);
   };
 
-  const groupedMatches = matches.reduce((acc: { [round: number]: Match[] }, match) => {
-    if (!acc[match.round]) {
-      acc[match.round] = [];
-    }
-    acc[match.round].push(match);
-    return acc;
-  }, {});
+  const matchesByRoundAndPool = matches.reduce(
+    (acc: Record<number, Record<string, Match[]>>, match) => {
+      if (!acc[match.round]) {
+        acc[match.round] = {};
+      }
+      const pool = match.poolId ?? 'all';
+      if (!acc[match.round][pool]) {
+        acc[match.round][pool] = [];
+      }
+      acc[match.round][pool].push(match);
+      return acc;
+    },
+    {}
+  );
 
-  const sortedRounds = Object.keys(groupedMatches).map(Number).sort((a, b) => b - a);
+  const sortedRounds = Object.keys(matchesByRoundAndPool)
+    .map(Number)
+    .sort((a, b) => b - a);
 
   const handlePrintRound = (round: number) => {
-    const roundMatches = groupedMatches[round];
+    const roundPools = matchesByRoundAndPool[round];
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    const matchRows = roundMatches
-      .map(
-        match => `
+    const poolTables = Object.entries(roundPools)
+      .map(([poolId, poolMatches]) => {
+        const rows = poolMatches
+          .map(
+            match => `
                 <tr>
                   <td>${match.isBye ? '-' : match.court > courts ? `Libre ${
-            match.court - courts
-          }` : match.court}</td>
+              match.court - courts
+            }` : match.court}</td>
                   <td>
                     ${match.team1Ids
                       ? getGroupLabel(match.team1Ids)
@@ -112,8 +123,8 @@ export function MatchesTab({
                         )}</div>`}
                   </td>
                   <td class="score">${match.completed || match.isBye ? `${
-            match.team1Score
-          } - ${match.team2Score}` : '- - -'}</td>
+              match.team1Score
+            } - ${match.team2Score}` : '- - -'}</td>
                   <td>
                     ${match.isBye
                       ? 'BYE'
@@ -128,9 +139,26 @@ export function MatchesTab({
                   </td>
                 </tr>
               `
-      )
+          )
+          .join('');
+        return `
+          ${poolId !== 'all' ? `<h2>Poule ${poolId}</h2>` : ''}
+          <table>
+            <thead>
+              <tr>
+                <th>Terrain</th>
+                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
+                <th>Score</th>
+                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        `;
+      })
       .join('');
-
 
     const printContent = `
       <!DOCTYPE html>
@@ -151,19 +179,7 @@ export function MatchesTab({
         </head>
         <body>
           <h1>Tour ${round}</h1>
-          <table>
-            <thead>
-              <tr>
-                <th>Terrain</th>
-                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
-                <th>Score</th>
-                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${matchRows}
-            </tbody>
-          </table>
+          ${poolTables}
           <div style="text-align: center; margin-top: 20px;">
             <button onclick="window.print()" style="padding: 8px 16px; font-size: 16px;">Imprimer</button>
           </div>
@@ -229,165 +245,170 @@ export function MatchesTab({
         {sortedRounds
           .filter(round => selectedRound === null || round === selectedRound)
           .map(round => (
-          <div key={round} className="glass-card overflow-hidden">
-            <div className="px-6 py-4 border-b border-white/20 flex justify-between items-center bg-white/5">
-              <h3 className="text-xl font-bold text-white tracking-wide">
-                Tour {round}
-              </h3>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handlePrintRound(round)}
-                  className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>Imprimer</span>
-                </button>
-                <button
-                  onClick={() => handleDeleteRound(round)}
-                  className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300 text-red-400"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Supprimer</span>
-                </button>
+            <div key={round}>
+              <div className="glass-card overflow-hidden">
+                <div className="px-6 py-4 border-b border-white/20 flex justify-between items-center bg-white/5">
+                  <h3 className="text-xl font-bold text-white tracking-wide">Tour {round}</h3>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handlePrintRound(round)}
+                      className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300"
+                    >
+                      <Printer className="w-4 h-4" />
+                      <span>Imprimer</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRound(round)}
+                      className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300 text-red-400"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span>Supprimer</span>
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-8 p-4">
+                  {Object.entries(matchesByRoundAndPool[round]).map(([poolId, poolMatches]) => (
+                    <div key={poolId} className="glass-card overflow-hidden">
+                      {poolId !== 'all' && (
+                        <div className="px-6 py-2 border-b border-white/20 bg-white/10">
+                          <h4 className="text-lg font-bold text-white tracking-wide">Poule {poolId}</h4>
+                        </div>
+                      )}
+                      <div className="overflow-x-auto">
+                        <table className="glass-table w-full">
+                          <thead>
+                            <tr>
+                              <th className="px-6 py-4 text-left font-bold tracking-wider">Terrain</th>
+                              <th className="px-6 py-4 text-center font-bold tracking-wider">{isSolo ? 'Joueur' : 'Équipe'}</th>
+                              <th className="px-4 py-4 text-center font-bold tracking-wider">Score</th>
+                              <th className="px-6 py-4 text-center font-bold tracking-wider">{isSolo ? 'Joueur' : 'Équipe'}</th>
+                              <th className="px-4 py-4 text-center font-bold tracking-wider">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {poolMatches.map(match => (
+                              <tr key={match.id} className="hover:bg-white/5 transition-colors">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  {match.isBye ? (
+                                    <span className="text-white/50">-</span>
+                                  ) : (
+                                    <div className="flex items-center space-x-2">
+                                      <MapPin className="w-4 h-4 text-white" />
+                                      {match.court > courts ? (
+                                        <select
+                                          value={match.court}
+                                          onChange={e => onUpdateCourt(match.id, Number(e.target.value))}
+                                          className="glass-select text-sm border-0 font-medium"
+                                        >
+                                          <option value={match.court}>{`Libre ${match.court - courts}`}</option>
+                                          {Array.from({ length: courts }, (_, i) => i + 1).map(court => (
+                                            <option key={court} value={court} className="bg-slate-800">
+                                              {court}
+                                            </option>
+                                          ))}
+                                        </select>
+                                      ) : (
+                                        <select
+                                          value={match.court}
+                                          onChange={e => onUpdateCourt(match.id, Number(e.target.value))}
+                                          className="glass-select text-sm border-0 font-medium"
+                                        >
+                                          {Array.from({ length: courts }, (_, i) => i + 1).map(court => (
+                                            <option key={court} value={court} className="bg-slate-800">
+                                              {court}
+                                            </option>
+                                          ))}
+                                        </select>
+                                      )}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="px-4 py-2 text-center">
+                                  {match.team1Ids
+                                    ? getGroupLabel(match.team1Ids)
+                                    : isSolo
+                                    ? getTeamName(match.team1Id)
+                                    : `${getTeamName(match.team1Id)} : ${getTeamPlayers(match.team1Id)}`}
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap text-center">
+                                  {editingMatch === match.id ? (
+                                    <div className="flex items-center justify-center space-x-2">
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        max="13"
+                                        value={editScores.team1}
+                                        onChange={e => setEditScores({ ...editScores, team1: Number(e.target.value) })}
+                                        className="glass-input w-16 px-2 py-1 text-center font-bold"
+                                      />
+                                      <span className="text-white font-bold">-</span>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        max="13"
+                                        value={editScores.team2}
+                                        onChange={e => setEditScores({ ...editScores, team2: Number(e.target.value) })}
+                                        className="glass-input w-16 px-2 py-1 text-center font-bold"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <span className="text-2xl font-bold text-white">
+                                      {match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-2 text-center">
+                                  {match.isBye
+                                    ? 'BYE'
+                                    : match.team2Ids
+                                    ? getGroupLabel(match.team2Ids)
+                                    : isSolo
+                                    ? getTeamName(match.team2Id)
+                                    : `${getTeamName(match.team2Id)} : ${getTeamPlayers(match.team2Id)}`}
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap text-center">
+                                  {!match.isBye && (
+                                    <div className="flex justify-center space-x-2">
+                                      {editingMatch === match.id ? (
+                                        <>
+                                          <button
+                                            onClick={() => handleSaveScore(match.id)}
+                                            className="text-green-400 hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-400/10"
+                                            title="Sauvegarder"
+                                          >
+                                            <Trophy className="w-5 h-5" />
+                                          </button>
+                                          <button
+                                            onClick={handleCancelEdit}
+                                            className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10 text-xl font-bold"
+                                            title="Annuler"
+                                          >
+                                            ×
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <button
+                                          onClick={() => handleEditScore(match)}
+                                          className="text-white hover:text-white/80 transition-colors p-2 rounded-lg hover:bg-white/10"
+                                          title="Modifier le score"
+                                        >
+                                          <Edit3 className="w-5 h-5" />
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="glass-table w-full">
-                <thead>
-                  <tr>
-                    <th className="px-6 py-4 text-left font-bold tracking-wider">
-                      Terrain
-                    </th>
-                    <th className="px-6 py-4 text-center font-bold tracking-wider">
-                      {isSolo ? 'Joueur' : 'Équipe'}
-                    </th>
-                    <th className="px-4 py-4 text-center font-bold tracking-wider">
-                      Score
-                    </th>
-                    <th className="px-6 py-4 text-center font-bold tracking-wider">
-                      {isSolo ? 'Joueur' : 'Équipe'}
-                    </th>
-                    <th className="px-4 py-4 text-center font-bold tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {groupedMatches[round].map((match) => (
-                    <tr key={match.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {match.isBye ? (
-                          <span className="text-white/50">-</span>
-                        ) : (
-                          <div className="flex items-center space-x-2">
-                            <MapPin className="w-4 h-4 text-white" />
-                            {match.court > courts ? (
-                              <select
-                                value={match.court}
-                                onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
-                                className="glass-select text-sm border-0 font-medium"
-                              >
-                                <option value={match.court}>{`Libre ${match.court - courts}`}</option>
-                                {Array.from({ length: courts }, (_, i) => i + 1).map(court => (
-                                  <option key={court} value={court} className="bg-slate-800">{court}</option>
-                                ))}
-                              </select>
-                            ) : (
-                              <select
-                                value={match.court}
-                                onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
-                                className="glass-select text-sm border-0 font-medium"
-                              >
-                                {Array.from({ length: courts }, (_, i) => i + 1).map(court => (
-                                  <option key={court} value={court} className="bg-slate-800">{court}</option>
-                                ))}
-                              </select>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-center">
-                        {match.team1Ids
-                          ? getGroupLabel(match.team1Ids)
-                          : isSolo
-                          ? getTeamName(match.team1Id)
-                          : `${getTeamName(match.team1Id)} : ${getTeamPlayers(match.team1Id)}`}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-center">
-                        {editingMatch === match.id ? (
-                          <div className="flex items-center justify-center space-x-2">
-                            <input
-                              type="number"
-                              min="0"
-                              max="13"
-                              value={editScores.team1}
-                              onChange={(e) => setEditScores({ ...editScores, team1: Number(e.target.value) })}
-                              className="glass-input w-16 px-2 py-1 text-center font-bold"
-                            />
-                            <span className="text-white font-bold">-</span>
-                            <input
-                              type="number"
-                              min="0"
-                              max="13"
-                              value={editScores.team2}
-                              onChange={(e) => setEditScores({ ...editScores, team2: Number(e.target.value) })}
-                              className="glass-input w-16 px-2 py-1 text-center font-bold"
-                            />
-                          </div>
-                        ) : (
-                          <span className="text-2xl font-bold text-white">
-                            {match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-center">
-                        {match.isBye
-                          ? 'BYE'
-                          : match.team2Ids
-                          ? getGroupLabel(match.team2Ids)
-                          : isSolo
-                          ? getTeamName(match.team2Id)
-                          : `${getTeamName(match.team2Id)} : ${getTeamPlayers(match.team2Id)}`}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-center">
-                        {!match.isBye && (
-                          <div className="flex justify-center space-x-2">
-                            {editingMatch === match.id ? (
-                              <>
-                                <button
-                                  onClick={() => handleSaveScore(match.id)}
-                                  className="text-green-400 hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-400/10"
-                                  title="Sauvegarder"
-                                >
-                                  <Trophy className="w-5 h-5" />
-                                </button>
-                                <button
-                                  onClick={handleCancelEdit}
-                                  className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10 text-xl font-bold"
-                                  title="Annuler"
-                                >
-                                  ×
-                                </button>
-                              </>
-                            ) : (
-                              <button
-                                onClick={() => handleEditScore(match)}
-                                className="text-white hover:text-white/80 transition-colors p-2 rounded-lg hover:bg-white/10"
-                                title="Modifier le score"
-                              >
-                                <Edit3 className="w-5 h-5" />
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {matches.length === 0 && (
