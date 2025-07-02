@@ -46,10 +46,14 @@ export function useTournament() {
       createdAt: new Date(),
       securityLevel: 1,
       networkStatus: 'online',
-      pools: [],
       stage: 'pool',
     };
-    saveTournament(newTournament);
+    const autoTypes: TournamentType[] = ['doublette-poule', 'triplette-poule'];
+    const finalTournament =
+      autoTypes.includes(type)
+        ? (createPoolsAutomatically(newTournament) as Tournament)
+        : newTournament;
+    saveTournament(finalTournament);
   };
 
   const createPools = (numPools: number) => {
@@ -66,6 +70,53 @@ export function useTournament() {
     }
 
     const updatedTournament = { ...tournament, pools };
+    saveTournament(updatedTournament);
+  };
+
+  const createPoolsAutomatically = (target?: Tournament) => {
+    const base = target ?? tournament;
+    if (!base) return;
+
+    const shuffled = [...base.teams].sort(() => Math.random() - 0.5);
+    if (shuffled.length === 0) return target ? target : undefined;
+
+    let numPools = Math.ceil(shuffled.length / 4);
+    if (shuffled.length / numPools < 3) {
+      numPools = Math.ceil(shuffled.length / 3);
+    }
+
+    const baseSize = Math.floor(shuffled.length / numPools);
+    let remainder = shuffled.length % numPools;
+
+    const pools: Pool[] = [];
+    const updatedTeams: Team[] = [];
+    let index = 0;
+    for (let i = 0; i < numPools; i++) {
+      const size = baseSize + (remainder > 0 ? 1 : 0);
+      if (remainder > 0) remainder -= 1;
+      const poolTeams = shuffled.slice(index, index + size);
+      const id = String.fromCharCode(65 + i);
+      pools.push({ id, teamIds: poolTeams.map(t => t.id) });
+      updatedTeams.push(
+        ...poolTeams.map(t => ({ ...t, pool: id, poolId: id })),
+      );
+      index += size;
+    }
+
+    const poolStandings = pools.reduce<Record<string, Team[]>>((acc, pool) => {
+      acc[pool.id] = updatedTeams.filter(t => t.pool === pool.id);
+      return acc;
+    }, {});
+
+    const updatedTournament = {
+      ...base,
+      teams: updatedTeams,
+      pools,
+      poolStandings,
+    };
+    if (target) {
+      return updatedTournament;
+    }
     saveTournament(updatedTournament);
   };
 
@@ -405,6 +456,7 @@ export function useTournament() {
     deleteRound,
     updateTeam,
     createPools,
+    createPoolsAutomatically,
     startKnockout,
     resetTournament,
   };
