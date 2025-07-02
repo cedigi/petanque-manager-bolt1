@@ -3,6 +3,8 @@ import { Tournament, Match, Team } from '../types/tournament';
 export function generateMatches(tournament: Tournament): Match[] {
   switch (tournament.type) {
     case 'pool':
+    case 'doublette-poule':
+    case 'triplette-poule':
       return generatePoolMatches(tournament);
     case 'quadrette':
       return generateQuadretteMatches(tournament);

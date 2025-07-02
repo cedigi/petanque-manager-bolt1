@@ -4,12 +4,9 @@ export type TournamentType =
   | 'triplette'
   | 'quadrette'
   | 'melee'
-        codex/créer-fonction-generatepoolmatches-pour-round-robin
-  | 'pool';
-
+  | 'pool'
   | 'doublette-poule'
   | 'triplette-poule';
-        main
 
 export interface CyberImplant {
   id: string;
@@ -59,8 +56,6 @@ export interface Match {
   day?: number;
   poolId?: string;
   court: number;
-  poolId?: string;
-  day?: number;
   team1Id: string;
   team2Id: string;
   team1Ids?: string[];
@@ -71,11 +66,6 @@ export interface Match {
   isBye: boolean;
   battleIntensity: number;
   hackingAttempts: number;
-}
-
-export interface Pool {
-  id: string;
-  teamIds: string[];
 }
 
 export interface Tournament {
@@ -95,6 +85,5 @@ export interface Tournament {
   createdAt: Date;
   securityLevel: number;
   networkStatus: 'online' | 'offline' | 'compromised';
-  pools?: Pool[];
   stage?: 'pool' | 'knockout' | 'finished';
 }
