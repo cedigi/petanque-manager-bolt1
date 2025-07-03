@@ -69,7 +69,8 @@ src/
 
 To start the application in development mode run `npm run dev` as shown above.
 
-## Usage
+## Theme toggle
 
-Use the **Matchs** tab to generate rounds and enter scores.
-If a round was created by mistake, click the **Supprimer** button next to its header to delete it. The standings are recalculated as if the removed matches never happened.
+The header provides a moon/sun button that switches between light and dark
+themes. This preference is saved in the browser so it persists across reloads.
+
