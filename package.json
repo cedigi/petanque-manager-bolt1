@@ -5,7 +5,7 @@
   "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 3000",
     "build:web": "vite build",
     "serve:web": "vite preview",
     "start:electron": "electron .",

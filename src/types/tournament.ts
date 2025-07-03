@@ -1,12 +1,4 @@
-export type TournamentType =
-  | 'tete-a-tete'
-  | 'doublette'
-  | 'triplette'
-  | 'quadrette'
-  | 'melee'
-  | 'pool'
-  | 'doublette-poule'
-  | 'triplette-poule';
+export type TournamentType = 'tete-a-tete' | 'doublette' | 'triplette' | 'quadrette' | 'melee' | 'doublette-poule' | 'triplette-poule';
 
 export interface CyberImplant {
   id: string;
@@ -31,10 +23,7 @@ export interface Player {
 
 export interface Team {
   id: string;
-  poolId?: string;
   name: string;
-  /** Pool identifier (e.g. "A", "B" ...) */
-  pool?: string;
   players: Player[];
   wins: number;
   losses: number;
@@ -43,18 +32,19 @@ export interface Team {
   performance: number;
   teamRating: number;
   synchroLevel: number;
+  poolId?: string;
 }
 
 export interface Pool {
   id: string;
+  name: string;
   teamIds: string[];
+  matches: Match[];
 }
 
 export interface Match {
   id: string;
   round: number;
-  day?: number;
-  poolId?: string;
   court: number;
   team1Id: string;
   team2Id: string;
@@ -66,6 +56,7 @@ export interface Match {
   isBye: boolean;
   battleIntensity: number;
   hackingAttempts: number;
+  poolId?: string;
 }
 
 export interface Tournament {
@@ -73,17 +64,13 @@ export interface Tournament {
   name: string;
   type: TournamentType;
   courts: number;
-  poolCount?: number;
-  teamsPerPool?: number;
   teams: Team[];
-  pools: Pool[];
   matches: Match[];
-  /** Standings grouped by pool */
-  poolStandings?: Record<string, Team[]>;
+  pools: Pool[];
   currentRound: number;
   completed: boolean;
   createdAt: Date;
   securityLevel: number;
   networkStatus: 'online' | 'offline' | 'compromised';
-  stage?: 'pool' | 'knockout' | 'finished';
+  poolsGenerated: boolean;
 }

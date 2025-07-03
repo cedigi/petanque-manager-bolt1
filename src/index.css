@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @layer base {
   * {
@@ -15,10 +15,6 @@
     animation: gradientShift 15s ease infinite;
     color: #ffffff;
     min-height: 100vh;
-  }
-
-  body.animation-paused {
-    animation-play-state: paused;
   }
 
   @keyframes gradientShift {
@@ -123,18 +119,15 @@
     overflow: hidden;
   }
   
-  .glass-table th,
-  .glass-table td {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
   .glass-table th {
     background: rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
     font-weight: 700;
   }
-
+  
   .glass-table td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.9);
   }
   
@@ -177,10 +170,6 @@
     pointer-events: none;
     z-index: -1;
     overflow: hidden;
-  }
-
-  .floating-petanque-balls.paused .petanque-ball {
-    animation-play-state: paused;
   }
 
   .petanque-ball {

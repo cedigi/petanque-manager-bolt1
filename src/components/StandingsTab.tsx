@@ -4,10 +4,9 @@ import { Trophy, TrendingUp, TrendingDown, Printer } from 'lucide-react';
 
 interface StandingsTabProps {
   teams: Team[];
-  pools?: Record<string, Team[]>;
 }
 
-export function StandingsTab({ teams, pools }: StandingsTabProps) {
+export function StandingsTab({ teams }: StandingsTabProps) {
   const isSolo = teams.every(t => t.players.length === 1);
   const sortedTeams = [...teams].sort((a, b) => {
     if (b.wins !== a.wins) {
@@ -41,67 +40,54 @@ export function StandingsTab({ teams, pools }: StandingsTabProps) {
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 20px;
-              border: 1px solid #000;
-            }
-            th, td {
-              padding: 12px;
-              border: 1px solid #000;
-            }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { padding: 12px; text-align: left; border: 1px solid #ddd; }
             th { background-color: #f2f2f2; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
-            .position { text-align: center; font-weight: bold; }
-            .center { text-align: center; }
             .podium { background-color: #fff3cd; }
+            .position { font-weight: bold; text-align: center; }
             @media print { body { margin: 0; } }
           </style>
         </head>
         <body>
           <h1>Classement</h1>
-          <table class="glass-table" >
+          <table>
             <thead>
               <tr>
-                <th class="center">Position</th>
+                <th style="text-align: center;">Position</th>
                 <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
-                <th class="center">V</th>
-                <th class="center">D</th>
-                <th class="center">+</th>
-                <th class="center">-</th>
-                <th class="center">Différentiel</th>
+                <th style="text-align: center;">V</th>
+                <th style="text-align: center;">D</th>
+                <th style="text-align: center;">+</th>
+                <th style="text-align: center;">-</th>
+                <th style="text-align: center;">Différentiel</th>
               </tr>
             </thead>
             <tbody>
               ${sortedTeams.map((team, index) => `
                 <tr class="${index < 3 ? 'podium' : ''}">
                   <td class="position">${index + 1}</td>
-                  <td>${isSolo ? team.name : `${team.name} : ${team.players.map(player => `${player.label ? `[${player.label}] ` : ''}${player.name}`).join(' - ')}`}</td>
-                  <td class="center">${team.wins}</td>
-                  <td class="center">${team.losses}</td>
-                  <td class="center">${team.pointsFor}</td>
-                  <td class="center">${team.pointsAgainst}</td>
-                  <td class="center">${team.performance > 0 ? '+' : ''}${team.performance}</td>
+                  <td>
+                    ${team.name}
+                    <br/><small>${team.players.map(player => `${player.label ? `[${player.label}] ` : ''}${player.name}`).join(', ')}</small>
+                  </td>
+                  <td style="text-align: center;">${team.wins}</td>
+                  <td style="text-align: center;">${team.losses}</td>
+                  <td style="text-align: center;">${team.pointsFor}</td>
+                  <td style="text-align: center;">${team.pointsAgainst}</td>
+                  <td style="text-align: center;">${team.performance > 0 ? '+' : ''}${team.performance}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
-          <div style="text-align: center; margin-top: 20px;">
-            <button onclick="window.print()" style="padding: 8px 16px; font-size: 16px;">Imprimer</button>
-          </div>
         </body>
       </html>
     `;
 
     printWindow.document.write(printContent);
     printWindow.document.close();
-    // The user can review the preview window and click the button to print
+    printWindow.print();
   };
-
-  const poolEntries = pools && Object.keys(pools).length > 0
-    ? Object.entries(pools)
-    : [['', sortedTeams]];
 
   return (
     <div className="p-6">
@@ -123,19 +109,14 @@ export function StandingsTab({ teams, pools }: StandingsTabProps) {
         </div>
       </div>
 
-      {poolEntries.map(([poolId, poolTeams]) => (
-        <div key={poolId} className="mb-8">
-          {poolId && (
-            <h3 className="text-xl font-bold text-white mb-4 tracking-wide">Poule {poolId}</h3>
-          )}
-          <div className="glass-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="glass-table w-full">
-                <thead>
-                  <tr>
-                    <th className="px-6 py-4 text-center font-bold tracking-wider">
-                      Position
-                    </th>
+      <div className="glass-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="glass-table w-full">
+            <thead>
+              <tr>
+                <th className="px-6 py-4 text-center font-bold tracking-wider">
+                  Position
+                </th>
                 <th className="px-6 py-4 text-left font-bold tracking-wider">
                   {isSolo ? 'Joueur' : 'Équipe'}
                 </th>
@@ -155,41 +136,45 @@ export function StandingsTab({ teams, pools }: StandingsTabProps) {
                   Différentiel
                 </th>
               </tr>
-                </thead>
-              <tbody>
-              {poolTeams.map((team, index) => (
+            </thead>
+            <tbody>
+              {sortedTeams.map((team, index) => (
                 <tr key={team.id} className={`hover:bg-white/5 transition-colors ${
                   index < 3 ? 'bg-gradient-to-r from-yellow-400/10 to-transparent' : ''
                 }`}>
-                  <td className="px-6 py-2 whitespace-nowrap text-center">
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="flex items-center justify-center">
                       {getPositionIcon(index)}
                     </div>
                   </td>
-                  <td className="px-6 py-2 whitespace-nowrap">
-                    <span className="font-bold text-white text-lg">
-                      {isSolo
-                        ? team.name
-                        : `${team.name} - ${team.players
-                            .map((player) =>
-                              `${player.label ? `[${player.label}] ` : ''}${player.name}`
-                            )
-                            .join(' - ')}`}
-                    </span>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="font-bold text-white text-lg">{team.name}</div>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                      {team.players.map((player) => (
+                        <div key={player.id} className="flex items-center space-x-2 text-sm text-white/80 font-medium">
+                          {player.label && (
+                            <span className="w-5 h-5 bg-blue-400/20 border border-blue-400 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">
+                              {player.label}
+                            </span>
+                          )}
+                          <span>{player.name}</span>
+                        </div>
+                      ))}
+                    </div>
                   </td>
-                  <td className="px-6 py-2 whitespace-nowrap text-center">
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
                     <span className="text-2xl font-bold text-green-400">{team.wins}</span>
                   </td>
-                  <td className="px-6 py-2 whitespace-nowrap text-center">
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
                     <span className="text-2xl font-bold text-red-400">{team.losses}</span>
                   </td>
-                  <td className="px-6 py-2 whitespace-nowrap text-center">
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
                     <span className="text-lg font-bold text-white">{team.pointsFor}</span>
                   </td>
-                  <td className="px-6 py-2 whitespace-nowrap text-center">
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
                     <span className="text-lg font-bold text-white">{team.pointsAgainst}</span>
                   </td>
-                  <td className="px-6 py-2 whitespace-nowrap text-center">
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="flex items-center justify-center space-x-2">
                       {getPerformanceIcon(team.performance)}
                       <span className={`text-lg font-bold ${
@@ -205,10 +190,8 @@ export function StandingsTab({ teams, pools }: StandingsTabProps) {
               ))}
             </tbody>
           </table>
-            </div>
-          </div>
         </div>
-      ))}
+      </div>
 
       {teams.length === 0 && (
         <div className="text-center py-16">

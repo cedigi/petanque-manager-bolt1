@@ -1,73 +1,63 @@
 import React, { useState } from 'react';
 import { Player, Team, TournamentType } from '../types/tournament';
-import { Plus, Trash2, Users, Printer, Edit3 } from 'lucide-react';
+import { Plus, Trash2, Users, Printer } from 'lucide-react';
 
 interface TeamsTabProps {
   teams: Team[];
   tournamentType: TournamentType;
   onAddTeam: (players: Player[]) => void;
   onRemoveTeam: (teamId: string) => void;
-  onUpdateTeam: (teamId: string, players: Player[]) => void;
 }
 
-export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpdateTeam }: TeamsTabProps) {
+export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: TeamsTabProps) {
+  const [players, setPlayers] = useState<Player[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
 
   const isSolo = tournamentType === 'melee' || tournamentType === 'tete-a-tete';
 
   const getPlayersPerTeam = () => {
     switch (tournamentType) {
-      case 'tete-a-tete':
-        return 1;
-      case 'doublette':
-      case 'doublette-poule':
-        return 2;
-      case 'triplette':
-      case 'triplette-poule':
-        return 3;
-      case 'quadrette':
-        return 4;
-      case 'melee':
-        return 1;
-      default:
-        return 2;
+      case 'tete-a-tete': return 1;
+      case 'doublette': 
+      case 'doublette-poule': return 2;
+      case 'triplette': 
+      case 'triplette-poule': return 3;
+      case 'quadrette': return 4;
+      case 'melee': return 1;
+      default: return 2;
     }
   };
 
   const initializeForm = () => {
-    setEditingTeam(null);
+    setPlayers([]);
+    setCurrentPlayerIndex(0);
     setShowForm(true);
   };
 
-  const handleEditTeam = (team: Team) => {
-    setEditingTeam(team);
-    setShowForm(true);
-  };
+  const handleAddPlayer = (player: Player) => {
+    const updatedPlayers = [...players, player];
+    setPlayers(updatedPlayers);
 
-  const handleAddTeamInternal = (teamPlayers: Player[]) => {
-    onAddTeam(teamPlayers);
-    setShowForm(false);
-  };
-
-  const handleUpdateTeamInternal = (teamPlayers: Player[]) => {
-    if (editingTeam) {
-      onUpdateTeam(editingTeam.id, teamPlayers);
+    if (updatedPlayers.length === getPlayersPerTeam()) {
+      onAddTeam(updatedPlayers);
+      setShowForm(false);
+      setPlayers([]);
+      setCurrentPlayerIndex(0);
+    } else {
+      setCurrentPlayerIndex(currentPlayerIndex + 1);
     }
-    setShowForm(false);
-    setEditingTeam(null);
   };
 
   const handleCancel = () => {
     setShowForm(false);
-    setEditingTeam(null);
+    setPlayers([]);
+    setCurrentPlayerIndex(0);
   };
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
-
-    const columnCount = teams.length > 40 ? 3 : teams.length > 20 ? 2 : 1;
 
     const printContent = `
       <!DOCTYPE html>
@@ -76,48 +66,32 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
           <title>Équipes</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
-            h1 { text-align: left; margin-bottom: 20px; }
-            .teams-container {
-              column-count: ${columnCount};
-              -webkit-column-count: ${columnCount};
-              -moz-column-count: ${columnCount};
-              column-gap: 20px;
-            }
-            .team {
-              text-align: left;
-              margin: 4px 0;
-              padding: 6px;
-              border: 1px solid #ccc;
-              break-inside: avoid;
-            }
+            h1 { text-align: center; margin-bottom: 20px; }
+            .team { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+            .team-name { font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+            .player { margin: 5px 0; padding: 8px; background: #f5f5f5; border-radius: 4px; }
             @media print { body { margin: 0; } }
           </style>
         </head>
         <body>
           <h1>Liste des ${isSolo ? 'Joueurs' : 'Équipes'}</h1>
-          <div class="teams-container">
-            ${teams
-              .map(
-                (team) => `
-              <div class="team">
-                ${team.name} : ${team.players
-                  .map(player => `${player.name}${player.label ? ` [${player.label}]` : ''}`)
-                  .join(' - ')}
-              </div>
-            `
-              )
-              .join('')}
-          </div>
-          <div style="text-align: center; margin-top: 20px;">
-            <button onclick="window.print()" style="padding: 8px 16px; font-size: 16px;">Imprimer</button>
-          </div>
+          ${teams.map(team => `
+            <div class="team">
+              <div class="team-name">${team.name}</div>
+              ${team.players.map(player => `
+                <div class="player">
+                  ${player.name} ${player.label ? `[${player.label}]` : ''}
+                </div>
+              `).join('')}
+            </div>
+          `).join('')}
         </body>
       </html>
     `;
 
     printWindow.document.write(printContent);
     printWindow.document.close();
-    // The user can review the preview window and click the button to print
+    printWindow.print();
   };
 
   return (
@@ -147,50 +121,75 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
       </div>
 
       {showForm && (
-        <div className="mb-8 max-w-md mx-auto">
-          <TeamForm
-            playersPerTeam={editingTeam ? editingTeam.players.length : getPlayersPerTeam()}
-            tournamentType={tournamentType}
-            onAddTeam={!editingTeam ? handleAddTeamInternal : undefined}
-            onUpdateTeam={editingTeam ? handleUpdateTeamInternal : undefined}
-            existingPlayers={editingTeam ? editingTeam.players : undefined}
+        <div className="mb-8">
+          <div className="mb-4">
+            <div className="flex items-center space-x-4 mb-2">
+              <span className="text-white font-bold">
+                Joueur {currentPlayerIndex + 1}/{getPlayersPerTeam()}
+              </span>
+              {players.length > 0 && (
+                <div className="flex space-x-2">
+                  {players.map((player, index) => (
+                    <div key={player.id} className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                  ))}
+                  {Array.from({ length: getPlayersPerTeam() - players.length }, (_, index) => (
+                    <div key={`empty-${index}`} className="w-3 h-3 border border-white/40 rounded-full"></div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <PlayerForm
+            onAddPlayer={handleAddPlayer}
             onCancel={handleCancel}
+            playerLabel={tournamentType === 'quadrette' ? ['A', 'B', 'C', 'D'][currentPlayerIndex] : undefined}
           />
         </div>
       )}
 
       <div className="space-y-4">
-        {teams.map(team => {
-          const playerList = team.players.map(p => p.name).join(' - ');
-          return (
-            <div
-              key={team.id}
-              className="glass-card py-2 px-4 hover:scale-[1.02] transition-all duration-300"
-            >
-              <div className="flex justify-between items-center mb-1">
-                <h3 className="text-white font-medium">
-                  {isSolo ? team.name : `${team.name} - ${playerList}`}
-                </h3>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleEditTeam(team)}
-                    className="text-white hover:text-white/80 transition-colors p-2 rounded-lg hover:bg-white/10"
-                    title={isSolo ? 'Modifier le joueur' : "Modifier l'équipe"}
-                  >
-                    <Edit3 className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => onRemoveTeam(team.id)}
-                    className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10"
-                    title={isSolo ? 'Supprimer le joueur' : "Supprimer l'équipe"}
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+        {teams.map((team) => (
+          <div key={team.id} className="glass-card p-6 hover:scale-[1.02] transition-all duration-300">
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex-1">
+                <div className="flex items-center space-x-3 mb-3">
+                  <Users className="w-6 h-6 text-white" />
+                  <h3 className="font-bold text-white text-xl tracking-wide">{team.name}</h3>
+                  {team.poolId && (
+                    <span className="px-3 py-1 bg-blue-500/30 border border-blue-400 text-blue-400 rounded-full text-sm font-bold">
+                      Poule assignée
+                    </span>
+                  )}
                 </div>
               </div>
+              <button
+                onClick={() => onRemoveTeam(team.id)}
+                className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10"
+                title={isSolo ? 'Supprimer le joueur' : "Supprimer l'équipe"}
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
             </div>
-          );
-        })}
+
+            <div className="space-y-3">
+              {team.players.map((player: Player) => (
+                <div
+                  key={player.id}
+                  className="glass-card p-4"
+                >
+                  <div className="flex items-center space-x-3">
+                    {player.label && (
+                      <span className="w-8 h-8 bg-blue-400/20 border border-blue-400 text-blue-400 rounded-full flex items-center justify-center text-sm font-bold">
+                        {player.label}
+                      </span>
+                    )}
+                    <span className="font-bold text-white text-lg">{player.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
       {teams.length === 0 && !showForm && (
@@ -200,7 +199,9 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
             {isSolo ? 'Aucun joueur inscrit' : 'Aucune équipe inscrite'}
           </h3>
           <p className="text-white/60 text-lg font-medium">
-            {isSolo ? 'Commencez par créer des joueurs' : 'Commencez par créer des équipes'}
+            {isSolo
+              ? 'Commencez par créer des joueurs'
+              : 'Commencez par créer des équipes'}
           </p>
         </div>
       )}
@@ -209,55 +210,37 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
 }
 
 // Formulaire simplifié sans les implants cybernétiques
-interface TeamFormProps {
-  playersPerTeam: number;
-  tournamentType: TournamentType;
-  onAddTeam?: (players: Player[]) => void;
-  onUpdateTeam?: (players: Player[]) => void;
-  existingPlayers?: Player[];
+interface PlayerFormProps {
+  onAddPlayer: (player: Player) => void;
   onCancel: () => void;
+  playerLabel?: string;
 }
 
-function TeamForm({ playersPerTeam, tournamentType, onAddTeam, onUpdateTeam, existingPlayers, onCancel }: TeamFormProps) {
-  const initialNames = existingPlayers ? existingPlayers.map(p => p.name) : Array(playersPerTeam).fill('');
-  const [playerNames, setPlayerNames] = useState<string[]>(initialNames);
-
-  const isSolo = playersPerTeam === 1;
-
-  const handleChange = (index: number, value: string) => {
-    const names = [...playerNames];
-    names[index] = value;
-    setPlayerNames(names);
-  };
+function PlayerForm({ onAddPlayer, onCancel, playerLabel }: PlayerFormProps) {
+  const [name, setName] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (playerNames.some(name => !name.trim())) return;
-
-    const labels = ['A', 'B', 'C', 'D'];
-    const players = playerNames.map((name, idx) => ({
-      id: existingPlayers?.[idx]?.id || crypto.randomUUID(),
-      name: name.trim(),
-      label: tournamentType === 'quadrette' ? labels[idx] : undefined,
-      cyberImplants: existingPlayers?.[idx]?.cyberImplants || [],
-      neuralScore: existingPlayers?.[idx]?.neuralScore ?? 100,
-      combatRating: existingPlayers?.[idx]?.combatRating ?? 100,
-      hackingLevel: existingPlayers?.[idx]?.hackingLevel ?? 1,
-      augmentationLevel: existingPlayers?.[idx]?.augmentationLevel ?? 0,
-    }));
-
-    if (onAddTeam) {
-      onAddTeam(players);
-    } else if (onUpdateTeam) {
-      onUpdateTeam(players);
+    if (name.trim()) {
+      const player: Player = {
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        label: playerLabel,
+        cyberImplants: [],
+        neuralScore: 100,
+        combatRating: 100,
+        hackingLevel: 1,
+        augmentationLevel: 0
+      };
+      onAddPlayer(player);
     }
   };
 
   return (
-    <div className="glass-card p-4 max-w-md mx-auto">
+    <div className="glass-card p-8">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold text-white tracking-wider">
-          {existingPlayers ? (isSolo ? 'Modifier le joueur' : "Modifier l'équipe") : isSolo ? 'Nouveau joueur' : 'Nouvelle équipe'}
+          Nouveau joueur {playerLabel && `[${playerLabel}]`}
         </h3>
         <button
           onClick={onCancel}
@@ -267,29 +250,27 @@ function TeamForm({ playersPerTeam, tournamentType, onAddTeam, onUpdateTeam, exi
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {playerNames.map((name, idx) => (
-          <div key={idx}>
-            <label className="block text-lg font-bold text-white mb-3 tracking-wide">
-              Nom du joueur {playersPerTeam > 1 ? idx + 1 : ''}
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => handleChange(idx, e.target.value)}
-              placeholder="Entrez le nom du joueur"
-              className="glass-input w-full px-4 py-3 text-lg font-medium tracking-wide"
-              required
-            />
-          </div>
-        ))}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block text-lg font-bold text-white mb-3 tracking-wide">
+            Nom du joueur
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Entrez le nom du joueur"
+            className="glass-input w-full px-4 py-3 text-lg font-medium tracking-wide"
+            required
+          />
+        </div>
 
         <div className="flex space-x-4">
           <button
             type="submit"
             className="glass-button flex-1 py-3 px-6 font-bold text-lg tracking-wider hover:scale-105 transition-all duration-300"
           >
-            {existingPlayers ? 'Enregistrer' : isSolo ? 'Créer joueur' : 'Créer équipe'}
+            Créer joueur
           </button>
           <button
             type="button"

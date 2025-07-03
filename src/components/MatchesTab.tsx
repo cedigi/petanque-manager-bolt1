@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Match, Team } from '../types/tournament';
-import { Play, Edit3, MapPin, Trophy, Printer, ChevronDown, Trash2 } from 'lucide-react';
+import { Play, Edit3, MapPin, Trophy, Printer, ChevronDown } from 'lucide-react';
 
 interface MatchesTabProps {
   matches: Match[];
@@ -10,7 +10,6 @@ interface MatchesTabProps {
   onGenerateRound: () => void;
   onUpdateScore: (matchId: string, team1Score: number, team2Score: number) => void;
   onUpdateCourt: (matchId: string, court: number) => void;
-  onDeleteRound: (round: number) => void;
 }
 
 export function MatchesTab({
@@ -20,8 +19,7 @@ export function MatchesTab({
   courts,
   onGenerateRound,
   onUpdateScore,
-  onUpdateCourt,
-  onDeleteRound
+  onUpdateCourt
 }: MatchesTabProps) {
   const [editingMatch, setEditingMatch] = useState<string | null>(null);
   const [editScores, setEditScores] = useState<{ team1: number; team2: number }>({ team1: 0, team2: 0 });
@@ -31,35 +29,23 @@ export function MatchesTab({
 
   const getTeamName = (teamId: string) => {
     const team = teams.find(t => t.id === teamId);
-    if (!team) {
-      return isSolo ? 'Joueur inconnu' : 'Équipe inconnue';
-    }
-    const name = team.name;
-    if (!isSolo && name.toLowerCase().startsWith('équipe ')) {
-      return name.replace(/^Équipe\s+/i, '');
-    }
-    return name;
+    return team?.name || (isSolo ? 'Joueur inconnu' : 'Équipe inconnue');
   };
 
-  const getTeamPlayers = (teamId: string, separator = ' - ') => {
+  const getTeamPlayers = (teamId: string) => {
     const team = teams.find(t => t.id === teamId);
     if (!team) return '';
     return team.players
       .map(player => (player.label ? `[${player.label}] ${player.name}` : player.name))
-      .join(separator);
+      .join(', ');
   };
 
   const getGroupLabel = (ids: string[]) => {
     const labels = ids.map(id => {
       const team = teams.find(t => t.id === id);
-      if (!team) return 'Inconnu';
-      const name = team.name || team.players[0]?.name || 'Inconnu';
-      if (!isSolo && name.toLowerCase().startsWith('équipe ')) {
-        return name.replace(/^Équipe\s+/i, '');
-      }
-      return name;
+      return team?.name || team?.players[0]?.name || 'Inconnu';
     });
-    return labels.join(' - ');
+    return labels.join(' + ');
   };
 
   const handleEditScore = (match: Match) => {
@@ -79,86 +65,20 @@ export function MatchesTab({
     setEditingMatch(null);
   };
 
-  const matchesByRoundAndPool = matches.reduce(
-    (acc: Record<number, Record<string, Match[]>>, match) => {
-      if (!acc[match.round]) {
-        acc[match.round] = {};
-      }
-      const pool = match.poolId ?? 'all';
-      if (!acc[match.round][pool]) {
-        acc[match.round][pool] = [];
-      }
-      acc[match.round][pool].push(match);
-      return acc;
-    },
-    {}
-  );
+  const groupedMatches = matches.reduce((acc: { [round: number]: Match[] }, match) => {
+    if (!acc[match.round]) {
+      acc[match.round] = [];
+    }
+    acc[match.round].push(match);
+    return acc;
+  }, {});
 
-  const sortedRounds = Object.keys(matchesByRoundAndPool)
-    .map(Number)
-    .sort((a, b) => b - a);
+  const sortedRounds = Object.keys(groupedMatches).map(Number).sort((a, b) => b - a);
 
   const handlePrintRound = (round: number) => {
-    const roundPools = matchesByRoundAndPool[round];
+    const roundMatches = groupedMatches[round];
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
-
-    const poolTables = Object.entries(roundPools)
-      .map(([poolId, poolMatches]) => {
-        const rows = poolMatches
-          .map(
-            match => `
-                <tr>
-                  <td>${match.isBye ? '-' : match.court > courts ? `Libre ${
-              match.court - courts
-            }` : match.court}</td>
-                  <td>
-                    ${match.team1Ids
-                      ? getGroupLabel(match.team1Ids)
-                      : isSolo
-                      ? `<strong>${getTeamName(match.team1Id)}</strong>`
-                      : `<strong>${getTeamName(match.team1Id)}</strong><div style="font-size: 0.9em;">${getTeamPlayers(
-                          match.team1Id,
-                          ' - '
-                        )}</div>`}
-                  </td>
-                  <td class="score">${match.completed || match.isBye ? `${
-              match.team1Score
-            } - ${match.team2Score}` : '- - -'}</td>
-                  <td>
-                    ${match.isBye
-                      ? 'BYE'
-                      : match.team2Ids
-                      ? getGroupLabel(match.team2Ids)
-                      : isSolo
-                      ? `<strong>${getTeamName(match.team2Id)}</strong>`
-                      : `<strong>${getTeamName(match.team2Id)}</strong><div style="font-size: 0.9em;">${getTeamPlayers(
-                          match.team2Id,
-                          ' - '
-                        )}</div>`}
-                  </td>
-                </tr>
-              `
-          )
-          .join('');
-        return `
-          ${poolId !== 'all' ? `<h2>Poule ${poolId}</h2>` : ''}
-          <table>
-            <thead>
-              <tr>
-                <th>Terrain</th>
-                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
-                <th>Score</th>
-                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows}
-            </tbody>
-          </table>
-        `;
-      })
-      .join('');
 
     const printContent = `
       <!DOCTYPE html>
@@ -169,8 +89,7 @@ export function MatchesTab({
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { padding: 8px; text-align: center; border: 1px solid #000; }
-            th:nth-child(1), td:nth-child(1) { width: 10%; }
+            th, td { padding: 12px; text-align: left; border: 1px solid #ddd; }
             th { background-color: #f2f2f2; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
             .score { font-size: 18px; font-weight: bold; text-align: center; }
@@ -179,23 +98,38 @@ export function MatchesTab({
         </head>
         <body>
           <h1>Tour ${round}</h1>
-          ${poolTables}
-          <div style="text-align: center; margin-top: 20px;">
-            <button onclick="window.print()" style="padding: 8px 16px; font-size: 16px;">Imprimer</button>
-          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Terrain</th>
+                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
+                <th>Score</th>
+                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${roundMatches.map(match => `
+                <tr>
+                  <td>${match.isBye ? '-' : match.court}</td>
+                  <td>
+                    ${match.team1Ids ? getGroupLabel(match.team1Ids) : getTeamName(match.team1Id)}
+                    ${!match.team1Ids ? `<br/><small>${getTeamPlayers(match.team1Id)}</small>` : ''}
+                  </td>
+                  <td class="score">${match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}</td>
+                  <td>
+                    ${match.isBye ? 'BYE' : match.team2Ids ? getGroupLabel(match.team2Ids) : `${getTeamName(match.team2Id)}<br/><small>${getTeamPlayers(match.team2Id)}</small>`}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
         </body>
       </html>
     `;
 
     printWindow.document.write(printContent);
     printWindow.document.close();
-    // The user can review the preview window and click the button to print
-  };
-
-  const handleDeleteRound = (round: number) => {
-    if (confirm('Supprimer ce tour ?')) {
-      onDeleteRound(round);
-    }
+    printWindow.print();
   };
 
   return (
@@ -245,170 +179,166 @@ export function MatchesTab({
         {sortedRounds
           .filter(round => selectedRound === null || round === selectedRound)
           .map(round => (
-            <div key={round}>
-              <div className="glass-card overflow-hidden">
-                <div className="px-6 py-4 border-b border-white/20 flex justify-between items-center bg-white/5">
-                  <h3 className="text-xl font-bold text-white tracking-wide">Tour {round}</h3>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handlePrintRound(round)}
-                      className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300"
-                    >
-                      <Printer className="w-4 h-4" />
-                      <span>Imprimer</span>
-                    </button>
-                    <button
-                      onClick={() => handleDeleteRound(round)}
-                      className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300 text-red-400"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      <span>Supprimer</span>
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-8 p-4">
-                  {Object.entries(matchesByRoundAndPool[round]).map(([poolId, poolMatches]) => (
-                    <div key={poolId} className="glass-card overflow-hidden">
-                      {poolId !== 'all' && (
-                        <div className="px-6 py-2 border-b border-white/20 bg-white/10">
-                          <h4 className="text-lg font-bold text-white tracking-wide">Poule {poolId}</h4>
-                        </div>
-                      )}
-                      <div className="overflow-x-auto">
-                        <table className="glass-table w-full">
-                          <thead>
-                            <tr>
-                              <th className="px-6 py-4 text-left font-bold tracking-wider">Terrain</th>
-                              <th className="px-6 py-4 text-center font-bold tracking-wider">{isSolo ? 'Joueur' : 'Équipe'}</th>
-                              <th className="px-4 py-4 text-center font-bold tracking-wider">Score</th>
-                              <th className="px-6 py-4 text-center font-bold tracking-wider">{isSolo ? 'Joueur' : 'Équipe'}</th>
-                              <th className="px-4 py-4 text-center font-bold tracking-wider">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {poolMatches.map(match => (
-                              <tr key={match.id} className="hover:bg-white/5 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  {match.isBye ? (
-                                    <span className="text-white/50">-</span>
-                                  ) : (
-                                    <div className="flex items-center space-x-2">
-                                      <MapPin className="w-4 h-4 text-white" />
-                                      {match.court > courts ? (
-                                        <select
-                                          value={match.court}
-                                          onChange={e => onUpdateCourt(match.id, Number(e.target.value))}
-                                          className="glass-select text-sm border-0 font-medium"
-                                        >
-                                          <option value={match.court}>{`Libre ${match.court - courts}`}</option>
-                                          {Array.from({ length: courts }, (_, i) => i + 1).map(court => (
-                                            <option key={court} value={court} className="bg-slate-800">
-                                              {court}
-                                            </option>
-                                          ))}
-                                        </select>
-                                      ) : (
-                                        <select
-                                          value={match.court}
-                                          onChange={e => onUpdateCourt(match.id, Number(e.target.value))}
-                                          className="glass-select text-sm border-0 font-medium"
-                                        >
-                                          {Array.from({ length: courts }, (_, i) => i + 1).map(court => (
-                                            <option key={court} value={court} className="bg-slate-800">
-                                              {court}
-                                            </option>
-                                          ))}
-                                        </select>
-                                      )}
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="px-4 py-2 text-center">
-                                  {match.team1Ids
-                                    ? getGroupLabel(match.team1Ids)
-                                    : isSolo
-                                    ? getTeamName(match.team1Id)
-                                    : `${getTeamName(match.team1Id)} : ${getTeamPlayers(match.team1Id)}`}
-                                </td>
-                                <td className="px-4 py-4 whitespace-nowrap text-center">
-                                  {editingMatch === match.id ? (
-                                    <div className="flex items-center justify-center space-x-2">
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        max="13"
-                                        value={editScores.team1}
-                                        onChange={e => setEditScores({ ...editScores, team1: Number(e.target.value) })}
-                                        className="glass-input w-16 px-2 py-1 text-center font-bold"
-                                      />
-                                      <span className="text-white font-bold">-</span>
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        max="13"
-                                        value={editScores.team2}
-                                        onChange={e => setEditScores({ ...editScores, team2: Number(e.target.value) })}
-                                        className="glass-input w-16 px-2 py-1 text-center font-bold"
-                                      />
-                                    </div>
-                                  ) : (
-                                    <span className="text-2xl font-bold text-white">
-                                      {match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="px-4 py-2 text-center">
-                                  {match.isBye
-                                    ? 'BYE'
-                                    : match.team2Ids
-                                    ? getGroupLabel(match.team2Ids)
-                                    : isSolo
-                                    ? getTeamName(match.team2Id)
-                                    : `${getTeamName(match.team2Id)} : ${getTeamPlayers(match.team2Id)}`}
-                                </td>
-                                <td className="px-4 py-4 whitespace-nowrap text-center">
-                                  {!match.isBye && (
-                                    <div className="flex justify-center space-x-2">
-                                      {editingMatch === match.id ? (
-                                        <>
-                                          <button
-                                            onClick={() => handleSaveScore(match.id)}
-                                            className="text-green-400 hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-400/10"
-                                            title="Sauvegarder"
-                                          >
-                                            <Trophy className="w-5 h-5" />
-                                          </button>
-                                          <button
-                                            onClick={handleCancelEdit}
-                                            className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10 text-xl font-bold"
-                                            title="Annuler"
-                                          >
-                                            ×
-                                          </button>
-                                        </>
-                                      ) : (
-                                        <button
-                                          onClick={() => handleEditScore(match)}
-                                          className="text-white hover:text-white/80 transition-colors p-2 rounded-lg hover:bg-white/10"
-                                          title="Modifier le score"
-                                        >
-                                          <Edit3 className="w-5 h-5" />
-                                        </button>
-                                      )}
-                                    </div>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          <div key={round} className="glass-card overflow-hidden">
+            <div className="px-6 py-4 border-b border-white/20 flex justify-between items-center bg-white/5">
+              <h3 className="text-xl font-bold text-white tracking-wide">
+                Tour {round}
+              </h3>
+              <button
+                onClick={() => handlePrintRound(round)}
+                className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Imprimer</span>
+              </button>
             </div>
-          ))}
+            <div className="overflow-x-auto">
+              <table className="glass-table w-full">
+                <thead>
+                  <tr>
+                    <th className="px-6 py-4 text-left font-bold tracking-wider">
+                      Terrain
+                    </th>
+                    <th className="px-6 py-4 text-center font-bold tracking-wider">
+                      {isSolo ? 'Joueur' : 'Équipe'}
+                    </th>
+                    <th className="px-4 py-4 text-center font-bold tracking-wider">
+                      Score
+                    </th>
+                    <th className="px-6 py-4 text-center font-bold tracking-wider">
+                      {isSolo ? 'Joueur' : 'Équipe'}
+                    </th>
+                    <th className="px-4 py-4 text-center font-bold tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {groupedMatches[round].map((match) => (
+                    <tr key={match.id} className="hover:bg-white/5 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {match.isBye ? (
+                          <span className="text-white/50">-</span>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-white" />
+                            {match.court > courts ? (
+                              <select
+                                value={match.court}
+                                onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
+                                className="glass-select text-sm border-0 font-medium"
+                              >
+                                <option value={match.court}>{`Libre ${match.court - courts}`}</option>
+                                {Array.from({ length: courts }, (_, i) => i + 1).map(court => (
+                                  <option key={court} value={court} className="bg-slate-800">{court}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <select
+                                value={match.court}
+                                onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
+                                className="glass-select text-sm border-0 font-medium"
+                              >
+                                {Array.from({ length: courts }, (_, i) => i + 1).map(court => (
+                                  <option key={court} value={court} className="bg-slate-800">{court}</option>
+                                ))}
+                              </select>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {match.team1Ids ? (
+                          <span className="font-bold text-white">{getGroupLabel(match.team1Ids)}</span>
+                        ) : (
+                          <>
+                            <span className="font-bold text-white">{getTeamName(match.team1Id)}</span>
+                            <div className="mt-1 text-xs text-white/70">
+                              {getTeamPlayers(match.team1Id)}
+                            </div>
+                          </>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-center">
+                        {editingMatch === match.id ? (
+                          <div className="flex items-center justify-center space-x-2">
+                            <input
+                              type="number"
+                              min="0"
+                              max="13"
+                              value={editScores.team1}
+                              onChange={(e) => setEditScores({ ...editScores, team1: Number(e.target.value) })}
+                              className="glass-input w-16 px-2 py-1 text-center font-bold"
+                            />
+                            <span className="text-white font-bold">-</span>
+                            <input
+                              type="number"
+                              min="0"
+                              max="13"
+                              value={editScores.team2}
+                              onChange={(e) => setEditScores({ ...editScores, team2: Number(e.target.value) })}
+                              className="glass-input w-16 px-2 py-1 text-center font-bold"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-2xl font-bold text-white">
+                            {match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}
+                          </span>
+                        )}
+                      </td>
+                      <td className="pl-8 pr-6 py-4 whitespace-nowrap text-center">
+                        {match.isBye ? (
+                          <span className="text-white/50 italic font-bold">BYE</span>
+                        ) : match.team2Ids ? (
+                          <span className="font-bold text-white">{getGroupLabel(match.team2Ids)}</span>
+                        ) : (
+                          <>
+                            <span className="font-bold text-white">{getTeamName(match.team2Id)}</span>
+                            <div className="mt-1 text-xs text-white/70">
+                              {getTeamPlayers(match.team2Id)}
+                            </div>
+                          </>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-center">
+                        {!match.isBye && (
+                          <div className="flex justify-center space-x-2">
+                            {editingMatch === match.id ? (
+                              <>
+                                <button
+                                  onClick={() => handleSaveScore(match.id)}
+                                  className="text-green-400 hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-400/10"
+                                  title="Sauvegarder"
+                                >
+                                  <Trophy className="w-5 h-5" />
+                                </button>
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10 text-xl font-bold"
+                                  title="Annuler"
+                                >
+                                  ×
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                onClick={() => handleEditScore(match)}
+                                className="text-white hover:text-white/80 transition-colors p-2 rounded-lg hover:bg-white/10"
+                                title="Modifier le score"
+                              >
+                                <Edit3 className="w-5 h-5" />
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
       </div>
 
       {matches.length === 0 && (

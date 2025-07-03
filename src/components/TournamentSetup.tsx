@@ -1,26 +1,19 @@
 import React, { useState } from 'react';
 import { TournamentType } from '../types/tournament';
-import { Users, Target, Trophy, Shield } from 'lucide-react';
+import { Users, Target, Trophy, Shield, Grid3X3 } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface TournamentSetupProps {
-  onCreateTournament: (
-    type: TournamentType,
-    courts: number,
-    poolCount?: number,
-    teamsPerPool?: number,
-  ) => void;
+  onCreateTournament: (type: TournamentType, courts: number) => void;
 }
 
 export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
   const [type, setType] = useState<TournamentType>('doublette');
   const [courts, setCourts] = useState(4);
-  const [poolCount, setPoolCount] = useState(2);
-  const [teamsPerPool, setTeamsPerPool] = useState(3);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCreateTournament(type, courts, poolCount, teamsPerPool);
+    onCreateTournament(type, courts);
   };
 
   const tournamentTypes = [
@@ -31,33 +24,19 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
       players: '1 joueur par équipe',
       description: 'Duel individuel'
     },
-    {
-      value: 'doublette',
-      label: 'Doublette',
-      icon: Users,
+    { 
+      value: 'doublette', 
+      label: 'Doublette', 
+      icon: Users, 
       players: '2 joueurs par équipe',
       description: 'Jeu en binôme'
     },
-    {
-      value: 'doublette-poule',
-      label: 'Doublette (poules)',
-      icon: Users,
-      players: '2 joueurs par équipe',
-      description: 'Phase de poules en doublette'
-    },
-    {
-      value: 'triplette',
-      label: 'Triplette',
-      icon: Users,
+    { 
+      value: 'triplette', 
+      label: 'Triplette', 
+      icon: Users, 
       players: '3 joueurs par équipe',
       description: 'Formation classique'
-    },
-    {
-      value: 'triplette-poule',
-      label: 'Triplette (poules)',
-      icon: Users,
-      players: '3 joueurs par équipe',
-      description: 'Phase de poules en triplette'
     },
     { 
       value: 'quadrette', 
@@ -73,11 +52,25 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
       players: 'Joueurs individuels',
       description: 'Tournoi libre'
     },
+    { 
+      value: 'doublette-poule', 
+      label: 'Doublette en poule', 
+      icon: Grid3X3, 
+      players: '2 joueurs par équipe',
+      description: 'Tournoi par poules'
+    },
+    { 
+      value: 'triplette-poule', 
+      label: 'Triplette en poule', 
+      icon: Grid3X3, 
+      players: '3 joueurs par équipe',
+      description: 'Tournoi par poules'
+    },
   ] as const;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="max-w-3xl w-full">
+      <div className="max-w-4xl w-full">
         <div className="text-center mb-8">
           <div className="relative w-24 h-24 mx-auto mb-6">
             <Logo className="w-24 h-24 drop-shadow-2xl" />
@@ -92,17 +85,17 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="glass-card p-4">
+          <div className="glass-card p-8">
             <label className="block text-xl font-bold text-white mb-6 tracking-wide">
               Type de tournoi
             </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {tournamentTypes.map((tournamentType) => {
                 const Icon = tournamentType.icon;
                 return (
                   <label
                     key={tournamentType.value}
-                    className={`glass-card flex flex-col p-3 cursor-pointer transition-all duration-300 ${
+                    className={`glass-card flex flex-col p-6 cursor-pointer transition-all duration-300 ${
                       type === tournamentType.value
                         ? 'bg-blue-500/30 border-white/40'
                         : 'hover:bg-white/10'
@@ -132,53 +125,24 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
                 );
               })}
             </div>
-            </div>
+          </div>
 
-            <div className="glass-card p-3">
-              <label className="block text-lg font-bold text-white mb-4 tracking-wide">
-                Nombre de terrains
-              </label>
-              <select
-                value={courts}
-                onChange={(e) => setCourts(Number(e.target.value))}
-                className="glass-select w-full px-4 py-3 text-lg font-medium tracking-wide focus:outline-none"
-              >
-                {Array.from({ length: 150 }, (_, i) => i + 1).map(num => (
-                  <option key={num} value={num} className="bg-slate-800">
-                    {num} terrain{num > 1 ? 's' : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {(type === 'doublette-poule' || type === 'triplette-poule') && (
-              <div className="glass-card p-3 space-y-4">
-                <div>
-                  <label className="block text-lg font-bold text-white mb-2 tracking-wide">
-                    Nombre de poules
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={poolCount}
-                    onChange={e => setPoolCount(Number(e.target.value))}
-                    className="glass-input w-full px-4 py-3 text-lg font-medium tracking-wide"
-                  />
-                </div>
-                <div>
-                  <label className="block text-lg font-bold text-white mb-2 tracking-wide">
-                    Équipes par poule
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={teamsPerPool}
-                    onChange={e => setTeamsPerPool(Number(e.target.value))}
-                    className="glass-input w-full px-4 py-3 text-lg font-medium tracking-wide"
-                  />
-                </div>
-              </div>
-            )}
+          <div className="glass-card p-6">
+            <label className="block text-lg font-bold text-white mb-4 tracking-wide">
+              Nombre de terrains
+            </label>
+            <select
+              value={courts}
+              onChange={(e) => setCourts(Number(e.target.value))}
+              className="glass-select w-full px-4 py-3 text-lg font-medium tracking-wide focus:outline-none"
+            >
+              {Array.from({ length: 50 }, (_, i) => i + 1).map(num => (
+                <option key={num} value={num} className="bg-slate-800">
+                  {num} terrain{num > 1 ? 's' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <button
             type="submit"
