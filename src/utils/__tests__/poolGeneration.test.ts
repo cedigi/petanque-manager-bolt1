@@ -1,8 +1,8 @@
 import { generatePools, generatePoolMatches } from '../poolGeneration';
-import { Team } from '../../types/tournament';
+import { Team, Player } from '../../types/tournament';
 
 function makeTeams(count: number): Team[] {
-  const players: any[] = [];
+  const players: Player[] = [];
   return Array.from({ length: count }).map((_, i) => ({
     id: `t${i + 1}`,
     name: `Team ${i + 1}`,

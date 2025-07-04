@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { TournamentSetup } from './components/TournamentSetup';
 import { TabNavigation } from './components/TabNavigation';
@@ -12,6 +12,10 @@ import { RotateCcw } from 'lucide-react';
 function App() {
   const [animationsPaused, setAnimationsPaused] = useState(false);
   const [activeTab, setActiveTab] = useState('teams');
+
+  useEffect(() => {
+    document.body.classList.toggle('animations-paused', animationsPaused);
+  }, [animationsPaused]);
   const {
     tournament,
     createTournament,
