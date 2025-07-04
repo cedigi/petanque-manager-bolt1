@@ -116,9 +116,9 @@ export function useTournament() {
 
     // Generate initial matches for each pool
     const allMatches: Match[] = [];
-    let courtIndex = 1;
     
-    pools.forEach(pool => {
+    pools.forEach((pool, index) => {
+      const baseCourt = index * 2 + 1;
       const poolTeams = pool.teamIds.map(id => tournament.teams.find(t => t.id === id)).filter(Boolean);
       
       if (poolTeams.length === 4) {
@@ -128,7 +128,7 @@ export function useTournament() {
         allMatches.push({
           id: crypto.randomUUID(),
           round: 1,
-          court: courtIndex,
+          court: baseCourt,
           team1Id: team1!.id,
           team2Id: team4!.id,
           completed: false,
@@ -138,13 +138,11 @@ export function useTournament() {
           hackingAttempts: 0,
         });
         
-        courtIndex = (courtIndex % tournament.courts) + 1;
-        
         // Match 2 vs 3
         allMatches.push({
           id: crypto.randomUUID(),
           round: 1,
-          court: courtIndex,
+          court: baseCourt + 1,
           team1Id: team2!.id,
           team2Id: team3!.id,
           completed: false,
@@ -154,7 +152,6 @@ export function useTournament() {
           hackingAttempts: 0,
         });
         
-        courtIndex = (courtIndex % tournament.courts) + 1;
       } else if (poolTeams.length === 3) {
         // Pour une poule de 3 : créer un seul match entre 2 équipes
         // La 3ème équipe reçoit un BYE automatique mais n'est PAS encore qualifiée
@@ -164,7 +161,7 @@ export function useTournament() {
         allMatches.push({
           id: crypto.randomUUID(),
           round: 1,
-          court: courtIndex,
+          court: baseCourt,
           team1Id: team1!.id,
           team2Id: team2!.id,
           completed: false,
@@ -173,8 +170,6 @@ export function useTournament() {
           battleIntensity: Math.floor(Math.random() * 50) + 25,
           hackingAttempts: 0,
         });
-        
-        courtIndex = (courtIndex % tournament.courts) + 1;
         
         // L'équipe 3 reçoit un BYE automatique (1 victoire) mais doit encore jouer
         allMatches.push({
@@ -195,7 +190,8 @@ export function useTournament() {
     });
 
     // Créer immédiatement les cadres vides des phases finales
-    const finalPhasesMatches = createEmptyFinalPhases(tournament.teams.length, tournament.courts);
+    const finalPhasesStart = pools.length * 2 + 1;
+    const finalPhasesMatches = createEmptyFinalPhases(tournament.teams.length, tournament.courts, finalPhasesStart);
 
     const updatedTournament = {
       ...tournament,
@@ -209,7 +205,7 @@ export function useTournament() {
   };
 
   // Nouvelle fonction pour créer les cadres vides des phases finales
-  const createEmptyFinalPhases = (totalTeams: number, courts: number) => {
+  const createEmptyFinalPhases = (totalTeams: number, courts: number, startCourt = 1) => {
     const matches: Match[] = [];
 
     // Calculer le nombre d'équipes qualifiées attendues
@@ -222,7 +218,7 @@ export function useTournament() {
     // Créer les phases nécessaires
     let currentTeamCount = bracketSize;
     let round = 100; // 100+ pour les phases finales
-    let courtIndex = 1;
+    let courtIndex = startCourt;
 
     while (currentTeamCount > 1) {
       const matchesInRound = Math.floor(currentTeamCount / 2);
