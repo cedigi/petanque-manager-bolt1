@@ -44,7 +44,7 @@ describe('generatePools', () => {
 describe('generatePoolMatches', () => {
   it('schedules round robin matches for a pool of four', () => {
     const teams = makeTeams(4);
-    const pool = { id: 'A', name: 'A', teamIds: teams.map(t => t.id), matches: [] };
+    const pool = { id: '1', name: 'Poule 1', teamIds: teams.map(t => t.id), matches: [] };
     const matches = generatePoolMatches(pool, teams);
     expect(matches).toHaveLength(6); // 4 choose 2
     const pairings = new Set(matches.map(m => [m.team1Id, m.team2Id].sort().join('-')));
@@ -53,7 +53,7 @@ describe('generatePoolMatches', () => {
 
   it('schedules round robin matches for a pool of three', () => {
     const teams = makeTeams(3);
-    const pool = { id: 'A', name: 'A', teamIds: teams.map(t => t.id), matches: [] };
+    const pool = { id: '1', name: 'Poule 1', teamIds: teams.map(t => t.id), matches: [] };
     const matches = generatePoolMatches(pool, teams);
     expect(matches).toHaveLength(3); // 3 choose 2
     const pairings = new Set(matches.map(m => [m.team1Id, m.team2Id].sort().join('-')));

@@ -21,7 +21,7 @@ export function generatePools(teams: Team[]): Pool[] {
     const poolTeams = shuffledTeams.slice(teamIndex, teamIndex + 4);
     pools.push({
       id: crypto.randomUUID(),
-      name: `Poule ${String.fromCharCode(65 + i)}`, // A, B, C, etc.
+      name: `Poule ${i + 1}`,
       teamIds: poolTeams.map(t => t.id),
       matches: []
     });
@@ -33,7 +33,7 @@ export function generatePools(teams: Team[]): Pool[] {
     const poolTeams = shuffledTeams.slice(teamIndex, teamIndex + 3);
     pools.push({
       id: crypto.randomUUID(),
-      name: `Poule ${String.fromCharCode(65 + poolsOf4 + i)}`,
+      name: `Poule ${poolsOf4 + i + 1}`,
       teamIds: poolTeams.map(t => t.id),
       matches: []
     });
