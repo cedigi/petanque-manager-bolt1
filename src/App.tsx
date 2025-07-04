@@ -87,6 +87,7 @@ function App() {
             pools={tournament.pools}
             onGeneratePools={generateTournamentPools}
             onUpdateScore={updateMatchScore}
+            onUpdateCourt={updateMatchCourt}
           />
         )}
         {activeTab === 'matches' && (

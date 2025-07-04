@@ -8,9 +8,10 @@ interface PoolsTabProps {
   pools: Pool[];
   onGeneratePools: () => void;
   onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
+  onUpdateCourt?: (matchId: string, court: number) => void;
 }
 
-export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateScore }: PoolsTabProps) {
+export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateScore, onUpdateCourt }: PoolsTabProps) {
   const isSolo = tournament.type === 'melee' || tournament.type === 'tete-a-tete';
 
   const handlePrint = () => {
@@ -231,12 +232,14 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
           {/* Affichage des poules compactes */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8">
             {pools.map((pool) => (
-              <CompactPool 
-                key={pool.id} 
-                pool={pool} 
-                teams={teams} 
+              <CompactPool
+                key={pool.id}
+                pool={pool}
+                teams={teams}
                 matches={tournament.matches}
+                courts={tournament.courts}
                 onUpdateScore={onUpdateScore}
+                onUpdateCourt={onUpdateCourt}
               />
             ))}
           </div>
@@ -573,16 +576,36 @@ interface CompactPoolProps {
   teams: Team[];
   matches: Match[];
   onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
+  onUpdateCourt?: (matchId: string, court: number) => void;
+  courts: number;
 }
 
-function CompactPool({ pool, teams, matches, onUpdateScore }: CompactPoolProps) {
+function CompactPool({ pool, teams, matches, onUpdateScore, onUpdateCourt, courts }: CompactPoolProps) {
   const poolMatches = matches.filter(m => m.poolId === pool.id);
   const poolTeams = pool.teamIds.map(id => teams.find(t => t.id === id)).filter(Boolean) as Team[];
   
   if (poolTeams.length === 4) {
-    return <CompactFourTeamPool poolTeams={poolTeams} poolMatches={poolMatches} pool={pool} onUpdateScore={onUpdateScore} />;
+    return (
+      <CompactFourTeamPool
+        poolTeams={poolTeams}
+        poolMatches={poolMatches}
+        pool={pool}
+        courts={courts}
+        onUpdateScore={onUpdateScore}
+        onUpdateCourt={onUpdateCourt}
+      />
+    );
   } else if (poolTeams.length === 3) {
-    return <CompactThreeTeamPool poolTeams={poolTeams} poolMatches={poolMatches} pool={pool} onUpdateScore={onUpdateScore} />;
+    return (
+      <CompactThreeTeamPool
+        poolTeams={poolTeams}
+        poolMatches={poolMatches}
+        pool={pool}
+        courts={courts}
+        onUpdateScore={onUpdateScore}
+        onUpdateCourt={onUpdateCourt}
+      />
+    );
   } else {
     return (
       <div className="glass-card p-3">
@@ -594,11 +617,13 @@ function CompactPool({ pool, teams, matches, onUpdateScore }: CompactPoolProps) 
 }
 
 // Composant pour poules de 4 équipes - Version compacte
-function CompactFourTeamPool({ poolTeams, poolMatches, pool, onUpdateScore }: {
+function CompactFourTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateScore, onUpdateCourt }: {
   poolTeams: Team[];
   poolMatches: Match[];
   pool: Pool;
+  courts: number;
   onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
+  onUpdateCourt?: (matchId: string, court: number) => void;
 }) {
   const [team1, team2, team3, team4] = poolTeams;
 
@@ -693,42 +718,52 @@ function CompactFourTeamPool({ poolTeams, poolMatches, pool, onUpdateScore }: {
       </div>
       
       <div className="p-2 space-y-1">
-        <CompactMatchBox 
-          team1={team1} 
-          team2={team4} 
+        <CompactMatchBox
+          team1={team1}
+          team2={team4}
           match={match1vs4}
+          courts={courts}
           onUpdateScore={onUpdateScore}
+          onUpdateCourt={onUpdateCourt}
         />
         
-        <CompactMatchBox 
-          team1={team2} 
-          team2={team3} 
+        <CompactMatchBox
+          team1={team2}
+          team2={team3}
           match={match2vs3}
+          courts={courts}
           onUpdateScore={onUpdateScore}
+          onUpdateCourt={onUpdateCourt}
         />
 
-        <CompactMatchBox 
-          team1={result1vs4.winner} 
-          team2={result2vs3.winner} 
+        <CompactMatchBox
+          team1={result1vs4.winner}
+          team2={result2vs3.winner}
           match={winnersMatch}
+          courts={courts}
           bgColor="bg-green-500/10"
           onUpdateScore={onUpdateScore}
+          onUpdateCourt={onUpdateCourt}
         />
 
-        <CompactMatchBox 
-          team1={result1vs4.loser} 
-          team2={result2vs3.loser} 
+        <CompactMatchBox
+          team1={result1vs4.loser}
+          team2={result2vs3.loser}
           match={losersMatch}
+          courts={courts}
           bgColor="bg-orange-500/10"
           onUpdateScore={onUpdateScore}
+          onUpdateCourt={onUpdateCourt}
         />
 
-        <CompactMatchBox 
-          team1={teamsWithOneWin[0]?.team} 
-          team2={teamsWithOneWin[1]?.team} 
+        <CompactMatchBox
+          team1={teamsWithOneWin[0]?.team}
+          team2={teamsWithOneWin[1]?.team}
           match={barrageMatch}
+          courts={courts}
           bgColor="bg-red-500/10"
           onUpdateScore={onUpdateScore}
+          onUpdateCourt={onUpdateCourt}
           showOnlyIfNeeded={teamsWithOneWin.length === 2}
         />
       </div>
@@ -737,11 +772,13 @@ function CompactFourTeamPool({ poolTeams, poolMatches, pool, onUpdateScore }: {
 }
 
 // Composant pour poules de 3 équipes - Version CORRIGÉE
-function CompactThreeTeamPool({ poolTeams, poolMatches, pool, onUpdateScore }: {
+function CompactThreeTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateScore, onUpdateCourt }: {
   poolTeams: Team[];
   poolMatches: Match[];
   pool: Pool;
+  courts: number;
   onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
+  onUpdateCourt?: (matchId: string, court: number) => void;
 }) {
   const [team1, team2, team3] = poolTeams;
 
@@ -824,11 +861,13 @@ function CompactThreeTeamPool({ poolTeams, poolMatches, pool, onUpdateScore }: {
       </div>
       
       <div className="p-2 space-y-1">
-        <CompactMatchBox 
-          team1={team1} 
-          team2={team2} 
+        <CompactMatchBox
+          team1={team1}
+          team2={team2}
           match={firstRoundMatch}
+          courts={courts}
           onUpdateScore={onUpdateScore}
+          onUpdateCourt={onUpdateCourt}
         />
         
         <div className="glass-card p-2 bg-blue-500/10 text-center">
@@ -840,12 +879,14 @@ function CompactThreeTeamPool({ poolTeams, poolMatches, pool, onUpdateScore }: {
           <div className="text-xs text-blue-400">BYE</div>
         </div>
 
-        <CompactMatchBox 
-          team1={firstRoundResult.winner} 
-          team2={team3} 
+        <CompactMatchBox
+          team1={firstRoundResult.winner}
+          team2={team3}
           match={finalMatch}
+          courts={courts}
           bgColor="bg-green-500/10"
           onUpdateScore={onUpdateScore}
+          onUpdateCourt={onUpdateCourt}
         />
 
         <div className="glass-card p-2 bg-orange-500/10 text-center">
@@ -855,12 +896,14 @@ function CompactThreeTeamPool({ poolTeams, poolMatches, pool, onUpdateScore }: {
           <div className="text-xs text-orange-400">BYE</div>
         </div>
 
-        <CompactMatchBox 
-          team1={teamsWithOneWin[0]?.team} 
-          team2={teamsWithOneWin[1]?.team} 
+        <CompactMatchBox
+          team1={teamsWithOneWin[0]?.team}
+          team2={teamsWithOneWin[1]?.team}
           match={barrageMatch}
+          courts={courts}
           bgColor="bg-red-500/10"
           onUpdateScore={onUpdateScore}
+          onUpdateCourt={onUpdateCourt}
           showOnlyIfNeeded={teamsWithOneWin.length === 2}
         />
       </div>
@@ -924,9 +967,11 @@ interface CompactMatchBoxProps {
   bgColor?: string;
   onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
   showOnlyIfNeeded?: boolean;
+  onUpdateCourt?: (matchId: string, court: number) => void;
+  courts?: number;
 }
 
-function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdateScore, showOnlyIfNeeded = true }: CompactMatchBoxProps) {
+function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdateScore, onUpdateCourt, courts = 0, showOnlyIfNeeded = true }: CompactMatchBoxProps) {
   const [showWinnerModal, setShowWinnerModal] = useState(false);
 
   // CORRECTION : Ne pas masquer la case si showOnlyIfNeeded est false
@@ -973,7 +1018,24 @@ function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdate
       <div className={`glass-card p-2 ${bgColor} transition-all duration-300 relative`}>
         {/* Terrain en haut à gauche */}
         <div className="absolute top-1 left-1">
-          <span className="text-xs font-bold text-blue-400">T{match?.court || '-'}</span>
+          {match && onUpdateCourt ? (
+            <select
+              value={match.court}
+              onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
+              className="glass-select text-xs border-0"
+            >
+              {match.court > courts ? (
+                <option value={match.court}>{`Libre ${match.court - courts}`}</option>
+              ) : null}
+              {Array.from({ length: courts }, (_, i) => i + 1).map((court) => (
+                <option key={court} value={court} className="bg-slate-800">
+                  {court}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="text-xs font-bold text-blue-400">T{match?.court || '-'}</span>
+          )}
         </div>
 
         {/* Bouton Trophée centré verticalement avec les noms */}
