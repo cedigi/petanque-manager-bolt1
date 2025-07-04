@@ -254,9 +254,9 @@ export function useTournament() {
     if (isPoolTournament && tournament.pools.length > 0) {
       // Generate second round matches (winners vs winners, losers vs losers)
       const allMatches: Match[] = [...tournament.matches];
-      let courtIndex = 1;
       
-      tournament.pools.forEach(pool => {
+      tournament.pools.forEach((pool, poolIndex) => {
+        const baseCourt = poolIndex * 2 + 1;
         const poolMatches = tournament.matches.filter(m => m.poolId === pool.id);
         const poolTeams = pool.teamIds.map(id => tournament.teams.find(t => t.id === id)).filter(Boolean);
         
@@ -315,7 +315,7 @@ export function useTournament() {
               allMatches.push({
                 id: crypto.randomUUID(),
                 round: 2,
-                court: courtIndex,
+                court: baseCourt,
                 team1Id: winner1vs4.id,
                 team2Id: winner2vs3.id,
                 completed: false,
@@ -324,8 +324,6 @@ export function useTournament() {
                 battleIntensity: Math.floor(Math.random() * 50) + 25,
                 hackingAttempts: 0,
               });
-              
-              courtIndex = (courtIndex % tournament.courts) + 1;
             }
             
             // Generate losers match
@@ -333,7 +331,7 @@ export function useTournament() {
               allMatches.push({
                 id: crypto.randomUUID(),
                 round: 2,
-                court: courtIndex,
+                court: baseCourt + 1,
                 team1Id: loser1vs4.id,
                 team2Id: loser2vs3.id,
                 completed: false,
@@ -342,8 +340,6 @@ export function useTournament() {
                 battleIntensity: Math.floor(Math.random() * 50) + 25,
                 hackingAttempts: 0,
               });
-              
-              courtIndex = (courtIndex % tournament.courts) + 1;
             }
           }
         }
@@ -629,9 +625,9 @@ export function useTournament() {
     }
 
     const allMatches: Match[] = [...updatedTournament.matches];
-    let courtIndex = Math.max(...allMatches.map(m => m.court), 0) + 1;
 
-    updatedTournament.pools.forEach(pool => {
+    updatedTournament.pools.forEach((pool, poolIndex) => {
+      const baseCourt = poolIndex * 2 + 1;
       const poolMatches = allMatches.filter(m => m.poolId === pool.id);
       const poolTeams = pool.teamIds.map(id => updatedTournament.teams.find(t => t.id === id)).filter(Boolean);
       
@@ -690,7 +686,7 @@ export function useTournament() {
             allMatches.push({
               id: crypto.randomUUID(),
               round: 2,
-              court: courtIndex,
+              court: baseCourt,
               team1Id: winner1vs4.id,
               team2Id: winner2vs3.id,
               completed: false,
@@ -699,8 +695,6 @@ export function useTournament() {
               battleIntensity: Math.floor(Math.random() * 50) + 25,
               hackingAttempts: 0,
             });
-            
-            courtIndex = (courtIndex % updatedTournament.courts) + 1;
           }
           
           // Generate losers match (Petite finale)
@@ -708,7 +702,7 @@ export function useTournament() {
             allMatches.push({
               id: crypto.randomUUID(),
               round: 2,
-              court: courtIndex,
+              court: baseCourt + 1,
               team1Id: loser1vs4.id,
               team2Id: loser2vs3.id,
               completed: false,
@@ -717,8 +711,6 @@ export function useTournament() {
               battleIntensity: Math.floor(Math.random() * 50) + 25,
               hackingAttempts: 0,
             });
-            
-            courtIndex = (courtIndex % updatedTournament.courts) + 1;
           }
         }
 
@@ -759,7 +751,7 @@ export function useTournament() {
               allMatches.push({
                 id: crypto.randomUUID(),
                 round: 3,
-                court: courtIndex,
+                court: baseCourt,
                 team1Id: teamsWithOneWin[0].team.id,
                 team2Id: teamsWithOneWin[1].team.id,
                 completed: false,
@@ -768,8 +760,6 @@ export function useTournament() {
                 battleIntensity: Math.floor(Math.random() * 50) + 25,
                 hackingAttempts: 0,
               });
-              
-              courtIndex = (courtIndex % updatedTournament.courts) + 1;
             }
           }
         }
@@ -814,7 +804,7 @@ export function useTournament() {
             allMatches.push({
               id: crypto.randomUUID(),
               round: 2,
-              court: courtIndex,
+              court: baseCourt,
               team1Id: winner.id,
               team2Id: team3!.id,
               completed: false,
@@ -823,8 +813,6 @@ export function useTournament() {
               battleIntensity: Math.floor(Math.random() * 50) + 25,
               hackingAttempts: 0,
             });
-            
-            courtIndex = (courtIndex % updatedTournament.courts) + 1;
           }
           
           // CORRECTION : Le perdant du premier match reçoit automatiquement un BYE (1 victoire)
@@ -914,7 +902,7 @@ export function useTournament() {
                 allMatches.push({
                   id: crypto.randomUUID(),
                   round: 3,
-                  court: courtIndex,
+                  court: baseCourt,
                   team1Id: teamsWithOneWin[0].team.id,
                   team2Id: teamsWithOneWin[1].team.id,
                   completed: false,
@@ -923,8 +911,6 @@ export function useTournament() {
                   battleIntensity: Math.floor(Math.random() * 50) + 25,
                   hackingAttempts: 0,
                 });
-                
-                courtIndex = (courtIndex % updatedTournament.courts) + 1;
               }
             }
           }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pool, Team, Tournament, Match } from '../types/tournament';
-import { Grid3X3, Trophy, Shuffle, Printer, Crown, X } from 'lucide-react';
+import { Grid3X3, Trophy, Shuffle, Printer, Crown, X, Edit3 } from 'lucide-react';
 
 interface PoolsTabProps {
   tournament: Tournament;
@@ -1037,6 +1037,15 @@ function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdate
             <span className="text-xs font-bold text-blue-400">T{match?.court || '-'}</span>
           )}
         </div>
+        {match && onUpdateScore && match.completed && (
+          <button
+            onClick={() => setShowWinnerModal(true)}
+            className="absolute top-1 right-1 p-1 text-white hover:text-white/80"
+            title="Modifier le gagnant"
+          >
+            <Edit3 className="w-3 h-3" />
+          </button>
+        )}
 
         {/* Bouton Trophée centré verticalement avec les noms */}
         <div className="flex items-center justify-between pt-4 pb-1">
