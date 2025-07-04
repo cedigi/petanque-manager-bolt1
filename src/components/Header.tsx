@@ -1,12 +1,12 @@
-import { Moon, Sun } from 'lucide-react';
+import { Pause, Play } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface HeaderProps {
-  darkMode: boolean;
-  onToggleDarkMode: () => void;
+  animationsPaused: boolean;
+  onToggleAnimations: () => void;
 }
 
-export function Header({ darkMode, onToggleDarkMode }: HeaderProps) {
+export function Header({ animationsPaused, onToggleAnimations }: HeaderProps) {
   return (
     <header className="glass-card border-b border-white/20 shadow-lg mx-6 mt-6">
       <div className="px-6 py-4 flex items-center justify-between">
@@ -27,11 +27,11 @@ export function Header({ darkMode, onToggleDarkMode }: HeaderProps) {
 
         <div className="flex items-center space-x-4">
           <button
-            onClick={onToggleDarkMode}
+            onClick={onToggleAnimations}
             className="glass-button-secondary p-3 rounded-lg transition-all duration-300 hover:scale-110"
-            title="Changer de thème"
+            title="Pause des animations"
           >
-            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {animationsPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
           </button>
         </div>
       </div>
