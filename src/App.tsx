@@ -33,7 +33,6 @@ function App() {
     document.documentElement.classList.toggle('dark');
   };
 
-  const isSolo = tournament && (tournament.type === 'melee' || tournament.type === 'tete-a-tete');
   const isPoolTournament = tournament && (tournament.type === 'doublette-poule' || tournament.type === 'triplette-poule');
 
   const content = !tournament ? (

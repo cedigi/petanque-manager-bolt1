@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Tournament, TournamentType, Team, Player, Pool, Match } from '../types/tournament';
+import { Tournament, TournamentType, Team, Player, Match } from '../types/tournament';
 import { generateMatches } from '../utils/matchmaking';
-import { generatePools, generatePoolMatches } from '../utils/poolGeneration';
+import { generatePools } from '../utils/poolGeneration';
 
 const STORAGE_KEY = 'petanque-tournament';
 
@@ -572,7 +572,7 @@ export function useTournament() {
         // Placer les gagnants dans les matchs du round suivant
         let winnerIndex = 0;
         
-        nextRoundMatches.forEach((nextMatch, matchIndex) => {
+        nextRoundMatches.forEach(nextMatch => {
           const matchInUpdated = updatedMatches.find(m => m.id === nextMatch.id);
           if (!matchInUpdated) return;
           
@@ -700,7 +700,6 @@ export function useTournament() {
 
     const allMatches: Match[] = [...updatedTournament.matches];
     let courtIndex = Math.max(...allMatches.map(m => m.court), 0) + 1;
-    let hasNewMatches = false;
 
     updatedTournament.pools.forEach(pool => {
       const poolMatches = allMatches.filter(m => m.poolId === pool.id);
@@ -772,7 +771,6 @@ export function useTournament() {
             });
             
             courtIndex = (courtIndex % updatedTournament.courts) + 1;
-            hasNewMatches = true;
           }
           
           // Generate losers match (Petite finale)
@@ -791,7 +789,6 @@ export function useTournament() {
             });
             
             courtIndex = (courtIndex % updatedTournament.courts) + 1;
-            hasNewMatches = true;
           }
         }
 
@@ -843,7 +840,6 @@ export function useTournament() {
               });
               
               courtIndex = (courtIndex % updatedTournament.courts) + 1;
-              hasNewMatches = true;
             }
           }
         }
@@ -899,7 +895,6 @@ export function useTournament() {
             });
             
             courtIndex = (courtIndex % updatedTournament.courts) + 1;
-            hasNewMatches = true;
           }
           
           // CORRECTION : Le perdant du premier match reçoit automatiquement un BYE (1 victoire)
@@ -923,7 +918,6 @@ export function useTournament() {
               battleIntensity: 0,
               hackingAttempts: 0,
             });
-            hasNewMatches = true;
           }
 
           // NOUVEAU : Vérifier s'il faut un barrage dans une poule de 3
@@ -1001,7 +995,6 @@ export function useTournament() {
                 });
                 
                 courtIndex = (courtIndex % updatedTournament.courts) + 1;
-                hasNewMatches = true;
               }
             }
           }
