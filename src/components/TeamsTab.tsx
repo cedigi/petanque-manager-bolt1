@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Player, Team, TournamentType } from '../types/tournament';
-import { Plus, Trash2, Users, Printer } from 'lucide-react';
+import { Plus, Trash2, Users, Printer, X } from 'lucide-react';
 
 interface TeamsTabProps {
   teams: Team[];
@@ -10,9 +10,7 @@ interface TeamsTabProps {
 }
 
 export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: TeamsTabProps) {
-  const [players, setPlayers] = useState<Player[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
 
   const isSolo = tournamentType === 'melee' || tournamentType === 'tete-a-tete';
 
@@ -27,32 +25,6 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
       case 'melee': return 1;
       default: return 2;
     }
-  };
-
-  const initializeForm = () => {
-    setPlayers([]);
-    setCurrentPlayerIndex(0);
-    setShowForm(true);
-  };
-
-  const handleAddPlayer = (player: Player) => {
-    const updatedPlayers = [...players, player];
-    setPlayers(updatedPlayers);
-
-    if (updatedPlayers.length === getPlayersPerTeam()) {
-      onAddTeam(updatedPlayers);
-      setShowForm(false);
-      setPlayers([]);
-      setCurrentPlayerIndex(0);
-    } else {
-      setCurrentPlayerIndex(currentPlayerIndex + 1);
-    }
-  };
-
-  const handleCancel = () => {
-    setShowForm(false);
-    setPlayers([]);
-    setCurrentPlayerIndex(0);
   };
 
   const handlePrint = () => {
@@ -111,7 +83,7 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
             </button>
           )}
           <button
-            onClick={initializeForm}
+            onClick={() => setShowForm(true)}
             className="glass-button flex items-center space-x-2 px-4 py-2 transition-all duration-300 hover:scale-105"
           >
             <Plus className="w-4 h-4" />
@@ -121,72 +93,64 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
       </div>
 
       {showForm && (
-        <div className="mb-8">
-          <div className="mb-4">
-            <div className="flex items-center space-x-4 mb-2">
-              <span className="text-white font-bold">
-                Joueur {currentPlayerIndex + 1}/{getPlayersPerTeam()}
-              </span>
-              {players.length > 0 && (
-                <div className="flex space-x-2">
-                  {players.map((player, index) => (
-                    <div key={player.id} className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                  ))}
-                  {Array.from({ length: getPlayersPerTeam() - players.length }, (_, index) => (
-                    <div key={`empty-${index}`} className="w-3 h-3 border border-white/40 rounded-full"></div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          <PlayerForm
-            onAddPlayer={handleAddPlayer}
-            onCancel={handleCancel}
-            playerLabel={tournamentType === 'quadrette' ? ['A', 'B', 'C', 'D'][currentPlayerIndex] : undefined}
-          />
-        </div>
+        <CompactTeamForm
+          tournamentType={tournamentType}
+          playersPerTeam={getPlayersPerTeam()}
+          onAddTeam={onAddTeam}
+          onClose={() => setShowForm(false)}
+        />
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-2">
         {teams.map((team) => (
-          <div key={team.id} className="glass-card p-6 hover:scale-[1.02] transition-all duration-300">
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex-1">
-                <div className="flex items-center space-x-3 mb-3">
-                  <Users className="w-6 h-6 text-white" />
-                  <h3 className="font-bold text-white text-xl tracking-wide">{team.name}</h3>
-                  {team.poolId && (
-                    <span className="px-3 py-1 bg-blue-500/30 border border-blue-400 text-blue-400 rounded-full text-sm font-bold">
-                      Poule assignée
-                    </span>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={() => onRemoveTeam(team.id)}
-                className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10"
-                title={isSolo ? 'Supprimer le joueur' : "Supprimer l'équipe"}
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {team.players.map((player: Player) => (
-                <div
-                  key={player.id}
-                  className="glass-card p-4"
-                >
-                  <div className="flex items-center space-x-3">
-                    {player.label && (
-                      <span className="w-8 h-8 bg-blue-400/20 border border-blue-400 text-blue-400 rounded-full flex items-center justify-center text-sm font-bold">
-                        {player.label}
-                      </span>
-                    )}
-                    <span className="font-bold text-white text-lg">{player.name}</span>
+          <div key={team.id} className="glass-card p-3 hover:scale-[1.01] transition-all duration-300">
+            <div className="flex items-center justify-between">
+              {/* Partie gauche : Icône + Nom équipe + Joueurs sur une ligne */}
+              <div className="flex items-center space-x-3 flex-1 min-w-0">
+                <Users className="w-5 h-5 text-white flex-shrink-0" />
+                
+                {/* Nom de l'équipe et joueurs sur la même ligne */}
+                <div className="flex items-center space-x-2 min-w-0 flex-1">
+                  <span className="font-bold text-white text-lg flex-shrink-0">
+                    {team.name} :
+                  </span>
+                  
+                  {/* Liste des joueurs avec labels */}
+                  <div className="flex items-center space-x-2 min-w-0 flex-1">
+                    {team.players.map((player, index) => (
+                      <React.Fragment key={player.id}>
+                        {index > 0 && <span className="text-white/60">-</span>}
+                        <div className="flex items-center space-x-1 flex-shrink-0">
+                          {player.label && (
+                            <span className="w-5 h-5 bg-blue-400/20 border border-blue-400 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                              {player.label}
+                            </span>
+                          )}
+                          <span className="text-white font-medium truncate">
+                            {player.name}
+                          </span>
+                        </div>
+                      </React.Fragment>
+                    ))}
                   </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Partie droite : Badge poule + Bouton supprimer */}
+              <div className="flex items-center space-x-3 flex-shrink-0">
+                {team.poolId && (
+                  <span className="px-2 py-1 bg-blue-500/30 border border-blue-400 text-blue-400 rounded-full text-xs font-bold">
+                    Poule
+                  </span>
+                )}
+                <button
+                  onClick={() => onRemoveTeam(team.id)}
+                  className="text-red-400 hover:text-red-300 transition-colors p-1 rounded-lg hover:bg-red-400/10"
+                  title={isSolo ? 'Supprimer le joueur' : "Supprimer l'équipe"}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -209,78 +173,100 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
   );
 }
 
-// Formulaire simplifié sans les implants cybernétiques
-interface PlayerFormProps {
-  onAddPlayer: (player: Player) => void;
-  onCancel: () => void;
-  playerLabel?: string;
+// Nouveau formulaire compact
+interface CompactTeamFormProps {
+  tournamentType: TournamentType;
+  playersPerTeam: number;
+  onAddTeam: (players: Player[]) => void;
+  onClose: () => void;
 }
 
-function PlayerForm({ onAddPlayer, onCancel, playerLabel }: PlayerFormProps) {
-  const [name, setName] = useState('');
+function CompactTeamForm({ tournamentType, playersPerTeam, onAddTeam, onClose }: CompactTeamFormProps) {
+  const [playerNames, setPlayerNames] = useState<string[]>(Array(playersPerTeam).fill(''));
+
+  const isSolo = tournamentType === 'melee' || tournamentType === 'tete-a-tete';
+  const labels = tournamentType === 'quadrette' ? ['A', 'B', 'C', 'D'] : undefined;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) {
-      const player: Player = {
-        id: crypto.randomUUID(),
-        name: name.trim(),
-        label: playerLabel,
-        cyberImplants: [],
-        neuralScore: 100,
-        combatRating: 100,
-        hackingLevel: 1,
-        augmentationLevel: 0
-      };
-      onAddPlayer(player);
-    }
+    
+    const validNames = playerNames.filter(name => name.trim());
+    if (validNames.length === 0) return;
+
+    const players: Player[] = validNames.map((name, index) => ({
+      id: crypto.randomUUID(),
+      name: name.trim(),
+      label: labels?.[index],
+      cyberImplants: [],
+      neuralScore: 100,
+      combatRating: 100,
+      hackingLevel: 1,
+      augmentationLevel: 0
+    }));
+
+    onAddTeam(players);
+    onClose();
+  };
+
+  const updatePlayerName = (index: number, name: string) => {
+    const newNames = [...playerNames];
+    newNames[index] = name;
+    setPlayerNames(newNames);
   };
 
   return (
-    <div className="glass-card p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-2xl font-bold text-white tracking-wider">
-          Nouveau joueur {playerLabel && `[${playerLabel}]`}
-        </h3>
-        <button
-          onClick={onCancel}
-          className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10"
-        >
-          ×
-        </button>
+    <div className="mb-8">
+      <div className="compact-team-form">
+        <div className="form-header">
+          <h3 className="form-title">
+            Nouvelle {isSolo ? 'inscription' : 'équipe'}
+          </h3>
+          <button
+            onClick={onClose}
+            className="close-button"
+            title="Fermer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="form-content">
+          <div className="players-grid">
+            {Array.from({ length: playersPerTeam }, (_, index) => (
+              <div key={index} className="player-input-group">
+                <label className="player-label">
+                  {labels ? `Joueur ${labels[index]}` : `Joueur ${index + 1}`}
+                </label>
+                <input
+                  type="text"
+                  value={playerNames[index]}
+                  onChange={(e) => updatePlayerName(index, e.target.value)}
+                  placeholder={`Nom du joueur ${labels?.[index] || index + 1}`}
+                  className="player-input"
+                  required={index === 0}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="form-actions">
+            <button
+              type="submit"
+              className="submit-button"
+              disabled={!playerNames[0]?.trim()}
+            >
+              Créer {isSolo ? 'joueur' : 'équipe'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="cancel-button"
+            >
+              Annuler
+            </button>
+          </div>
+        </form>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-lg font-bold text-white mb-3 tracking-wide">
-            Nom du joueur
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Entrez le nom du joueur"
-            className="glass-input w-full px-4 py-3 text-lg font-medium tracking-wide"
-            required
-          />
-        </div>
-
-        <div className="flex space-x-4">
-          <button
-            type="submit"
-            className="glass-button flex-1 py-3 px-6 font-bold text-lg tracking-wider hover:scale-105 transition-all duration-300"
-          >
-            Créer joueur
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="glass-button-secondary px-6 py-3 font-bold text-lg tracking-wider hover:scale-105 transition-all duration-300"
-          >
-            Annuler
-          </button>
-        </div>
-      </form>
     </div>
   );
 }
