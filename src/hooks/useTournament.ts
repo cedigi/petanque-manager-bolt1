@@ -381,9 +381,37 @@ export function useTournament() {
     // Obtenir les matchs des phases finales (round >= 100)
     const finalMatches = updatedTournament.matches.filter(m => m.round >= 100);
     const poolMatches = updatedTournament.matches.filter(m => m.poolId);
+
+    // Nettoyer les équipes non qualifiées des phases finales existantes
+    const qualifiedIds = new Set(qualifiedTeams.map(t => t.id));
+    const cleanedFinalMatches = finalMatches.map(match => {
+      let changed = false;
+      let { team1Id, team2Id } = match;
+
+      if (team1Id && !qualifiedIds.has(team1Id)) {
+        team1Id = '';
+        changed = true;
+      }
+      if (team2Id && !qualifiedIds.has(team2Id)) {
+        team2Id = '';
+        changed = true;
+      }
+
+      return changed
+        ? {
+            ...match,
+            team1Id,
+            team2Id,
+            team1Score: undefined,
+            team2Score: undefined,
+            completed: false,
+            isBye: false,
+          }
+        : match;
+    });
     
     // Trouver les matchs vides de la première phase finale (round 100)
-    const firstRoundFinalMatches = finalMatches.filter(m => m.round === 100);
+    const firstRoundFinalMatches = cleanedFinalMatches.filter(m => m.round === 100);
     
     // Récupérer les équipes déjà placées
     const usedTeams = new Set<string>();
@@ -396,8 +424,12 @@ export function useTournament() {
     const newQualifiedTeams = qualifiedTeams.filter(team => !usedTeams.has(team.id));
     
     if (newQualifiedTeams.length === 0) {
-      // Pas de nouvelles équipes à placer, mais vérifier les phases suivantes
-      return propagateWinnersToNextPhases(updatedTournament);
+      // Pas de nouvelles équipes à placer, mais mettre à jour les matchs existants
+      const baseTournament = {
+        ...updatedTournament,
+        matches: [...poolMatches, ...cleanedFinalMatches],
+      };
+      return propagateWinnersToNextPhases(baseTournament);
     }
 
     // Rassembler les positions disponibles en donnant la priorité à une équipe par match
@@ -470,7 +502,7 @@ export function useTournament() {
     const allUpdatedMatches = [
       ...poolMatches,
       ...updatedFinalMatches,
-      ...finalMatches.filter(m => m.round > 100) // Garder les autres phases finales
+      ...cleanedFinalMatches.filter(m => m.round > 100) // Garder les autres phases finales
     ];
     
     const result = {
