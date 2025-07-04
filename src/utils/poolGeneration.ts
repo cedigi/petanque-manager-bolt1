@@ -44,38 +44,19 @@ export function generatePools(teams: Team[]): Pool[] {
 }
 
 function calculateOptimalPools(totalTeams: number): { poolsOf4: number; poolsOf3: number } {
-  // Priorité aux poules de 4, avec des poules de 3 si nécessaire
-  
-  if (totalTeams % 4 === 0) {
-    // Divisible par 4 : que des poules de 4
-    return { poolsOf4: totalTeams / 4, poolsOf3: 0 };
+  // Start with as many pools of 4 as possible
+  let poolsOf4 = Math.floor(totalTeams / 4);
+  let remainder = totalTeams % 4;
+
+  // If remainder isn't divisible by 3, convert pools of 4 to pools of 3
+  while (remainder % 3 !== 0 && poolsOf4 > 0) {
+    poolsOf4 -= 1;
+    remainder += 4;
   }
-  
-  if (totalTeams % 4 === 1) {
-    // Reste 1 : on fait 2 poules de 3 et le reste en poules de 4
-    if (totalTeams >= 9) {
-      return { poolsOf4: Math.floor((totalTeams - 6) / 4), poolsOf3: 2 };
-    } else {
-      // Pas assez d'équipes pour 2 poules de 3, on fait tout en poules de 3
-      return { poolsOf4: 0, poolsOf3: Math.ceil(totalTeams / 3) };
-    }
-  }
-  
-  if (totalTeams % 4 === 2) {
-    // Reste 2 : on fait 2 poules de 3 et le reste en poules de 4
-    if (totalTeams >= 10) {
-      return { poolsOf4: Math.floor((totalTeams - 6) / 4), poolsOf3: 2 };
-    } else {
-      return { poolsOf4: 0, poolsOf3: Math.ceil(totalTeams / 3) };
-    }
-  }
-  
-  if (totalTeams % 4 === 3) {
-    // Reste 3 : on fait 1 poule de 3 et le reste en poules de 4
-    return { poolsOf4: Math.floor((totalTeams - 3) / 4), poolsOf3: 1 };
-  }
-  
-  return { poolsOf4: 0, poolsOf3: 0 };
+
+  const poolsOf3 = remainder / 3;
+
+  return { poolsOf4, poolsOf3 };
 }
 
 export function generatePoolMatches(pool: Pool, teams: Team[]): Match[] {

@@ -31,6 +31,14 @@ describe('generatePools', () => {
     const sizes = pools.map(p => p.teamIds.length).sort();
     expect(sizes).toEqual([3,3,4]);
   });
+
+  it('distributes 21 teams into six pools', () => {
+    const teams = makeTeams(21);
+    const pools = generatePools(teams);
+    const sizes = pools.map(p => p.teamIds.length).sort();
+    expect(pools).toHaveLength(6);
+    expect(sizes).toEqual([3,3,3,4,4,4]);
+  });
 });
 
 describe('generatePoolMatches', () => {
