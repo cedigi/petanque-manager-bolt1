@@ -531,7 +531,7 @@ export function useTournament() {
   const propagateWinnersToNextPhases = (tournament: Tournament): Tournament => {
     const finalMatches = tournament.matches.filter(m => m.round >= 100);
     const poolMatches = tournament.matches.filter(m => m.poolId);
-    
+
     // Grouper les matchs par round
     const matchesByRound: { [round: number]: Match[] } = {};
     finalMatches.forEach(match => {
@@ -545,63 +545,34 @@ export function useTournament() {
     let hasChanges = false;
     const updatedMatches = [...finalMatches];
 
-    // Pour chaque round, vérifier si on peut propager les gagnants au round suivant
+    // Propager les gagnants au fur et à mesure
     for (let i = 0; i < rounds.length - 1; i++) {
       const currentRound = rounds[i];
       const nextRound = rounds[i + 1];
-      
-      const currentRoundMatches = matchesByRound[currentRound];
-      const nextRoundMatches = matchesByRound[nextRound];
-      
-      // Vérifier si tous les matchs du round actuel sont terminés
-      const completedMatches = currentRoundMatches.filter(m => m.completed);
-      
-      if (completedMatches.length === currentRoundMatches.length && completedMatches.length > 0) {
-        // Tous les matchs du round actuel sont terminés, propager les gagnants
-        
-        // Obtenir les gagnants du round actuel
-        const winners = completedMatches.map(match => {
-          const team1 = tournament.teams.find(t => t.id === match.team1Id);
-          const team2 = tournament.teams.find(t => t.id === match.team2Id);
-          
-          if (!team1 || !team2) return null;
-          
-          return (match.team1Score! > match.team2Score!) ? team1 : team2;
-        }).filter(Boolean) as Team[];
 
-        // Placer les gagnants dans les matchs du round suivant
-        let winnerIndex = 0;
-        
-        nextRoundMatches.forEach(nextMatch => {
-          const matchInUpdated = updatedMatches.find(m => m.id === nextMatch.id);
-          if (!matchInUpdated) return;
-          
-          // Placer les gagnants dans l'ordre
-          if (!matchInUpdated.team1Id && winnerIndex < winners.length) {
-            const updatedMatchIndex = updatedMatches.findIndex(m => m.id === nextMatch.id);
-            if (updatedMatchIndex !== -1) {
-              updatedMatches[updatedMatchIndex] = {
-                ...matchInUpdated,
-                team1Id: winners[winnerIndex].id
-              };
-              winnerIndex++;
-              hasChanges = true;
-            }
+      const currentMatches = matchesByRound[currentRound].sort((a, b) => a.court - b.court);
+      const nextMatches = matchesByRound[nextRound].sort((a, b) => a.court - b.court);
+
+      currentMatches.forEach((match, idx) => {
+        if (!match.completed) return;
+
+        const winnerId = (match.team1Score! > match.team2Score!) ? match.team1Id : match.team2Id;
+        const target = nextMatches[Math.floor(idx / 2)];
+        const targetIndex = updatedMatches.findIndex(m => m.id === target.id);
+        if (targetIndex === -1) return;
+
+        if (idx % 2 === 0) {
+          if (updatedMatches[targetIndex].team1Id !== winnerId) {
+            updatedMatches[targetIndex] = { ...updatedMatches[targetIndex], team1Id: winnerId };
+            hasChanges = true;
           }
-          
-          if (!matchInUpdated.team2Id && winnerIndex < winners.length) {
-            const updatedMatchIndex = updatedMatches.findIndex(m => m.id === nextMatch.id);
-            if (updatedMatchIndex !== -1) {
-              updatedMatches[updatedMatchIndex] = {
-                ...updatedMatches[updatedMatchIndex],
-                team2Id: winners[winnerIndex].id
-              };
-              winnerIndex++;
-              hasChanges = true;
-            }
+        } else {
+          if (updatedMatches[targetIndex].team2Id !== winnerId) {
+            updatedMatches[targetIndex] = { ...updatedMatches[targetIndex], team2Id: winnerId };
+            hasChanges = true;
           }
-        });
-      }
+        }
+      });
     }
 
     if (hasChanges) {
