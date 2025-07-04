@@ -466,7 +466,7 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: Progress
 
   return (
     <>
-      <div className={`glass-card p-2 min-h-[100px] transition-all duration-300 cursor-pointer hover:scale-105 ${
+      <div className={`glass-card p-1 min-h-[80px] transition-all duration-300 cursor-pointer hover:scale-105 ${
         isEmpty ? 'bg-gradient-to-br from-gray-500/20 to-gray-600/20 border-gray-400/40' :
         isPartial ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-400/50' :
         isReady ? 'bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-purple-400/50' :
@@ -495,11 +495,7 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: Progress
               </span>
               {winner?.id === team1?.id && <Crown className="w-3 h-3 text-yellow-400 flex-shrink-0" />}
             </div>
-            {match.completed && team1 && (
-              <span className="text-sm font-bold text-green-400">
-                {match.team1Score}
-              </span>
-            )}
+            {/* Score supprimé dans les phases finales */}
           </div>
 
           {/* Bouton VS ou Trophée */}
@@ -536,11 +532,7 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: Progress
               </span>
               {winner?.id === team2?.id && <Crown className="w-3 h-3 text-yellow-400 flex-shrink-0" />}
             </div>
-            {match.completed && team2 && (
-              <span className="text-sm font-bold text-green-400">
-                {match.team2Score}
-              </span>
-            )}
+            {/* Score supprimé dans les phases finales */}
           </div>
         </div>
 
