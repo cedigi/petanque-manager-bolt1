@@ -27,32 +27,31 @@ export function createKnockoutBracket(teams: Team[], startingRound = 1): Match[]
   const byesNeeded = bracketSize - teams.length;
 
   let round = startingRound;
-  const nextRound: Team[] = [];
-
   // First round - assign BYE to as many teams as needed
   let teamIndex = 0;
+  const firstRound: Match[] = [];
+
   for (let i = 0; i < byesNeeded; i++) {
     const t1 = teams[teamIndex++];
-    matches.push({
+    firstRound.push({
       id: crypto.randomUUID(),
       round,
       court: 0,
       team1Id: t1.id,
       team2Id: t1.id,
       team1Score: 13,
-      team2Score: 7,
+      team2Score: 0,
       completed: true,
       isBye: true,
       battleIntensity: 0,
       hackingAttempts: 0,
     });
-    nextRound.push(t1);
   }
 
   for (; teamIndex < teams.length; teamIndex += 2) {
     const t1 = teams[teamIndex];
     const t2 = teams[teamIndex + 1];
-    matches.push({
+    firstRound.push({
       id: crypto.randomUUID(),
       round,
       court: 0,
@@ -63,31 +62,45 @@ export function createKnockoutBracket(teams: Team[], startingRound = 1): Match[]
       battleIntensity: 0,
       hackingAttempts: 0,
     });
-    nextRound.push(t1);
   }
 
+  matches.push(...firstRound);
   round += 1;
-  let currentTeams = nextRound;
 
-  while (currentTeams.length > 1) {
-    const followingRound: Team[] = [];
-    for (let i = 0; i < currentTeams.length; i += 2) {
-      const t1 = currentTeams[i];
-      const t2 = currentTeams[i + 1];
-      matches.push({
+  let previousRound = firstRound;
+
+  while (previousRound.length > 1) {
+    const nextMatches: Match[] = [];
+    for (let i = 0; i < previousRound.length; i += 2) {
+      const m1 = previousRound[i];
+      const m2 = previousRound[i + 1];
+      const winner1 =
+        m1.completed && (m1.team1Score ?? 0) >= (m1.team2Score ?? 0)
+          ? m1.team1Id
+          : m1.completed
+            ? m1.team2Id
+            : '';
+      const winner2 =
+        m2.completed && (m2.team1Score ?? 0) >= (m2.team2Score ?? 0)
+          ? m2.team1Id
+          : m2.completed
+            ? m2.team2Id
+            : '';
+
+      nextMatches.push({
         id: crypto.randomUUID(),
         round,
         court: 0,
-        team1Id: t1.id,
-        team2Id: t2.id,
+        team1Id: winner1,
+        team2Id: winner2,
         completed: false,
         isBye: false,
         battleIntensity: 0,
         hackingAttempts: 0,
       });
-      followingRound.push(t1);
     }
-    currentTeams = followingRound;
+    matches.push(...nextMatches);
+    previousRound = nextMatches;
     round += 1;
   }
 

@@ -45,4 +45,24 @@ describe('createKnockoutBracket', () => {
     expect(firstRound.filter(m => m.isBye)).toHaveLength(4);
     expect(matches).toHaveLength(15); // bracket of 16
   });
+
+  it('does not prefill winners for non-BYE matches', () => {
+    const teams = makeTeams(6);
+    const matches = createKnockoutBracket(teams);
+
+    const round2 = matches.filter(m => m.round === 2);
+    expect(round2).toHaveLength(2);
+
+    // One match should have the BYE winners populated
+    const filled = round2.find(m => m.team1Id && m.team2Id);
+    expect(filled).toBeDefined();
+
+    // The other match should not have predetermined teams
+    const empty = round2.find(m => !m.team1Id && !m.team2Id);
+    expect(empty).toBeDefined();
+
+    const final = matches.find(m => m.round === 3);
+    expect(final?.team1Id).toBe('');
+    expect(final?.team2Id).toBe('');
+  });
 });
