@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { TournamentSetup } from './components/TournamentSetup';
 import { TabNavigation } from './components/TabNavigation';
@@ -10,7 +10,7 @@ import { useTournament } from './hooks/useTournament';
 import { RotateCcw } from 'lucide-react';
 
 function App() {
-  const [darkMode, setDarkMode] = useState(true);
+  const [animationsPaused, setAnimationsPaused] = useState(false);
   const [activeTab, setActiveTab] = useState('teams');
   const {
     tournament,
@@ -24,13 +24,8 @@ function App() {
     resetTournament,
   } = useTournament();
 
-  useEffect(() => {
-    document.documentElement.classList.add('dark');
-  }, []);
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
+  const toggleAnimations = () => {
+    setAnimationsPaused(!animationsPaused);
   };
 
   const isPoolTournament = tournament && (tournament.type === 'doublette-poule' || tournament.type === 'triplette-poule');
@@ -111,7 +106,7 @@ function App() {
   return (
     <div className="min-h-screen relative">
       {/* Floating petanque balls background */}
-      <div className="floating-petanque-balls">
+      <div className={`floating-petanque-balls${animationsPaused ? ' paused' : ''}`}>
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
@@ -119,8 +114,8 @@ function App() {
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
       </div>
-      
-      <Header darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
+
+      <Header animationsPaused={animationsPaused} onToggleAnimations={toggleAnimations} />
       {content}
     </div>
   );
