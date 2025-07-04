@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Tournament, TournamentType, Team, Player, Match } from '../types/tournament';
 import { generateMatches } from '../utils/matchmaking';
-import { generatePools } from '../utils/poolGeneration';
+import { generatePools, calculateOptimalPools } from '../utils/poolGeneration';
 import { applyByeLogic } from '../utils/finals';
 
 const STORAGE_KEY = 'petanque-tournament';
@@ -213,16 +213,7 @@ export function useTournament() {
     const matches: Match[] = [];
 
     // Calculer le nombre d'équipes qualifiées attendues
-    const poolsOf4 = Math.floor(totalTeams / 4);
-    const remainder = totalTeams % 4;
-    let poolsOf3 = 0;
-
-    if (remainder === 1 || remainder === 2) {
-      poolsOf3 = 2;
-    } else if (remainder === 3) {
-      poolsOf3 = 1;
-    }
-
+    const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
     const expectedQualified = (poolsOf4 + poolsOf3) * 2;
 
     // Taille du tableau : puissance de deux immédiatement supérieure
@@ -392,16 +383,7 @@ export function useTournament() {
 
     // Calculer le nombre d'équipes qualifiées attendues comme dans createEmptyFinalPhases
     const totalTeams = updatedTournament.teams.length;
-    const poolsOf4 = Math.floor(totalTeams / 4);
-    const remainder = totalTeams % 4;
-    let poolsOf3 = 0;
-
-    if (remainder === 1 || remainder === 2) {
-      poolsOf3 = 2;
-    } else if (remainder === 3) {
-      poolsOf3 = 1;
-    }
-
+    const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
     const expectedQualified = (poolsOf4 + poolsOf3) * 2;
     
     // Obtenir les matchs des phases finales (round >= 100)
