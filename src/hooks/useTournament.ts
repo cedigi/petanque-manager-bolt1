@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Tournament, TournamentType, Team, Player, Match } from '../types/tournament';
 import { generateMatches } from '../utils/matchmaking';
 import { generatePools } from '../utils/poolGeneration';
+import { applyByeLogic } from '../utils/finals';
 
 const STORAGE_KEY = 'petanque-tournament';
 
@@ -388,6 +389,20 @@ export function useTournament() {
 
     // Obtenir les équipes qualifiées actuelles (avec 2 victoires)
     const qualifiedTeams = getCurrentQualifiedTeams(updatedTournament);
+
+    // Calculer le nombre d'équipes qualifiées attendues comme dans createEmptyFinalPhases
+    const totalTeams = updatedTournament.teams.length;
+    const poolsOf4 = Math.floor(totalTeams / 4);
+    const remainder = totalTeams % 4;
+    let poolsOf3 = 0;
+
+    if (remainder === 1 || remainder === 2) {
+      poolsOf3 = 2;
+    } else if (remainder === 3) {
+      poolsOf3 = 1;
+    }
+
+    const expectedQualified = (poolsOf4 + poolsOf3) * 2;
     
     // Obtenir les matchs des phases finales (round >= 100)
     const finalMatches = updatedTournament.matches.filter(m => m.round >= 100);
@@ -515,20 +530,15 @@ export function useTournament() {
     });
 
     // Marquer automatiquement les matchs avec une seule équipe comme BYE
+    const pendingPoolMatches = poolMatches.filter(m => !m.completed).length;
+    const finalMatchesWithByes = applyByeLogic(
+      updatedFinalMatches,
+      qualifiedTeams.length,
+      expectedQualified,
+      pendingPoolMatches
+    );
     for (let i = 0; i < updatedFinalMatches.length; i++) {
-      const match = updatedFinalMatches[i];
-      if (!match.completed && ((match.team1Id && !match.team2Id) || (!match.team1Id && match.team2Id))) {
-        const solo = match.team1Id || match.team2Id || '';
-        updatedFinalMatches[i] = {
-          ...match,
-          team1Id: solo,
-          team2Id: solo,
-          team1Score: 13,
-          team2Score: 0,
-          completed: true,
-          isBye: true,
-        };
-      }
+      updatedFinalMatches[i] = finalMatchesWithByes[i];
     }
     
     // Reconstituer tous les matchs
