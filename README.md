@@ -52,6 +52,16 @@ Run the linter to check for code style issues:
 npm run lint
 ```
 
+## Testing
+
+Run all unit tests with:
+
+```bash
+npm test
+```
+
+This uses Jest and React Testing Library.
+
 ## Project structure
 
 The main source code lives in the `src` directory:
