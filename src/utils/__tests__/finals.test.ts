@@ -44,4 +44,21 @@ describe('applyByeLogic', () => {
       expect(m.completed).toBe(true);
     });
   });
+
+  it('assigns four BYEs for a 21 team tournament', () => {
+    const matches = [
+      makeMatch('m1', 't1', 't2'),
+      makeMatch('m2', 't3', 't4'),
+      makeMatch('m3', 't5', 't6'),
+      makeMatch('m4', 't7'),
+      makeMatch('m5', 't8'),
+      makeMatch('m6', 't9', 't10'),
+      makeMatch('m7', 't11'),
+      makeMatch('m8', 't12'),
+    ];
+
+    const result = applyByeLogic(matches, 12, 12, 0);
+    const byeMatches = result.filter(m => m.isBye);
+    expect(byeMatches).toHaveLength(4);
+  });
 });

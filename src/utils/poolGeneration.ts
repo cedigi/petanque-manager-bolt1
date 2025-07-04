@@ -43,7 +43,7 @@ export function generatePools(teams: Team[]): Pool[] {
   return pools;
 }
 
-function calculateOptimalPools(totalTeams: number): { poolsOf4: number; poolsOf3: number } {
+export function calculateOptimalPools(totalTeams: number): { poolsOf4: number; poolsOf3: number } {
   // Start with as many pools of 4 as possible
   let poolsOf4 = Math.floor(totalTeams / 4);
   let remainder = totalTeams % 4;
