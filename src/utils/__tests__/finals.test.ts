@@ -61,4 +61,64 @@ describe('applyByeLogic', () => {
     const byeMatches = result.filter(m => m.isBye);
     expect(byeMatches).toHaveLength(4);
   });
+
+  it('places 12 qualified teams from a 21 team tournament and marks four BYEs', () => {
+    function makeTeam(id: string, poolId: string) {
+      return {
+        id,
+        name: id,
+        players: [],
+        wins: 0,
+        losses: 0,
+        pointsFor: 0,
+        pointsAgainst: 0,
+        performance: 0,
+        teamRating: 0,
+        synchroLevel: 0,
+        poolId,
+      } as const;
+    }
+
+    const qualifiedTeams = Array.from({ length: 12 }).map((_, i) =>
+      makeTeam(`t${i + 1}`, `p${Math.floor(i / 2)}`)
+    );
+
+    const firstRound = Array.from({ length: 8 }).map((_, i) => makeMatch(`f${i + 1}`));
+
+    const primary: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
+    const secondary: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
+
+    firstRound.forEach((match, idx) => {
+      primary.push({ matchIndex: idx, position: 'team1' });
+      secondary.push({ matchIndex: idx, position: 'team2' });
+    });
+
+    const positions = [...primary, ...secondary];
+    const placed = [...firstRound];
+
+    qualifiedTeams.forEach(team => {
+      for (let i = 0; i < positions.length; i++) {
+        const pos = positions[i];
+        const match = placed[pos.matchIndex];
+        const otherId = pos.position === 'team1' ? match.team2Id : match.team1Id;
+        if (otherId) {
+          const otherTeam = qualifiedTeams.find(t => t.id === otherId);
+          if (otherTeam && otherTeam.poolId === team.poolId) {
+            continue;
+          }
+        }
+        placed[pos.matchIndex] = {
+          ...match,
+          [pos.position + 'Id']: team.id,
+        } as Match;
+        positions.splice(i, 1);
+        break;
+      }
+    });
+
+    const expectedQualified = 12; // from calculateOptimalPools(21)
+    const withByes = applyByeLogic(placed, qualifiedTeams.length, expectedQualified, 0);
+    const byeMatches = withByes.filter(m => m.isBye);
+    expect(byeMatches).toHaveLength(4);
+  });
 });

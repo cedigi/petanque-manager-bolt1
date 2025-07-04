@@ -408,106 +408,57 @@ export function useTournament() {
       return propagateWinnersToNextPhases(updatedTournament);
     }
 
-    // CORRECTION PRINCIPALE : Placement vraiment aléatoire
-    // 1. Créer une liste de toutes les positions vides disponibles
-    const availablePositions: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
-    
+    // Rassembler les positions disponibles en donnant la priorité à une équipe par match
+    const primary: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
+    const secondary: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
+
     firstRoundFinalMatches.forEach((match, matchIndex) => {
-      if (!match.team1Id) {
-        availablePositions.push({ matchIndex, position: 'team1' });
-      }
-      if (!match.team2Id) {
-        availablePositions.push({ matchIndex, position: 'team2' });
+      const empty1 = !match.team1Id;
+      const empty2 = !match.team2Id;
+
+      if (empty1 && empty2) {
+        primary.push({ matchIndex, position: 'team1' });
+        secondary.push({ matchIndex, position: 'team2' });
+      } else if (empty1 || empty2) {
+        const pos = empty1 ? 'team1' : 'team2';
+        secondary.push({ matchIndex, position: pos });
       }
     });
 
-    // 2. Mélanger les positions disponibles
-    const shuffledPositions = [...availablePositions].sort(() => Math.random() - 0.5);
-    
-    // 3. Mélanger les nouvelles équipes
-    const shuffledNewTeams = [...newQualifiedTeams].sort(() => Math.random() - 0.5);
-    
-    // 4. Placer les équipes dans les positions aléatoires
+    const orderedPositions = [...primary, ...secondary];
     const updatedFinalMatches = [...firstRoundFinalMatches];
-    
-    shuffledNewTeams.forEach((team, teamIndex) => {
-      if (teamIndex >= shuffledPositions.length) return; // Plus de positions disponibles
-      
-      const position = shuffledPositions[teamIndex];
-      const match = updatedFinalMatches[position.matchIndex];
-      
-      // Vérifier qu'on n'a pas déjà une équipe de la même poule dans ce match
-      let canPlace = true;
-      
-      if (position.position === 'team1' && match.team2Id) {
-        const otherTeam = updatedTournament.teams.find(t => t.id === match.team2Id);
-        if (otherTeam && otherTeam.poolId === team.poolId) {
-          canPlace = false;
+
+    newQualifiedTeams.forEach(team => {
+      let placed = false;
+
+      for (let i = 0; i < orderedPositions.length; i++) {
+        const pos = orderedPositions[i];
+        const match = updatedFinalMatches[pos.matchIndex];
+        const otherTeamId = pos.position === 'team1' ? match.team2Id : match.team1Id;
+
+        if (otherTeamId) {
+          const otherTeam = updatedTournament.teams.find(t => t.id === otherTeamId);
+          if (otherTeam && otherTeam.poolId === team.poolId) {
+            continue; // éviter les rencontres de la même poule
+          }
         }
-      } else if (position.position === 'team2' && match.team1Id) {
-        const otherTeam = updatedTournament.teams.find(t => t.id === match.team1Id);
-        if (otherTeam && otherTeam.poolId === team.poolId) {
-          canPlace = false;
-        }
+
+        updatedFinalMatches[pos.matchIndex] = {
+          ...match,
+          [pos.position + 'Id']: team.id,
+        } as Match;
+        orderedPositions.splice(i, 1); // retirer la position utilisée
+        placed = true;
+        break;
       }
-      
-      if (canPlace) {
-        // Placer l'équipe
-        if (position.position === 'team1') {
-          updatedFinalMatches[position.matchIndex] = {
-            ...match,
-            team1Id: team.id
-          };
-        } else {
-          updatedFinalMatches[position.matchIndex] = {
-            ...match,
-            team2Id: team.id
-          };
-        }
-      } else {
-        // Chercher une autre position libre pour éviter le conflit de poule
-        const alternativePositions = shuffledPositions.slice(teamIndex + 1);
-        
-        for (const altPosition of alternativePositions) {
-          const altMatch = updatedFinalMatches[altPosition.matchIndex];
-          let altCanPlace = true;
-          
-          if (altPosition.position === 'team1' && altMatch.team2Id) {
-            const otherTeam = updatedTournament.teams.find(t => t.id === altMatch.team2Id);
-            if (otherTeam && otherTeam.poolId === team.poolId) {
-              altCanPlace = false;
-            }
-          } else if (altPosition.position === 'team2' && altMatch.team1Id) {
-            const otherTeam = updatedTournament.teams.find(t => t.id === altMatch.team1Id);
-            if (otherTeam && otherTeam.poolId === team.poolId) {
-              altCanPlace = false;
-            }
-          }
-          
-          if (altCanPlace) {
-            // Placer dans la position alternative
-            if (altPosition.position === 'team1') {
-              updatedFinalMatches[altPosition.matchIndex] = {
-                ...altMatch,
-                team1Id: team.id
-              };
-            } else {
-              updatedFinalMatches[altPosition.matchIndex] = {
-                ...altMatch,
-                team2Id: team.id
-              };
-            }
-            
-            // Retirer cette position de la liste
-            const altIndex = shuffledPositions.findIndex(p => 
-              p.matchIndex === altPosition.matchIndex && p.position === altPosition.position
-            );
-            if (altIndex > -1) {
-              shuffledPositions.splice(altIndex, 1);
-            }
-            break;
-          }
-        }
+
+      if (!placed && orderedPositions.length > 0) {
+        const pos = orderedPositions.shift()!;
+        const match = updatedFinalMatches[pos.matchIndex];
+        updatedFinalMatches[pos.matchIndex] = {
+          ...match,
+          [pos.position + 'Id']: team.id,
+        } as Match;
       }
     });
 
