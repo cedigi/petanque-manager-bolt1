@@ -399,7 +399,7 @@ function PhaseSection({ phaseName, phaseIndex, matches, tournament, onUpdateScor
         {phaseName} ({matchesReady.length}/{expectedMatches} prêts)
       </h4>
       
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
         {/* Afficher TOUS les matchs, même vides */}
         {phaseMatches.map(match => (
           <ProgressiveFinalMatchBox
@@ -465,7 +465,7 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: Progress
 
   return (
     <>
-      <div className={`glass-card p-3 min-h-[120px] transition-all duration-300 cursor-pointer hover:scale-105 ${
+      <div className={`glass-card p-2 min-h-[100px] transition-all duration-300 cursor-pointer hover:scale-105 ${
         isEmpty ? 'bg-gradient-to-br from-gray-500/20 to-gray-600/20 border-gray-400/40' :
         isPartial ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-400/50' :
         isReady ? 'bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-purple-400/50' :
