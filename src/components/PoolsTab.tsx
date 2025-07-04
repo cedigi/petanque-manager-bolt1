@@ -379,8 +379,9 @@ function PhaseSection({ phaseName, phaseIndex, matches, tournament, onUpdateScor
   // Calculer le nombre de matchs attendus pour cette phase
   const getExpectedMatches = () => {
     if (phaseIndex === 0) {
-      // Première phase : dépend du nombre d'équipes qualifiées
-      return Math.floor(expectedQualified / 2);
+      // Première phase : tableau complet basé sur la puissance de deux
+      const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
+      return bracketSize / 2;
     } else {
       // Phases suivantes : moitié de la phase précédente
       const previousPhaseMatches = matches.filter(m => m.round === phaseIndex + 99);

@@ -210,25 +210,28 @@ export function useTournament() {
   // Nouvelle fonction pour créer les cadres vides des phases finales
   const createEmptyFinalPhases = (totalTeams: number, courts: number) => {
     const matches: Match[] = [];
-    
+
     // Calculer le nombre d'équipes qualifiées attendues
     const poolsOf4 = Math.floor(totalTeams / 4);
     const remainder = totalTeams % 4;
     let poolsOf3 = 0;
-    
+
     if (remainder === 1 || remainder === 2) {
       poolsOf3 = 2;
     } else if (remainder === 3) {
       poolsOf3 = 1;
     }
-    
+
     const expectedQualified = (poolsOf4 + poolsOf3) * 2;
-    
+
+    // Taille du tableau : puissance de deux immédiatement supérieure
+    const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
+
     // Créer les phases nécessaires
-    let currentTeamCount = expectedQualified;
+    let currentTeamCount = bracketSize;
     let round = 100; // 100+ pour les phases finales
     let courtIndex = 1;
-    
+
     while (currentTeamCount > 1) {
       const matchesInRound = Math.floor(currentTeamCount / 2);
       
@@ -510,6 +513,23 @@ export function useTournament() {
         }
       }
     });
+
+    // Marquer automatiquement les matchs avec une seule équipe comme BYE
+    for (let i = 0; i < updatedFinalMatches.length; i++) {
+      const match = updatedFinalMatches[i];
+      if (!match.completed && ((match.team1Id && !match.team2Id) || (!match.team1Id && match.team2Id))) {
+        const solo = match.team1Id || match.team2Id || '';
+        updatedFinalMatches[i] = {
+          ...match,
+          team1Id: solo,
+          team2Id: solo,
+          team1Score: 13,
+          team2Score: 0,
+          completed: true,
+          isBye: true,
+        };
+      }
+    }
     
     // Reconstituer tous les matchs
     const allUpdatedMatches = [
