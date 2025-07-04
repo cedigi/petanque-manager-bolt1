@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pool, Team, Tournament, Match } from '../types/tournament';
-import { Grid3X3, Users, Trophy, Shuffle, Printer, Crown, X } from 'lucide-react';
+import { Grid3X3, Trophy, Shuffle, Printer, Crown, X } from 'lucide-react';
 
 interface PoolsTabProps {
   tournament: Tournament;
@@ -351,7 +351,6 @@ function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, totalTeams }: 
               key={phaseName}
               phaseName={phaseName}
               phaseIndex={index}
-              qualifiedTeams={qualifiedTeams}
               matches={finalMatches}
               tournament={tournament}
               onUpdateScore={onUpdateScore}
@@ -368,14 +367,13 @@ function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, totalTeams }: 
 interface PhaseSectionProps {
   phaseName: string;
   phaseIndex: number;
-  qualifiedTeams: Team[];
   matches: Match[];
   tournament: Tournament;
   onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
   expectedQualified: number;
 }
 
-function PhaseSection({ phaseName, phaseIndex, qualifiedTeams, matches, tournament, onUpdateScore, expectedQualified }: PhaseSectionProps) {
+function PhaseSection({ phaseName, phaseIndex, matches, tournament, onUpdateScore, expectedQualified }: PhaseSectionProps) {
   const phaseMatches = matches.filter(m => m.round === phaseIndex + 100); // 100+ pour les phases finales
   
   // Calculer le nombre de matchs attendus pour cette phase
@@ -392,8 +390,7 @@ function PhaseSection({ phaseName, phaseIndex, qualifiedTeams, matches, tourname
 
   const expectedMatches = getExpectedMatches();
   
-  // Compter les matchs avec au moins une équipe
-  const matchesWithTeams = phaseMatches.filter(m => m.team1Id || m.team2Id);
+  // Compter les matchs prêts (avec les deux équipes connues)
   const matchesReady = phaseMatches.filter(m => m.team1Id && m.team2Id);
   
   return (

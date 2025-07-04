@@ -1,4 +1,4 @@
-import { Team, Pool } from '../types/tournament';
+import { Team, Pool, Match } from '../types/tournament';
 
 export function generatePools(teams: Team[]): Pool[] {
   const totalTeams = teams.length;
@@ -78,9 +78,9 @@ function calculateOptimalPools(totalTeams: number): { poolsOf4: number; poolsOf3
   return { poolsOf4: 0, poolsOf3: 0 };
 }
 
-export function generatePoolMatches(pool: Pool, teams: Team[]): any[] {
+export function generatePoolMatches(pool: Pool, teams: Team[]): Match[] {
   const poolTeams = pool.teamIds.map(id => teams.find(t => t.id === id)).filter(Boolean);
-  const matches: any[] = [];
+  const matches: Match[] = [];
   
   // Générer tous les matchs possibles dans la poule (round robin)
   for (let i = 0; i < poolTeams.length; i++) {
