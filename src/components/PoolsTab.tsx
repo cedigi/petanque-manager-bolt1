@@ -437,7 +437,7 @@ interface ProgressiveFinalMatchBoxProps {
 }
 
 function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: ProgressiveFinalMatchBoxProps) {
-  const [showWinnerModal, setShowWinnerModal] = useState(false);
+  const [winnerModalPos, setWinnerModalPos] = useState<{x: number; y: number} | null>(null);
   
   const team1 = match.team1Id ? tournament.teams.find(t => t.id === match.team1Id) : null;
   const team2 = match.team2Id ? tournament.teams.find(t => t.id === match.team2Id) : null;
@@ -459,7 +459,7 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: Progress
     } else {
       onUpdateScore(match.id, loserScore, winnerScore);
     }
-    setShowWinnerModal(false);
+    setWinnerModalPos(null);
   };
 
   // Déterminer l'état du match
@@ -501,7 +501,7 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: Progress
 
             {isReady && onUpdateScore && !match.completed ? (
               <button
-                onClick={() => setShowWinnerModal(true)}
+                onClick={(e) => setWinnerModalPos({ x: e.clientX, y: e.clientY })}
                 className="p-1 bg-yellow-500/80 text-white rounded hover:bg-yellow-500 transition-colors animate-pulse"
                 title="Sélectionner le gagnant"
               >
@@ -554,12 +554,13 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: Progress
       </div>
 
       {/* Modal de sélection du gagnant */}
-      {showWinnerModal && team1 && team2 && (
+      {winnerModalPos && team1 && team2 && (
         <WinnerModal
           team1={team1}
           team2={team2}
           onSelectWinner={handleQuickWin}
-          onClose={() => setShowWinnerModal(false)}
+          onClose={() => setWinnerModalPos(null)}
+          position={winnerModalPos}
         />
       )}
     </>
@@ -913,14 +914,25 @@ interface WinnerModalProps {
   team2: Team;
   onSelectWinner: (winner: 'team1' | 'team2') => void;
   onClose: () => void;
+  position?: { x: number; y: number };
 }
 
-function WinnerModal({ team1, team2, onSelectWinner, onClose }: WinnerModalProps) {
+function WinnerModal({ team1, team2, onSelectWinner, onClose, position }: WinnerModalProps) {
+  const modalStyle = position
+    ? { position: 'fixed' as const, top: position.y, left: position.x }
+    : { position: 'fixed' as const, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
   return (
+        codex/mise-à-jour-des-modales-dans-progressivefinalmatchbox
+    <div className="fixed inset-0 bg-black/50 z-50 p-4">
+      <div className="glass-card p-6 max-w-md w-full" style={modalStyle}>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold text-white">Qui a gagné ?</h3>
+
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="glass-card p-4 max-w-xs w-full">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-white">Qui a gagné ?</h3>
+        main
           <button
             onClick={onClose}
             className="text-white/60 hover:text-white transition-colors"
