@@ -3,6 +3,7 @@ import { Tournament, TournamentType, Team, Player, Match } from '../types/tourna
 import { generateMatches } from '../utils/matchmaking';
 import { generatePools, calculateOptimalPools } from '../utils/poolGeneration';
 import { applyByeLogic } from '../utils/finals';
+import { generateUuid } from '../utils/uuid';
 
 const STORAGE_KEY = 'petanque-tournament';
 
@@ -31,7 +32,7 @@ export function useTournament() {
   const createTournament = (type: TournamentType, courts: number) => {
     const defaultName = `Tournoi ${new Date().toLocaleDateString()}`;
     const newTournament: Tournament = {
-      id: crypto.randomUUID(),
+      id: generateUuid(),
       name: defaultName,
       type,
       courts,
@@ -58,7 +59,7 @@ export function useTournament() {
         : `Équipe ${teamNumber}`;
 
     const team: Team = {
-      id: crypto.randomUUID(),
+      id: generateUuid(),
       name: teamName,
       players,
       wins: 0,
@@ -126,7 +127,7 @@ export function useTournament() {
         
         // Match 1 vs 4
         allMatches.push({
-          id: crypto.randomUUID(),
+          id: generateUuid(),
           round: 1,
           court: baseCourt,
           team1Id: team1!.id,
@@ -140,7 +141,7 @@ export function useTournament() {
         
         // Match 2 vs 3
         allMatches.push({
-          id: crypto.randomUUID(),
+          id: generateUuid(),
           round: 1,
           court: baseCourt + 1,
           team1Id: team2!.id,
@@ -159,7 +160,7 @@ export function useTournament() {
         
         // Match entre les 2 premières équipes
         allMatches.push({
-          id: crypto.randomUUID(),
+          id: generateUuid(),
           round: 1,
           court: baseCourt,
           team1Id: team1!.id,
@@ -173,7 +174,7 @@ export function useTournament() {
         
         // L'équipe 3 reçoit un BYE automatique (1 victoire) mais doit encore jouer
         allMatches.push({
-          id: crypto.randomUUID(),
+          id: generateUuid(),
           round: 1,
           court: 0, // Court 0 = match virtuel
           team1Id: team3!.id,
@@ -225,7 +226,7 @@ export function useTournament() {
       
       for (let i = 0; i < matchesInRound; i++) {
         matches.push({
-          id: crypto.randomUUID(),
+          id: generateUuid(),
           round,
           court: courtIndex,
           team1Id: '', // Vide au début
@@ -313,7 +314,7 @@ export function useTournament() {
             // Generate winners match
             if (!winnersMatchExists) {
               allMatches.push({
-                id: crypto.randomUUID(),
+                id: generateUuid(),
                 round: 2,
                 court: baseCourt,
                 team1Id: winner1vs4.id,
@@ -329,7 +330,7 @@ export function useTournament() {
             // Generate losers match
             if (!losersMatchExists) {
               allMatches.push({
-                id: crypto.randomUUID(),
+                id: generateUuid(),
                 round: 2,
                 court: baseCourt + 1,
                 team1Id: loser1vs4.id,
@@ -716,7 +717,7 @@ export function useTournament() {
           // Generate winners match (Finale)
           if (!winnersMatchExists) {
             allMatches.push({
-              id: crypto.randomUUID(),
+              id: generateUuid(),
               round: 2,
               court: baseCourt,
               team1Id: winner1vs4.id,
@@ -732,7 +733,7 @@ export function useTournament() {
           // Generate losers match (Petite finale)
           if (!losersMatchExists) {
             allMatches.push({
-              id: crypto.randomUUID(),
+              id: generateUuid(),
               round: 2,
               court: baseCourt + 1,
               team1Id: loser1vs4.id,
@@ -781,7 +782,7 @@ export function useTournament() {
 
             if (!barrageExists) {
               allMatches.push({
-                id: crypto.randomUUID(),
+                id: generateUuid(),
                 round: 3,
                 court: baseCourt,
                 team1Id: teamsWithOneWin[0].team.id,
@@ -834,7 +835,7 @@ export function useTournament() {
           
           if (!winnersMatchExists) {
             allMatches.push({
-              id: crypto.randomUUID(),
+              id: generateUuid(),
               round: 2,
               court: baseCourt,
               team1Id: winner.id,
@@ -855,7 +856,7 @@ export function useTournament() {
           
           if (!loserByeExists) {
             allMatches.push({
-              id: crypto.randomUUID(),
+              id: generateUuid(),
               round: 2,
               court: 0, // Court 0 = match virtuel
               team1Id: loser.id,
@@ -932,7 +933,7 @@ export function useTournament() {
 
               if (!barrageExists) {
                 allMatches.push({
-                  id: crypto.randomUUID(),
+                  id: generateUuid(),
                   round: 3,
                   court: baseCourt,
                   team1Id: teamsWithOneWin[0].team.id,

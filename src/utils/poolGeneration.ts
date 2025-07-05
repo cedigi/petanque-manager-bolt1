@@ -1,4 +1,5 @@
 import { Team, Pool, Match } from '../types/tournament';
+import { generateUuid } from './uuid';
 
 export function generatePools(teams: Team[]): Pool[] {
   const totalTeams = teams.length;
@@ -20,7 +21,7 @@ export function generatePools(teams: Team[]): Pool[] {
   for (let i = 0; i < poolsOf4; i++) {
     const poolTeams = shuffledTeams.slice(teamIndex, teamIndex + 4);
     pools.push({
-      id: crypto.randomUUID(),
+      id: generateUuid(),
       name: `Poule ${i + 1}`,
       teamIds: poolTeams.map(t => t.id),
       matches: []
@@ -32,7 +33,7 @@ export function generatePools(teams: Team[]): Pool[] {
   for (let i = 0; i < poolsOf3; i++) {
     const poolTeams = shuffledTeams.slice(teamIndex, teamIndex + 3);
     pools.push({
-      id: crypto.randomUUID(),
+      id: generateUuid(),
       name: `Poule ${poolsOf4 + i + 1}`,
       teamIds: poolTeams.map(t => t.id),
       matches: []
@@ -67,7 +68,7 @@ export function generatePoolMatches(pool: Pool, teams: Team[]): Match[] {
   for (let i = 0; i < poolTeams.length; i++) {
     for (let j = i + 1; j < poolTeams.length; j++) {
       matches.push({
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         round: 1,
         court: 1,
         team1Id: poolTeams[i]!.id,

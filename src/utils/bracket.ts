@@ -1,4 +1,5 @@
 import { Pool, Team, Match } from '../types/tournament';
+import { generateUuid } from './uuid';
 
 export function getTopTeamsFromPools(pools: Pool[], allTeams: Team[], qualifiersPerPool: number): Team[] {
   const idToTeam = new Map(allTeams.map(t => [t.id, t]));
@@ -34,7 +35,7 @@ export function createKnockoutBracket(teams: Team[], startingRound = 1): Match[]
   for (let i = 0; i < byesNeeded; i++) {
     const t1 = teams[teamIndex++];
     firstRound.push({
-      id: crypto.randomUUID(),
+      id: generateUuid(),
       round,
       court: 0,
       team1Id: t1.id,
@@ -52,7 +53,7 @@ export function createKnockoutBracket(teams: Team[], startingRound = 1): Match[]
     const t1 = teams[teamIndex];
     const t2 = teams[teamIndex + 1];
     firstRound.push({
-      id: crypto.randomUUID(),
+      id: generateUuid(),
       round,
       court: 0,
       team1Id: t1.id,
@@ -88,7 +89,7 @@ export function createKnockoutBracket(teams: Team[], startingRound = 1): Match[]
             : '';
 
       nextMatches.push({
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         round,
         court: 0,
         team1Id: winner1,

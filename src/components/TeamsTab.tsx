@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Player, Team, TournamentType } from '../types/tournament';
+import { generateUuid } from '../utils/uuid';
 import { Plus, Trash2, Users, Printer, X } from 'lucide-react';
 
 interface TeamsTabProps {
@@ -194,7 +195,7 @@ function CompactTeamForm({ tournamentType, playersPerTeam, onAddTeam, onClose }:
     if (validNames.length === 0) return;
 
     const players: Player[] = validNames.map((name, index) => ({
-      id: crypto.randomUUID(),
+      id: generateUuid(),
       name: name.trim(),
       label: labels?.[index],
       cyberImplants: [],
