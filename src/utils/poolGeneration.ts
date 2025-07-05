@@ -44,18 +44,28 @@ export function generatePools(teams: Team[]): Pool[] {
   return pools;
 }
 
-export function calculateOptimalPools(totalTeams: number): { poolsOf4: number; poolsOf3: number } {
-  // Start with as many pools of 4 as possible
+export function calculateOptimalPools(totalTeams: number): {
+  poolsOf4: number;
+  poolsOf3: number;
+} {
+  // Try to maximise pools of 4 while ensuring the remainder can form pools of 3
   let poolsOf4 = Math.floor(totalTeams / 4);
-  let remainder = totalTeams % 4;
+  let poolsOf3 = 0;
 
-  // If remainder isn't divisible by 3, convert pools of 4 to pools of 3
-  while (remainder % 3 !== 0 && poolsOf4 > 0) {
+  while (poolsOf4 >= 0) {
+    const remaining = totalTeams - poolsOf4 * 4;
+    if (remaining % 3 === 0) {
+      poolsOf3 = remaining / 3;
+      break;
+    }
     poolsOf4 -= 1;
-    remainder += 4;
   }
 
-  const poolsOf3 = remainder / 3;
+  // If we could not find a valid combination, return zero to signal invalid
+  if (poolsOf4 < 0) {
+    poolsOf4 = 0;
+    poolsOf3 = 0;
+  }
 
   return { poolsOf4, poolsOf3 };
 }
