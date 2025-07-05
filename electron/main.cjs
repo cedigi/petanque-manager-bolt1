@@ -8,8 +8,7 @@ function createWindow() {
     ? path.join(process.resourcesPath, 'app.asar')
     : app.getAppPath();
 
-  // Chemins vers preload.js et index.html dans ou hors ASAR
-  const preloadPath = path.join(appPath, 'electron', 'preload.js');
+  // Chemin vers index.html dans ou hors ASAR
   const indexPath = app.isPackaged
     ? path.join(appPath, 'dist', 'index.html')
     : 'http://localhost:3000';
@@ -21,7 +20,6 @@ function createWindow() {
       ? path.join(process.resourcesPath, 'public', 'logo.ico')
       : path.join(appPath, 'public', 'logo.ico'),
     webPreferences: {
-      preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false
     }

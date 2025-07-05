@@ -23,8 +23,7 @@
     },
     "files": [
       "dist/**/*",
-      "electron/main.cjs",
-      "electron/preload.js"
+      "electron/main.cjs"
     ],
     "win": {
       "icon": "public/logo.ico",
