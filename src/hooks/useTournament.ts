@@ -13,14 +13,19 @@ export function useTournament() {
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      const parsed = JSON.parse(saved);
-      parsed.createdAt = new Date(parsed.createdAt);
-      // Ensure pools array exists for backward compatibility
-      if (!parsed.pools) {
-        parsed.pools = [];
-        parsed.poolsGenerated = false;
+      try {
+        const parsed = JSON.parse(saved);
+        parsed.createdAt = new Date(parsed.createdAt);
+        // Ensure pools array exists for backward compatibility
+        if (!parsed.pools) {
+          parsed.pools = [];
+          parsed.poolsGenerated = false;
+        }
+        setTournament(parsed);
+      } catch (e) {
+        console.warn('Failed to parse saved tournament:', e);
+        localStorage.removeItem(STORAGE_KEY);
       }
-      setTournament(parsed);
     }
   }, []);
 
