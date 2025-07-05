@@ -13,8 +13,12 @@ export function TabNavigation({ activeTab, onTabChange, tournamentType }: TabNav
   const tabs = [
     { id: 'teams', label: 'Teams', icon: Users },
     ...(isPoolTournament ? [{ id: 'pools', label: 'Poules', icon: Grid3X3 }] : []),
-    { id: 'matches', label: 'Matches', icon: Gamepad2 },
-    { id: 'standings', label: 'Standings', icon: Trophy },
+    ...(!isPoolTournament
+      ? [
+          { id: 'matches', label: 'Matches', icon: Gamepad2 },
+          { id: 'standings', label: 'Standings', icon: Trophy },
+        ]
+      : []),
   ];
 
   return (

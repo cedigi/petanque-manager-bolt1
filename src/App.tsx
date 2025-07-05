@@ -32,6 +32,26 @@ function App() {
     setAnimationsPaused(!animationsPaused);
   };
 
+  // Ensure the active tab is valid for the current tournament type
+  useEffect(() => {
+    if (!tournament) {
+      setActiveTab('teams');
+      return;
+    }
+
+    const poolTournament =
+      tournament.type === 'doublette-poule' ||
+      tournament.type === 'triplette-poule';
+
+    if (poolTournament && (activeTab === 'matches' || activeTab === 'standings')) {
+      setActiveTab('teams');
+    }
+
+    if (!poolTournament && activeTab === 'pools') {
+      setActiveTab('teams');
+    }
+  }, [tournament]);
+
   const isPoolTournament = tournament && (tournament.type === 'doublette-poule' || tournament.type === 'triplette-poule');
 
   const content = !tournament ? (
