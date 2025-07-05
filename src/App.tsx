@@ -21,6 +21,7 @@ function App() {
     createTournament,
     addTeam,
     removeTeam,
+    updateTeam,
     generateTournamentPools,
     generateRound,
     updateMatchScore,
@@ -98,6 +99,7 @@ function App() {
             tournamentType={tournament.type}
             onAddTeam={addTeam}
             onRemoveTeam={removeTeam}
+            onUpdateTeam={updateTeam}
           />
         )}
         {activeTab === 'pools' && isPoolTournament && (
