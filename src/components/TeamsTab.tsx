@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { Player, Team, TournamentType } from '../types/tournament';
 import { generateUuid } from '../utils/uuid';
-import { Plus, Trash2, Users, Printer, X } from 'lucide-react';
+import { Plus, Trash2, Users, Printer, X, Edit3 } from 'lucide-react';
 
 interface TeamsTabProps {
   teams: Team[];
   tournamentType: TournamentType;
   onAddTeam: (players: Player[]) => void;
   onRemoveTeam: (teamId: string) => void;
+  onUpdateTeam: (teamId: string, players: Player[]) => void;
 }
 
-export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: TeamsTabProps) {
+export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpdateTeam }: TeamsTabProps) {
   const [showForm, setShowForm] = useState(false);
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [editNames, setEditNames] = useState<string[]>([]);
 
   const isSolo = tournamentType === 'melee' || tournamentType === 'tete-a-tete';
 
@@ -103,9 +106,10 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
       )}
 
       <div className="space-y-2">
-        {teams.map((team) => (
-          <div key={team.id} className="glass-card p-3 hover:scale-[1.01] transition-all duration-300">
-            <div className="flex items-center justify-between">
+        {teams.map(team => (
+          <React.Fragment key={team.id}>
+            <div className="glass-card p-3 hover:scale-[1.01] transition-all duration-300">
+              <div className="flex items-center justify-between">
               {/* Partie gauche : Icône + Nom équipe + Joueurs sur une ligne */}
               <div className="flex items-center space-x-3 flex-1 min-w-0">
                 <Users className="w-5 h-5 text-white flex-shrink-0" />
@@ -145,6 +149,16 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
                   </span>
                 )}
                 <button
+                  onClick={() => {
+                    setEditingTeamId(team.id);
+                    setEditNames(team.players.map(p => p.name));
+                  }}
+                  className="text-white hover:text-white/80 transition-colors p-1 rounded-lg hover:bg-white/10"
+                  title="Modifier"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </button>
+                <button
                   onClick={() => onRemoveTeam(team.id)}
                   className="text-red-400 hover:text-red-300 transition-colors p-1 rounded-lg hover:bg-red-400/10"
                   title={isSolo ? 'Supprimer le joueur' : "Supprimer l'équipe"}
@@ -154,6 +168,21 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam }: Tea
               </div>
             </div>
           </div>
+          {editingTeamId === team.id && (
+            <EditTeamForm
+              tournamentType={tournamentType}
+              players={team.players}
+              playerNames={editNames}
+              onChangeNames={setEditNames}
+              onSave={(names) => {
+                const players = team.players.map((p, i) => ({ ...p, name: names[i] || '' }));
+                onUpdateTeam(team.id, players);
+                setEditingTeamId(null);
+              }}
+              onCancel={() => setEditingTeamId(null)}
+            />
+          )}
+          </React.Fragment>
         ))}
       </div>
 
@@ -265,6 +294,66 @@ function CompactTeamForm({ tournamentType, playersPerTeam, onAddTeam, onClose }:
             >
               Annuler
             </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+interface EditTeamFormProps {
+  tournamentType: TournamentType;
+  players: Player[];
+  playerNames: string[];
+  onChangeNames: (names: string[]) => void;
+  onSave: (names: string[]) => void;
+  onCancel: () => void;
+}
+
+function EditTeamForm({ tournamentType, players, playerNames, onChangeNames, onSave, onCancel }: EditTeamFormProps) {
+  const labels = tournamentType === 'quadrette' ? ['A', 'B', 'C', 'D'] : undefined;
+  const isSolo = tournamentType === 'melee' || tournamentType === 'tete-a-tete';
+
+  const updateName = (index: number, name: string) => {
+    const newNames = [...playerNames];
+    newNames[index] = name;
+    onChangeNames(newNames);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(playerNames.map(n => n.trim()));
+  };
+
+  return (
+    <div className="mb-4">
+      <div className="compact-team-form">
+        <div className="form-header">
+          <h3 className="form-title">Modifier {isSolo ? 'le joueur' : "l'équipe"}</h3>
+          <button onClick={onCancel} className="close-button" title="Fermer">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="form-content">
+          <div className="players-grid">
+            {players.map((p, idx) => (
+              <div key={p.id} className="player-input-group">
+                <label className="player-label">
+                  {labels ? `Joueur ${labels[idx]}` : `Joueur ${idx + 1}`}
+                </label>
+                <input
+                  type="text"
+                  value={playerNames[idx]}
+                  onChange={(e) => updateName(idx, e.target.value)}
+                  className="player-input"
+                  required={idx === 0}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="form-actions">
+            <button type="submit" className="submit-button" disabled={!playerNames[0]?.trim()}>Sauvegarder</button>
+            <button type="button" onClick={onCancel} className="cancel-button">Annuler</button>
           </div>
         </form>
       </div>

@@ -101,6 +101,29 @@ export function useTournament() {
     saveTournament(updatedTournament);
   };
 
+  const updateTeam = (
+    teamId: string,
+    players: Player[],
+    name?: string
+  ) => {
+    if (!tournament) return;
+
+    const updatedTeams = tournament.teams.map((team, index) => {
+      if (team.id !== teamId) return team;
+
+      const newName =
+        name ??
+        (tournament.type === 'melee' || tournament.type === 'tete-a-tete'
+          ? `${index + 1} - ${players[0].name}`
+          : team.name);
+
+      return { ...team, players, name: newName };
+    });
+
+    const updatedTournament = { ...tournament, teams: updatedTeams };
+    saveTournament(updatedTournament);
+  };
+
   const generateTournamentPools = () => {
     if (!tournament) return;
 
@@ -1076,6 +1099,7 @@ export function useTournament() {
     createTournament,
     addTeam,
     removeTeam,
+    updateTeam,
     generateTournamentPools,
     generateRound,
     updateMatchScore,
