@@ -936,25 +936,14 @@ function WinnerModal({ team1, team2, onSelectWinner, onClose, position }: Winner
     ? { position: 'fixed' as const, top: position.y, left: position.x }
     : { position: 'fixed' as const, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
   return (
-        codex/mise-à-jour-des-modales-dans-progressivefinalmatchbox
     <div className="fixed inset-0 bg-black/50 z-50 p-4">
       <div className="glass-card p-6 max-w-md w-full" style={modalStyle}>
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold text-white">Qui a gagné ?</h3>
-
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="glass-card p-4 max-w-xs w-full">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-white">Qui a gagné ?</h3>
-        main
-          <button
-            onClick={onClose}
-            className="text-white/60 hover:text-white transition-colors"
-          >
+          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
-
         <div className="space-y-3">
           <button
             onClick={() => onSelectWinner('team1')}
@@ -965,7 +954,6 @@ function WinnerModal({ team1, team2, onSelectWinner, onClose, position }: Winner
               <span className="font-bold text-base">{team1.name}</span>
             </div>
           </button>
-
           <button
             onClick={() => onSelectWinner('team2')}
             className="w-full glass-button p-3 text-left hover:scale-105 transition-all duration-300"
