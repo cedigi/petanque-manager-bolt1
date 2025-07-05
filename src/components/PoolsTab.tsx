@@ -702,11 +702,18 @@ function CompactFourTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateSco
 
   const teamsWithOneWin = allStats.filter(stat => stat.wins === 1 && stat.matches >= 2);
 
-  const barrageMatch = poolMatches.find(m => 
-    m.round === 3 && 
+  const barrageMatch = poolMatches.find(m =>
+    m.round === 3 &&
     teamsWithOneWin.some(stat => stat.team.id === m.team1Id) &&
     teamsWithOneWin.some(stat => stat.team.id === m.team2Id)
   );
+
+  const barrageTeam1 = barrageMatch
+    ? poolTeams.find(t => t.id === barrageMatch.team1Id)
+    : undefined;
+  const barrageTeam2 = barrageMatch
+    ? poolTeams.find(t => t.id === barrageMatch.team2Id)
+    : undefined;
 
   return (
     <div className="glass-card overflow-hidden">
@@ -754,14 +761,14 @@ function CompactFourTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateSco
         />
 
         <CompactMatchBox
-          team1={teamsWithOneWin[0]?.team}
-          team2={teamsWithOneWin[1]?.team}
+          team1={barrageTeam1}
+          team2={barrageTeam2}
           match={barrageMatch}
           courts={courts}
           bgColor="bg-red-500/10"
           onUpdateScore={onUpdateScore}
           onUpdateCourt={onUpdateCourt}
-          showOnlyIfNeeded={teamsWithOneWin.length === 2}
+          showOnlyIfNeeded={!!barrageMatch}
         />
       </div>
     </div>
@@ -845,11 +852,18 @@ function CompactThreeTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateSc
   // Trouver les équipes avec exactement 1 victoire
   const teamsWithOneWin = allStats.filter(stat => stat.wins === 1);
 
-  const barrageMatch = poolMatches.find(m => 
-    m.round === 3 && 
+  const barrageMatch = poolMatches.find(m =>
+    m.round === 3 &&
     teamsWithOneWin.some(stat => stat.team.id === m.team1Id) &&
     teamsWithOneWin.some(stat => stat.team.id === m.team2Id)
   );
+
+  const barrageTeam1 = barrageMatch
+    ? poolTeams.find(t => t.id === barrageMatch.team1Id)
+    : undefined;
+  const barrageTeam2 = barrageMatch
+    ? poolTeams.find(t => t.id === barrageMatch.team2Id)
+    : undefined;
 
   return (
     <div className="glass-card overflow-hidden">
@@ -894,14 +908,14 @@ function CompactThreeTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateSc
         </div>
 
         <CompactMatchBox
-          team1={teamsWithOneWin[0]?.team}
-          team2={teamsWithOneWin[1]?.team}
+          team1={barrageTeam1}
+          team2={barrageTeam2}
           match={barrageMatch}
           courts={courts}
           bgColor="bg-red-500/10"
           onUpdateScore={onUpdateScore}
           onUpdateCourt={onUpdateCourt}
-          showOnlyIfNeeded={teamsWithOneWin.length === 2}
+          showOnlyIfNeeded={!!barrageMatch}
         />
       </div>
     </div>
