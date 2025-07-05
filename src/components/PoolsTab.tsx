@@ -918,35 +918,35 @@ interface WinnerModalProps {
 function WinnerModal({ team1, team2, onSelectWinner, onClose }: WinnerModalProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="glass-card p-6 max-w-md w-full">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-white">Qui a gagné ?</h3>
+      <div className="glass-card p-4 max-w-xs w-full">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-white">Qui a gagné ?</h3>
           <button
             onClick={onClose}
             className="text-white/60 hover:text-white transition-colors"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <button
             onClick={() => onSelectWinner('team1')}
-            className="w-full glass-button p-4 text-left hover:scale-105 transition-all duration-300"
+            className="w-full glass-button p-3 text-left hover:scale-105 transition-all duration-300"
           >
-            <div className="flex items-center space-x-3">
-              <Crown className="w-6 h-6 text-yellow-400" />
-              <span className="font-bold text-lg">{team1.name}</span>
+            <div className="flex items-center space-x-2">
+              <Crown className="w-5 h-5 text-yellow-400" />
+              <span className="font-bold text-base">{team1.name}</span>
             </div>
           </button>
 
           <button
             onClick={() => onSelectWinner('team2')}
-            className="w-full glass-button p-4 text-left hover:scale-105 transition-all duration-300"
+            className="w-full glass-button p-3 text-left hover:scale-105 transition-all duration-300"
           >
-            <div className="flex items-center space-x-3">
-              <Crown className="w-6 h-6 text-yellow-400" />
-              <span className="font-bold text-lg">{team2.name}</span>
+            <div className="flex items-center space-x-2">
+              <Crown className="w-5 h-5 text-yellow-400" />
+              <span className="font-bold text-base">{team2.name}</span>
             </div>
           </button>
         </div>
