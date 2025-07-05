@@ -475,19 +475,7 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: Progress
         isReady ? 'bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-purple-400/50' :
         'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-400/50'
       }`}>
-        {/* Terrain */}
-        <div className="text-center mb-2">
-          <span className={`text-xs font-bold ${
-            isEmpty ? 'text-gray-400' :
-            isPartial ? 'text-yellow-400' :
-            isReady ? 'text-purple-400' :
-            'text-green-400'
-          }`}>
-            T{match.court || '-'}
-          </span>
-        </div>
 
-        {/* Équipes */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1 flex-1 min-w-0">
@@ -501,8 +489,16 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: Progress
             {/* Score supprimé dans les phases finales */}
           </div>
 
-          {/* Bouton VS ou Trophée */}
-          <div className="flex items-center justify-center">
+          <div className="flex flex-col items-center">
+            <span className={`text-xs font-bold mb-1 ${
+              isEmpty ? 'text-gray-400' :
+              isPartial ? 'text-yellow-400' :
+              isReady ? 'text-purple-400' :
+              'text-green-400'
+            }`}>
+              T{match.court || '-'}
+            </span>
+
             {isReady && onUpdateScore && !match.completed ? (
               <button
                 onClick={() => setShowWinnerModal(true)}
@@ -518,9 +514,9 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: Progress
                 match.completed ? 'text-green-400' :
                 'text-white/60'
               }`}>
-                {isEmpty ? '⏳' : 
-                 isPartial ? '🔄' : 
-                 match.completed ? '✅' : 
+                {isEmpty ? '⏳' :
+                 isPartial ? '🔄' :
+                 match.completed ? '✅' :
                  'VS'}
               </span>
             )}
@@ -1016,27 +1012,6 @@ function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdate
   return (
     <>
       <div className={`glass-card p-2 ${bgColor} transition-all duration-300 relative`}>
-        {/* Terrain en haut à gauche */}
-        <div className="absolute top-1 left-1">
-          {match && onUpdateCourt ? (
-            <select
-              value={match.court}
-              onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
-              className="glass-select text-xs border-0"
-            >
-              {match.court > courts ? (
-                <option value={match.court}>{`Libre ${match.court - courts}`}</option>
-              ) : null}
-              {Array.from({ length: courts }, (_, i) => i + 1).map((court) => (
-                <option key={court} value={court} className="bg-slate-800">
-                  {court}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <span className="text-xs font-bold text-blue-400">T{match?.court || '-'}</span>
-          )}
-        </div>
         {match && onUpdateScore && match.completed && (
           <button
             onClick={() => setShowWinnerModal(true)}
@@ -1047,8 +1022,7 @@ function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdate
           </button>
         )}
 
-        {/* Bouton Trophée centré verticalement avec les noms */}
-        <div className="flex items-center justify-between pt-4 pb-1">
+        <div className="flex items-center justify-between">
           {/* Équipe 1 */}
           <div className="flex items-center space-x-1 flex-1">
             <span className="font-bold text-white truncate text-xs">
@@ -1058,23 +1032,41 @@ function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdate
               <Crown className="w-3 h-3 text-yellow-400 flex-shrink-0" />
             )}
           </div>
-          
-          {/* Bouton Trophée au centre */}
-          {match && onUpdateScore && team1 && team2 && !match.completed && (
-            <button
-              onClick={() => setShowWinnerModal(true)}
-              className="mx-2 p-1 bg-yellow-500/80 text-white rounded hover:bg-yellow-500 transition-colors flex-shrink-0"
-              title="Sélectionner le gagnant"
-            >
-              <Trophy className="w-3 h-3" />
-            </button>
-          )}
-          
-          {/* VS au centre si pas de bouton */}
-          {(!match || !onUpdateScore || !team1 || !team2 || match.completed) && (
-            <span className="mx-2 text-white/60 text-xs flex-shrink-0">vs</span>
-          )}
-          
+
+          {/* Terrain et trophée/VS */}
+          <div className="flex flex-col items-center mx-2 flex-shrink-0">
+            {match && onUpdateCourt ? (
+              <select
+                value={match.court}
+                onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
+                className="glass-select text-xs border-0 mb-1"
+              >
+                {match.court > courts ? (
+                  <option value={match.court}>{`Libre ${match.court - courts}`}</option>
+                ) : null}
+                {Array.from({ length: courts }, (_, i) => i + 1).map((court) => (
+                  <option key={court} value={court} className="bg-slate-800">
+                    {court}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-xs font-bold text-blue-400 mb-1">T{match?.court || '-'}</span>
+            )}
+
+            {match && onUpdateScore && team1 && team2 && !match.completed ? (
+              <button
+                onClick={() => setShowWinnerModal(true)}
+                className="p-1 bg-yellow-500/80 text-white rounded hover:bg-yellow-500 transition-colors"
+                title="Sélectionner le gagnant"
+              >
+                <Trophy className="w-3 h-3" />
+              </button>
+            ) : (
+              <span className="text-white/60 text-xs">vs</span>
+            )}
+          </div>
+
           {/* Équipe 2 */}
           <div className="flex items-center space-x-1 flex-1 justify-end">
             {winner?.id === team2?.id && (
