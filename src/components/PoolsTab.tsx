@@ -249,10 +249,11 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
           <CourtAvailability courts={tournament.courts} matches={tournament.matches} />
 
           {/* Phases finales - TOUJOURS affichées avec remplissage progressif */}
-          <FinalPhases 
+          <FinalPhases
             qualifiedTeams={qualifiedTeams}
             tournament={tournament}
             onUpdateScore={onUpdateScore}
+            onUpdateCourt={onUpdateCourt}
             totalTeams={teams.length}
           />
 
@@ -306,10 +307,11 @@ interface FinalPhasesProps {
   qualifiedTeams: Team[];
   tournament: Tournament;
   onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
+  onUpdateCourt?: (matchId: string, court: number) => void;
   totalTeams: number;
 }
 
-function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, totalTeams }: FinalPhasesProps) {
+function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, onUpdateCourt, totalTeams }: FinalPhasesProps) {
   // Calculer la structure du tableau en fonction du nombre total d'équipes
   const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
   const expectedQualified = (poolsOf4 + poolsOf3) * 2;
