@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pool, Team, Tournament, Match } from '../types/tournament';
 import { Grid3X3, Trophy, Shuffle, Printer, Crown, X, Edit3 } from 'lucide-react';
+import { CourtAvailability } from './CourtAvailability';
 
 interface PoolsTabProps {
   tournament: Tournament;
@@ -230,7 +231,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
       {pools.length > 0 ? (
         <>
           {/* Affichage des poules compactes */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-4">
             {pools.map((pool) => (
               <CompactPool
                 key={pool.id}
@@ -243,6 +244,8 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
               />
             ))}
           </div>
+
+          <CourtAvailability courts={tournament.courts} matches={tournament.matches} />
 
           {/* Phases finales - TOUJOURS affichées avec remplissage progressif */}
           <FinalPhases 
@@ -357,6 +360,7 @@ function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, totalTeams }: 
               matches={finalMatches}
               tournament={tournament}
               onUpdateScore={onUpdateScore}
+              onUpdateCourt={onUpdateCourt}
               expectedQualified={expectedQualified}
             />
           ))}
@@ -373,10 +377,11 @@ interface PhaseSectionProps {
   matches: Match[];
   tournament: Tournament;
   onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
+  onUpdateCourt?: (matchId: string, court: number) => void;
   expectedQualified: number;
 }
 
-function PhaseSection({ phaseName, phaseIndex, matches, tournament, onUpdateScore, expectedQualified }: PhaseSectionProps) {
+function PhaseSection({ phaseName, phaseIndex, matches, tournament, onUpdateScore, onUpdateCourt, expectedQualified }: PhaseSectionProps) {
   const phaseMatches = matches.filter(m => m.round === phaseIndex + 100); // 100+ pour les phases finales
   
   // Calculer le nombre de matchs attendus pour cette phase
@@ -411,6 +416,7 @@ function PhaseSection({ phaseName, phaseIndex, matches, tournament, onUpdateScor
             match={match}
             tournament={tournament}
             onUpdateScore={onUpdateScore}
+            onUpdateCourt={onUpdateCourt}
           />
         ))}
       </div>
@@ -434,9 +440,10 @@ interface ProgressiveFinalMatchBoxProps {
   match: Match;
   tournament: Tournament;
   onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
+  onUpdateCourt?: (matchId: string, court: number) => void;
 }
 
-function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: ProgressiveFinalMatchBoxProps) {
+function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore, onUpdateCourt }: ProgressiveFinalMatchBoxProps) {
   const [winnerModalPos, setWinnerModalPos] = useState<{x: number; y: number} | null>(null);
   
   const team1 = match.team1Id ? tournament.teams.find(t => t.id === match.team1Id) : null;
@@ -469,12 +476,21 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: Progress
 
   return (
     <>
-      <div className={`glass-card p-1 min-h-[80px] transition-all duration-300 cursor-pointer hover:scale-105 ${
+      <div className={`glass-card p-1 min-h-[80px] transition-all duration-300 cursor-pointer hover:scale-105 relative ${
         isEmpty ? 'bg-gradient-to-br from-gray-500/20 to-gray-600/20 border-gray-400/40' :
         isPartial ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-400/50' :
         isReady ? 'bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-purple-400/50' :
         'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-400/50'
       }`}>
+        {match.completed && onUpdateScore && (
+          <button
+            onClick={(e) => setWinnerModalPos({ x: e.clientX, y: e.clientY })}
+            className="absolute top-1 right-1 p-1 text-white hover:text-white/80"
+            title="Modifier le gagnant"
+          >
+            <Edit3 className="w-3 h-3" />
+          </button>
+        )}
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -490,14 +506,31 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore }: Progress
           </div>
 
           <div className="flex flex-col items-center">
-            <span className={`text-xs font-bold mb-1 ${
-              isEmpty ? 'text-gray-400' :
-              isPartial ? 'text-yellow-400' :
-              isReady ? 'text-purple-400' :
-              'text-green-400'
-            }`}>
-              T{match.court || '-'}
-            </span>
+            {onUpdateCourt ? (
+              <select
+                value={match.court}
+                onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
+                className="glass-select text-xs border-0 mb-1"
+              >
+                {match.court > tournament.courts ? (
+                  <option value={match.court}>{`Libre ${match.court - tournament.courts}`}</option>
+                ) : null}
+                {Array.from({ length: tournament.courts }, (_, i) => i + 1).map(court => (
+                  <option key={court} value={court} className="bg-slate-800">
+                    {court}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className={`text-xs font-bold mb-1 ${
+                isEmpty ? 'text-gray-400' :
+                isPartial ? 'text-yellow-400' :
+                isReady ? 'text-purple-400' :
+                'text-green-400'
+              }`}>
+                T{match.court || '-'}
+              </span>
+            )}
 
             {isReady && onUpdateScore && !match.completed ? (
               <button
@@ -937,7 +970,7 @@ function WinnerModal({ team1, team2, onSelectWinner, onClose, position }: Winner
     : { position: 'fixed' as const, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
   return (
     <div className="fixed inset-0 bg-black/50 z-50 p-4">
-      <div className="glass-card p-6 max-w-md w-full" style={modalStyle}>
+      <div className="glass-card p-4 max-w-xs w-full" style={modalStyle}>
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold text-white">Qui a gagné ?</h3>
           <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
@@ -982,7 +1015,7 @@ interface CompactMatchBoxProps {
 }
 
 function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdateScore, onUpdateCourt, courts = 0, showOnlyIfNeeded = true }: CompactMatchBoxProps) {
-  const [showWinnerModal, setShowWinnerModal] = useState(false);
+  const [winnerModalPos, setWinnerModalPos] = useState<{x: number; y: number} | null>(null);
 
   // CORRECTION : Ne pas masquer la case si showOnlyIfNeeded est false
   if (showOnlyIfNeeded && (!team1 || !team2)) {
@@ -1015,7 +1048,7 @@ function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdate
     } else {
       onUpdateScore(match.id, loserScore, winnerScore);
     }
-    setShowWinnerModal(false);
+    setWinnerModalPos(null);
   };
 
   // CORRECTION PRINCIPALE : Toujours afficher les noms même si pas d'équipes définies
@@ -1028,7 +1061,7 @@ function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdate
       <div className={`glass-card p-2 ${bgColor} transition-all duration-300 relative`}>
         {match && onUpdateScore && match.completed && (
           <button
-            onClick={() => setShowWinnerModal(true)}
+            onClick={(e) => setWinnerModalPos({ x: e.clientX, y: e.clientY })}
             className="absolute top-1 right-1 p-1 text-white hover:text-white/80"
             title="Modifier le gagnant"
           >
@@ -1070,7 +1103,7 @@ function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdate
 
             {match && onUpdateScore && team1 && team2 && !match.completed ? (
               <button
-                onClick={() => setShowWinnerModal(true)}
+                onClick={(e) => setWinnerModalPos({ x: e.clientX, y: e.clientY })}
                 className="p-1 bg-yellow-500/80 text-white rounded hover:bg-yellow-500 transition-colors"
                 title="Sélectionner le gagnant"
               >
@@ -1094,12 +1127,13 @@ function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdate
       </div>
 
       {/* Modal de sélection du gagnant */}
-      {showWinnerModal && team1 && team2 && (
+      {winnerModalPos && team1 && team2 && (
         <WinnerModal
           team1={team1}
           team2={team2}
           onSelectWinner={handleQuickWin}
-          onClose={() => setShowWinnerModal(false)}
+          onClose={() => setWinnerModalPos(null)}
+          position={winnerModalPos}
         />
       )}
     </>
