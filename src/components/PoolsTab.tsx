@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Pool, Team, Tournament, Match } from '../types/tournament';
 import { Grid3X3, Trophy, Shuffle, Printer, Crown, X, Edit3 } from 'lucide-react';
 import { CourtAvailability } from './CourtAvailability';
+import { calculateOptimalPools } from '../utils/poolGeneration';
 
 interface PoolsTabProps {
   tournament: Tournament;
@@ -310,22 +311,8 @@ interface FinalPhasesProps {
 
 function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, totalTeams }: FinalPhasesProps) {
   // Calculer la structure du tableau en fonction du nombre total d'équipes
-  const getExpectedQualified = () => {
-    const poolsOf4 = Math.floor(totalTeams / 4);
-    const remainder = totalTeams % 4;
-    let poolsOf3 = 0;
-    
-    if (remainder === 1 || remainder === 2) {
-      poolsOf3 = 2;
-    } else if (remainder === 3) {
-      poolsOf3 = 1;
-    }
-    
-    // 2 qualifiés par poule
-    return (poolsOf4 + poolsOf3) * 2;
-  };
-
-  const expectedQualified = getExpectedQualified();
+  const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
+  const expectedQualified = (poolsOf4 + poolsOf3) * 2;
   
   // Déterminer les phases nécessaires
   const getPhaseConfiguration = (count: number) => {
