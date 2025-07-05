@@ -1,4 +1,4 @@
-import { generatePools, generatePoolMatches } from '../poolGeneration';
+import { generatePools, generatePoolMatches, calculateOptimalPools } from '../poolGeneration';
 import { Team, Player } from '../../types/tournament';
 
 function makeTeams(count: number): Team[] {
@@ -38,6 +38,20 @@ describe('generatePools', () => {
     const sizes = pools.map(p => p.teamIds.length).sort();
     expect(pools).toHaveLength(6);
     expect(sizes).toEqual([3,3,3,4,4,4]);
+  });
+
+  it('returns an empty array for invalid team counts', () => {
+    // 5 teams cannot be split into pools of 3 and 4
+    const teams = makeTeams(5);
+    const pools = generatePools(teams);
+    expect(pools).toEqual([]);
+  });
+});
+
+describe('calculateOptimalPools', () => {
+  it('returns zero pools when the team count cannot be split', () => {
+    expect(calculateOptimalPools(5)).toEqual({ poolsOf4: 0, poolsOf3: 0 });
+    expect(calculateOptimalPools(2)).toEqual({ poolsOf4: 0, poolsOf3: 0 });
   });
 });
 
