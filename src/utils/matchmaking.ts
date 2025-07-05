@@ -1,4 +1,5 @@
 import { Tournament, Match, Team } from '../types/tournament';
+import { generateUuid } from './uuid';
 
 export function generateMatches(tournament: Tournament): Match[] {
   switch (tournament.type) {
@@ -26,7 +27,7 @@ function generateStandardMatches(tournament: Tournament): Match[] {
     if (remainingTeams.length % 2 === 1) {
       const byeTeam = remainingTeams.pop() as Team;
       newMatches.push({
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         round,
         court: 0,
         team1Id: byeTeam.id,
@@ -48,7 +49,7 @@ function generateStandardMatches(tournament: Tournament): Match[] {
       const t1 = remainingTeams[i];
       const t2 = remainingTeams[i + 2];
       newMatches.push({
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         round,
         court: courtIndex++,
         team1Id: t1.id,
@@ -62,7 +63,7 @@ function generateStandardMatches(tournament: Tournament): Match[] {
       const t3 = remainingTeams[i + 1];
       const t4 = remainingTeams[i + 3];
       newMatches.push({
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         round,
         court: courtIndex++,
         team1Id: t3.id,
@@ -79,7 +80,7 @@ function generateStandardMatches(tournament: Tournament): Match[] {
       const t1 = remainingTeams[i];
       const t2 = remainingTeams[i + 1];
       newMatches.push({
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         round,
         court: courtIndex++,
         team1Id: t1.id,
@@ -99,7 +100,7 @@ function generateStandardMatches(tournament: Tournament): Match[] {
     const byeTeam = remainingTeams[remainingTeams.length - 1];
 
     newMatches.push({
-      id: crypto.randomUUID(),
+      id: generateUuid(),
       round,
       court: 0,
       team1Id: byeTeam.id,
@@ -131,7 +132,7 @@ function generateStandardMatches(tournament: Tournament): Match[] {
     const [team2] = remainingTeams.splice(opponentIndex, 1);
 
     newMatches.push({
-      id: crypto.randomUUID(),
+      id: generateUuid(),
       round,
       court: courtIndex,
       team1Id: team1.id,
@@ -194,7 +195,7 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
         for (let i = 0; i < subTeamIds.length - 1; i += 2) {
           if (subTeamIds[i + 1]) {
             newMatches.push({
-              id: crypto.randomUUID(),
+              id: generateUuid(),
               round,
               court: ((courtIndex - 1) % courts) + 1,
               team1Id: subTeamIds[i],
@@ -283,7 +284,7 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
       groups.splice(second, 1);
 
       matchesResult.push({
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         round,
         court: courtIndex,
         team1Id: groupA[0],
@@ -313,7 +314,7 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
     const team2Ids = groups.splice(opponentIndex, 1)[0];
 
     matchesResult.push({
-      id: crypto.randomUUID(),
+      id: generateUuid(),
       round,
       court: courtIndex,
       team1Id: team1Ids[0],
@@ -332,7 +333,7 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
   if (groups.length === 1) {
     const teamIds = groups.shift()!;
     matchesResult.push({
-      id: crypto.randomUUID(),
+      id: generateUuid(),
       round,
       court: courtIndex,
       team1Id: teamIds[0],
