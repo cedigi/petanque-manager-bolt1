@@ -51,7 +51,7 @@ function App() {
     if (!poolTournament && activeTab === 'pools') {
       setActiveTab('teams');
     }
-  }, [tournament]);
+  }, [tournament, activeTab]);
 
   const isPoolTournament = tournament && (tournament.type === 'doublette-poule' || tournament.type === 'triplette-poule');
 
