@@ -332,14 +332,67 @@ function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, onUpdateCourt,
   // Trouver les matchs des phases finales (ceux sans poolId et round >= 100)
   const finalMatches = tournament.matches.filter(m => !m.poolId && m.round >= 100);
 
+  const handlePrintFinals = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Phases finales - ${tournament.name}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { text-align: center; margin-bottom: 20px; }
+            h2 { margin-top: 20px; }
+            .match { border: 1px solid #ddd; padding: 6px; margin: 4px 0; border-radius: 4px; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <h1>Phases finales - ${tournament.name}</h1>
+          ${config.phases.map((phaseName, index) => {
+            const phaseMatches = finalMatches.filter(m => m.round === index + 100);
+            return `
+              <div>
+                <h2>${phaseName}</h2>
+                ${phaseMatches.map(match => {
+                  const team1 = tournament.teams.find(t => t.id === match.team1Id);
+                  const team2 = tournament.teams.find(t => t.id === match.team2Id);
+                  const score = match.completed ? `${match.team1Score} - ${match.team2Score}` : '- - -';
+                  return `<div class="match">T${match.court || '-'} | ${team1?.name || '-'} ${score} ${team2?.name || '-'}</div>`;
+                }).join('')}
+              </div>
+            `;
+          }).join('')}
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   return (
     <div className="mb-8">
       <div className="glass-card p-6">
-        <h3 className="text-2xl font-bold text-white mb-6 tracking-wide flex items-center space-x-2">
-          <Trophy className="w-6 h-6 text-yellow-400" />
-          <span>Phases finales</span>
-          <span className="text-lg text-white/70">({qualifiedTeams.length}/{expectedQualified} qualifiés)</span>
-        </h3>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-bold text-white tracking-wide flex items-center space-x-2">
+            <Trophy className="w-6 h-6 text-yellow-400" />
+            <span>Phases finales</span>
+            <span className="text-lg text-white/70">({qualifiedTeams.length}/{expectedQualified} qualifiés)</span>
+          </h3>
+          {finalMatches.length > 0 && (
+            <button
+              onClick={handlePrintFinals}
+              className="glass-button-secondary flex items-center space-x-2 px-4 py-2 text-sm font-bold tracking-wide hover:scale-105 transition-all"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Imprimer</span>
+            </button>
+          )}
+        </div>
 
         <div className="space-y-8">
           {config.phases.map((phaseName, index) => (
@@ -466,7 +519,7 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore, onUpdateCo
 
   return (
     <>
-      <div className={`glass-card p-1 min-h-[80px] transition-all duration-300 cursor-pointer hover:scale-105 relative ${
+      <div className={`glass-card p-1 min-h-[60px] transition-all duration-300 cursor-pointer hover:scale-105 relative ${
         isEmpty ? 'bg-gradient-to-br from-gray-500/20 to-gray-600/20 border-gray-400/40' :
         isPartial ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-400/50' :
         isReady ? 'bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-purple-400/50' :
