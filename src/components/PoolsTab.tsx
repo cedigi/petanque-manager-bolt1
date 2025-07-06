@@ -744,45 +744,7 @@ function CompactFourTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateSco
     );
   });
 
-  const getTeamStats = (team: Team) => {
-    const teamMatches = poolMatches.filter(m => 
-      m.completed && (m.team1Id === team.id || m.team2Id === team.id)
-    );
-
-    // CORRECTION : Compter aussi les victoires BYE
-    const byeMatches = poolMatches.filter(m => 
-      m.completed && m.isBye && (m.team1Id === team.id || m.team2Id === team.id) &&
-      ((m.team1Id === team.id && (m.team1Score || 0) > (m.team2Score || 0)) ||
-       (m.team2Id === team.id && (m.team2Score || 0) > (m.team1Score || 0)))
-    );
-
-    let wins = 0;
-    teamMatches.forEach(match => {
-      const isTeam1 = match.team1Id === team.id;
-      const teamScore = isTeam1 ? match.team1Score! : match.team2Score!;
-      const opponentScore = isTeam1 ? match.team2Score! : match.team1Score!;
-      
-      if (teamScore > opponentScore) wins++;
-    });
-
-    // Ajouter les victoires BYE
-    wins += byeMatches.length;
-
-    return { wins, matches: teamMatches.length + byeMatches.length };
-  };
-
-  const allStats = poolTeams.map(team => ({
-    team,
-    ...getTeamStats(team)
-  }));
-
-  const teamsWithOneWin = allStats.filter(stat => stat.wins === 1 && stat.matches >= 2);
-
-  const barrageMatch = poolMatches.find(m =>
-    m.round === 3 &&
-    teamsWithOneWin.some(stat => stat.team.id === m.team1Id) &&
-    teamsWithOneWin.some(stat => stat.team.id === m.team2Id)
-  );
+  const barrageMatch = poolMatches.find(m => m.round === 3);
 
   const barrageTeam1 = barrageMatch
     ? poolTeams.find(t => t.id === barrageMatch.team1Id)
@@ -836,16 +798,17 @@ function CompactFourTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateSco
           onUpdateCourt={onUpdateCourt}
         />
 
-        <CompactMatchBox
-          team1={barrageTeam1}
-          team2={barrageTeam2}
-          match={barrageMatch}
-          courts={courts}
-          bgColor="bg-red-500/10"
-          onUpdateScore={onUpdateScore}
-          onUpdateCourt={onUpdateCourt}
-          showOnlyIfNeeded={!!barrageMatch}
-        />
+        {barrageMatch && (
+          <CompactMatchBox
+            team1={barrageTeam1}
+            team2={barrageTeam2}
+            match={barrageMatch}
+            courts={courts}
+            bgColor="bg-red-500/10"
+            onUpdateScore={onUpdateScore}
+            onUpdateCourt={onUpdateCourt}
+          />
+        )}
       </div>
     </div>
   );
@@ -891,48 +854,7 @@ function CompactThreeTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateSc
        (m.team1Id === team3.id && m.team2Id === firstRoundResult.winner.id));
   });
 
-  // LOGIQUE CORRIGÉE pour le barrage dans une poule de 3
-  // Calculer les statistiques de chaque équipe
-  const getTeamStats = (team: Team) => {
-    const teamMatches = poolMatches.filter(m => 
-      m.completed && !m.isBye && (m.team1Id === team.id || m.team2Id === team.id)
-    );
-
-    // CORRECTION : Compter aussi les victoires BYE
-    const byeMatches = poolMatches.filter(m => 
-      m.completed && m.isBye && (m.team1Id === team.id || m.team2Id === team.id) &&
-      ((m.team1Id === team.id && (m.team1Score || 0) > (m.team2Score || 0)) ||
-       (m.team2Id === team.id && (m.team2Score || 0) > (m.team1Score || 0)))
-    );
-
-    let wins = 0;
-    teamMatches.forEach(match => {
-      const isTeam1 = match.team1Id === team.id;
-      const teamScore = isTeam1 ? match.team1Score! : match.team2Score!;
-      const opponentScore = isTeam1 ? match.team2Score! : match.team1Score!;
-      
-      if (teamScore > opponentScore) wins++;
-    });
-
-    // Ajouter les victoires BYE
-    wins += byeMatches.length;
-
-    return { wins, matches: teamMatches.length + byeMatches.length };
-  };
-
-  const allStats = poolTeams.map(team => ({
-    team,
-    ...getTeamStats(team)
-  }));
-
-  // Trouver les équipes avec exactement 1 victoire
-  const teamsWithOneWin = allStats.filter(stat => stat.wins === 1);
-
-  const barrageMatch = poolMatches.find(m =>
-    m.round === 3 &&
-    teamsWithOneWin.some(stat => stat.team.id === m.team1Id) &&
-    teamsWithOneWin.some(stat => stat.team.id === m.team2Id)
-  );
+  const barrageMatch = poolMatches.find(m => m.round === 3);
 
   const barrageTeam1 = barrageMatch
     ? poolTeams.find(t => t.id === barrageMatch.team1Id)
@@ -983,16 +905,17 @@ function CompactThreeTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateSc
           <div className="text-xs text-orange-400">BYE</div>
         </div>
 
-        <CompactMatchBox
-          team1={barrageTeam1}
-          team2={barrageTeam2}
-          match={barrageMatch}
-          courts={courts}
-          bgColor="bg-red-500/10"
-          onUpdateScore={onUpdateScore}
-          onUpdateCourt={onUpdateCourt}
-          showOnlyIfNeeded={!!barrageMatch}
-        />
+        {barrageMatch && (
+          <CompactMatchBox
+            team1={barrageTeam1}
+            team2={barrageTeam2}
+            match={barrageMatch}
+            courts={courts}
+            bgColor="bg-red-500/10"
+            onUpdateScore={onUpdateScore}
+            onUpdateCourt={onUpdateCourt}
+          />
+        )}
       </div>
     </div>
   );
