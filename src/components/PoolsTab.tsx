@@ -75,9 +75,21 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
         (m.team1Id === team3.id && m.team2Id === team2.id)
       );
 
+      const winner1vs4 = match1vs4?.completed
+        ? (match1vs4.team1Score! > match1vs4.team2Score!
+            ? (match1vs4.team1Id === team1.id ? team1.name : team4.name)
+            : (match1vs4.team1Id === team1.id ? team4.name : team1.name))
+        : null;
+
+      const winner2vs3 = match2vs3?.completed
+        ? (match2vs3.team1Score! > match2vs3.team2Score!
+            ? (match2vs3.team1Id === team2.id ? team2.name : team3.name)
+            : (match2vs3.team1Id === team2.id ? team3.name : team2.name))
+        : null;
+
       return `
-        <div class="match-box">T${match1vs4?.court || '-'} | ${team1.name} ${match1vs4?.completed ? `${match1vs4.team1Id === team1.id ? match1vs4.team1Score : match1vs4.team2Score} - ${match1vs4.team1Id === team1.id ? match1vs4.team2Score : match1vs4.team1Score}` : '- - -'} ${team4.name}</div>
-        <div class="match-box">T${match2vs3?.court || '-'} | ${team2.name} ${match2vs3?.completed ? `${match2vs3.team1Id === team2.id ? match2vs3.team1Score : match2vs3.team2Score} - ${match2vs3.team1Id === team2.id ? match2vs3.team2Score : match2vs3.team1Score}` : '- - -'} ${team3.name}</div>
+        <div class="match-box">T${match1vs4?.court || '-'} | ${team1.name} vs ${team4.name} ${winner1vs4 ? `(gagnant: ${winner1vs4})` : ''}</div>
+        <div class="match-box">T${match2vs3?.court || '-'} | ${team2.name} vs ${team3.name} ${winner2vs3 ? `(gagnant: ${winner2vs3})` : ''}</div>
         <div class="match-box">Finale : - - -</div>
         <div class="match-box">Petite finale : - - -</div>
         <div class="match-box">Barrage : - - -</div>
@@ -91,8 +103,14 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
          (m.team1Id === team2.id && m.team2Id === team1.id))
       );
 
+      const winner1vs2 = match1vs2?.completed
+        ? (match1vs2.team1Score! > match1vs2.team2Score!
+            ? (match1vs2.team1Id === team1.id ? team1.name : team2.name)
+            : (match1vs2.team1Id === team1.id ? team2.name : team1.name))
+        : null;
+
       return `
-        <div class="match-box">T${match1vs2?.court || '-'} | ${team1.name} ${match1vs2?.completed ? `${match1vs2.team1Id === team1.id ? match1vs2.team1Score : match1vs2.team2Score} - ${match1vs2.team1Id === team1.id ? match1vs2.team2Score : match1vs2.team1Score}` : '- - -'} ${team2.name}</div>
+        <div class="match-box">T${match1vs2?.court || '-'} | ${team1.name} vs ${team2.name} ${winner1vs2 ? `(gagnant: ${winner1vs2})` : ''}</div>
         <div class="match-box">${team3.name} - BYE</div>
         <div class="match-box">Finale : - - -</div>
         <div class="match-box">Perdant : BYE</div>
@@ -359,8 +377,12 @@ function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, onUpdateCourt,
                 ${phaseMatches.map(match => {
                   const team1 = tournament.teams.find(t => t.id === match.team1Id);
                   const team2 = tournament.teams.find(t => t.id === match.team2Id);
-                  const score = match.completed ? `${match.team1Score} - ${match.team2Score}` : '- - -';
-                  return `<div class="match">T${match.court || '-'} | ${team1?.name || '-'} ${score} ${team2?.name || '-'}</div>`;
+                  const winner = match.completed
+                    ? match.team1Score! > match.team2Score!
+                      ? team1?.name
+                      : team2?.name
+                    : null;
+                  return `<div class="match">T${match.court || '-'} | ${team1?.name || '-'} vs ${team2?.name || '-'} ${winner ? `(gagnant: ${winner})` : ''}</div>`;
                 }).join('')}
               </div>
             `;
