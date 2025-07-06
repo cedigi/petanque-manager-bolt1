@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Pool, Team, Tournament, Match } from '../types/tournament';
 import { Grid3X3, Trophy, Shuffle, Printer, Crown, X, Edit3 } from 'lucide-react';
 import { CourtAvailability } from './CourtAvailability';
@@ -957,7 +958,8 @@ function WinnerModal({ team1, team2, onSelectWinner, onClose, position }: Winner
   const modalStyle = position
     ? { position: 'fixed' as const, top: position.y, left: position.x }
     : { position: 'fixed' as const, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
-  return (
+
+  const modal = (
     <div className="fixed inset-0 bg-black/50 z-50 p-4">
       <div className="glass-card p-4 max-w-xs w-full" style={modalStyle}>
         <div className="flex justify-between items-center mb-6">
@@ -989,6 +991,8 @@ function WinnerModal({ team1, team2, onSelectWinner, onClose, position }: Winner
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
 
 // Composant de case de match compacte CORRIGÉ - Les noms ne disparaissent plus
