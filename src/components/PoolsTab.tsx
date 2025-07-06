@@ -738,7 +738,7 @@ function CompactFourTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateSco
     : undefined;
 
   return (
-    <div className="glass-card overflow-hidden">
+    <div className="glass-card">
       <div className="px-3 py-2 border-b border-white/20 bg-white/5">
         <h3 className="text-sm font-bold text-white">{pool.name}</h3>
       </div>
@@ -888,7 +888,7 @@ function CompactThreeTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateSc
     : undefined;
 
   return (
-    <div className="glass-card overflow-hidden">
+    <div className="glass-card">
       <div className="px-3 py-2 border-b border-white/20 bg-white/5">
         <h3 className="text-sm font-bold text-white">{pool.name} (3)</h3>
       </div>
