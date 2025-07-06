@@ -29,10 +29,10 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
-            .pools-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-            .pool { border: 2px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-            .pool-title { font-weight: bold; font-size: 18px; margin-bottom: 15px; text-align: center; background: #f0f0f0; padding: 10px; border-radius: 4px; }
-            .match-box { border: 1px solid #ddd; padding: 8px; margin: 4px 0; background: #f9f9f9; border-radius: 4px; text-align: center; }
+            .pools-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+            .pool { border: 1px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 12px; }
+            .pool-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; text-align: center; background: #f0f0f0; padding: 8px; border-radius: 4px; }
+            .match-box { border: 1px solid #ddd; padding: 6px; margin: 3px 0; background: #f9f9f9; border-radius: 4px; text-align: center; }
             .team-name { font-weight: bold; }
             .score { font-weight: bold; }
             @media print { body { margin: 0; } }
