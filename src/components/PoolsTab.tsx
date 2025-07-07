@@ -32,10 +32,10 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
-            .pools-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+            .pools-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
             .pool { border: 1px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 12px; }
-            .pool-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; text-align: center; background: #f0f0f0; padding: 8px; border-radius: 4px; }
-            .match-box { border: 1px solid #ddd; padding: 6px; margin: 3px 0; background: #f9f9f9; border-radius: 4px; text-align: center; }
+            .pool-title { font-weight: bold; font-size: 16px; margin-bottom: 8px; text-align: center; background: #f0f0f0; padding: 6px; border-radius: 4px; }
+            .team-box { border: 1px solid #ddd; padding: 4px; margin: 2px 0; background: #f9f9f9; border-radius: 4px; text-align: center; font-size: 14px; }
             .team-name { font-weight: bold; }
             .score { font-weight: bold; }
             @media print { body { margin: 0; } }
@@ -45,13 +45,14 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
           <h1>Poules - ${tournament.name}</h1>
           <div class="pools-container">
             ${pools.map(pool => {
-              const poolMatches = tournament.matches.filter(m => m.poolId === pool.id);
-              const poolTeams = pool.teamIds.map(id => teams.find(t => t.id === id)).filter(Boolean);
-              
+              const poolTeams = pool.teamIds
+                .map(id => teams.find(t => t.id === id))
+                .filter(Boolean);
+
               return `
                 <div class="pool">
                   <div class="pool-title">${pool.name}</div>
-                  ${generatePoolHTML(poolTeams, poolMatches)}
+                  ${generatePoolHTML(poolTeams)}
                 </div>
               `;
             }).join('')}
@@ -65,59 +66,23 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
     printWindow.print();
   };
 
-  const generatePoolHTML = (poolTeams: Team[], poolMatches: Match[]) => {
+  const generatePoolHTML = (poolTeams: Team[]) => {
     if (poolTeams.length === 4) {
       const [team1, team2, team3, team4] = poolTeams;
-      
-      const match1vs4 = poolMatches.find(m => 
-        (m.team1Id === team1.id && m.team2Id === team4.id) ||
-        (m.team1Id === team4.id && m.team2Id === team1.id)
-      );
-      const match2vs3 = poolMatches.find(m => 
-        (m.team1Id === team2.id && m.team2Id === team3.id) ||
-        (m.team1Id === team3.id && m.team2Id === team2.id)
-      );
-
-      const winner1vs4 = match1vs4?.completed
-        ? (match1vs4.team1Score! > match1vs4.team2Score!
-            ? (match1vs4.team1Id === team1.id ? team1.name : team4.name)
-            : (match1vs4.team1Id === team1.id ? team4.name : team1.name))
-        : null;
-
-      const winner2vs3 = match2vs3?.completed
-        ? (match2vs3.team1Score! > match2vs3.team2Score!
-            ? (match2vs3.team1Id === team2.id ? team2.name : team3.name)
-            : (match2vs3.team1Id === team2.id ? team3.name : team2.name))
-        : null;
 
       return `
-        <div class="match-box">T${match1vs4?.court || '-'} | ${team1.name} vs ${team4.name} ${winner1vs4 ? `(gagnant: ${winner1vs4})` : ''}</div>
-        <div class="match-box">T${match2vs3?.court || '-'} | ${team2.name} vs ${team3.name} ${winner2vs3 ? `(gagnant: ${winner2vs3})` : ''}</div>
-        <div class="match-box">Finale : - - -</div>
-        <div class="match-box">Petite finale : - - -</div>
-        <div class="match-box">Barrage : - - -</div>
+        <div class="team-box">${team1.name}</div>
+        <div class="team-box">${team2.name}</div>
+        <div class="team-box">${team3.name}</div>
+        <div class="team-box">${team4.name}</div>
       `;
     } else if (poolTeams.length === 3) {
       const [team1, team2, team3] = poolTeams;
-      
-      const match1vs2 = poolMatches.find(m => 
-        m.round === 1 && !m.isBye &&
-        ((m.team1Id === team1.id && m.team2Id === team2.id) ||
-         (m.team1Id === team2.id && m.team2Id === team1.id))
-      );
-
-      const winner1vs2 = match1vs2?.completed
-        ? (match1vs2.team1Score! > match1vs2.team2Score!
-            ? (match1vs2.team1Id === team1.id ? team1.name : team2.name)
-            : (match1vs2.team1Id === team1.id ? team2.name : team1.name))
-        : null;
 
       return `
-        <div class="match-box">T${match1vs2?.court || '-'} | ${team1.name} vs ${team2.name} ${winner1vs2 ? `(gagnant: ${winner1vs2})` : ''}</div>
-        <div class="match-box">${team3.name} - BYE</div>
-        <div class="match-box">Finale : - - -</div>
-        <div class="match-box">Perdant : BYE</div>
-        <div class="match-box">Match de barrage : - - -</div>
+        <div class="team-box">${team1.name}</div>
+        <div class="team-box">${team2.name}</div>
+        <div class="team-box">${team3.name}</div>
       `;
     } else {
       return '<p>Poule incomplète</p>';
