@@ -34,4 +34,58 @@ describe('category B finals', () => {
     const firstRound = matches.filter(m => m.round === 200);
     expect(firstRound).toHaveLength(8);
   });
+
+  it('creates 15 BYEs for the 35 team scenario', () => {
+    function makeTeam(id: string) {
+      return {
+        id,
+        name: id,
+        players: [],
+        wins: 0,
+        losses: 0,
+        pointsFor: 0,
+        pointsAgainst: 0,
+        performance: 0,
+        teamRating: 0,
+        synchroLevel: 0,
+      } as const;
+    }
+
+    const teams = Array.from({ length: 17 }).map((_, i) => makeTeam(`t${i + 1}`));
+    const bracket = createCategoryBBracket(teams.length);
+    const firstRound = bracket.filter(m => m.round === 200);
+
+    const bracketSize = 1 << Math.ceil(Math.log2(teams.length));
+    const byesNeeded = bracketSize - teams.length;
+
+    let teamIdx = 0;
+    for (let i = 0; i < firstRound.length; i++) {
+      if (i < byesNeeded) {
+        const t = teams[teamIdx++];
+        firstRound[i] = {
+          ...firstRound[i],
+          team1Id: t.id,
+          team2Id: t.id,
+          completed: true,
+          isBye: true,
+        } as Match;
+      } else {
+        const t1 = teams[teamIdx++];
+        const t2 = teams[teamIdx++];
+        firstRound[i] = {
+          ...firstRound[i],
+          team1Id: t1.id,
+          team2Id: t2.id,
+          completed: false,
+          isBye: false,
+        } as Match;
+      }
+    }
+
+    const placed = applyByeLogic(firstRound, teams.length, teams.length, 0);
+    const byeMatches = placed.filter(m => m.isBye);
+    expect(placed).toHaveLength(16);
+    expect(byeMatches).toHaveLength(15);
+    expect(placed.filter(m => !m.isBye)).toHaveLength(1);
+  });
 });
