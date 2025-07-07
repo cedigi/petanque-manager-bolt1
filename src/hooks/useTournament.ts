@@ -114,8 +114,8 @@ export function useTournament() {
     });
 
     const firstRound = matchesB.filter(m => m.round === 200);
-    const bracketSize = 1 << Math.ceil(Math.log2(bottomTeams.length));
-    const byesNeeded = bracketSize - bottomTeams.length;
+    const bracketSize = 1 << Math.ceil(Math.log2(bottomCount));
+    const byesNeeded = bracketSize - bottomCount;
 
     const sortedTeams = [...bottomTeams];
     let teamIdx = 0;
