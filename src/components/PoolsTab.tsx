@@ -269,7 +269,10 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
             ))}
           </div>
 
-          <CourtAvailability courts={tournament.courts} matches={tournament.matches} />
+          <CourtAvailability
+            courts={tournament.courts}
+            matches={showCatB ? tournament.matchesB : tournament.matches}
+          />
 
           {/* Phases finales - TOUJOURS affichées avec remplissage progressif */}
           <div className="flex justify-end mb-2">
@@ -304,16 +307,22 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
 
           {/* Phases finales - affichage conditionnel */}
           {showCategoryB ? (
-            <FinalPhases
-              qualifiedTeams={qualifiedTeams}
-              tournament={tournament}
-              matches={tournament.matchesB}
-              onUpdateScore={onUpdateScore}
-              onUpdateCourt={onUpdateCourt}
-              totalTeams={teams.length}
-              title="Catégorie B"
-              roundOffset={200}
-            />
+            <>
+              <CourtAvailability
+                courts={tournament.courts}
+                matches={tournament.matchesB}
+              />
+              <FinalPhases
+                qualifiedTeams={qualifiedTeams}
+                tournament={tournament}
+                matches={tournament.matchesB}
+                onUpdateScore={onUpdateScore}
+                onUpdateCourt={onUpdateCourt}
+                totalTeams={teams.length}
+                title="Catégorie B"
+                roundOffset={200}
+              />
+            </>
           ) : (
             <FinalPhases
               qualifiedTeams={qualifiedTeams}
