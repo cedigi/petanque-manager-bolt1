@@ -255,8 +255,14 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   if (bottomCount <= 1) return t;
 
   let matchesB = t.matchesB;
-  if (matchesB.length === 0) {
-    matchesB = createEmptyFinalPhasesB(t.teams.length, t.courts, t.pools.length * 2 + 1);
+  const rebuildBracket =
+    matchesB.length === 0 || bottomTeams.length !== bottomCount;
+  if (rebuildBracket) {
+    matchesB = createEmptyFinalPhasesB(
+      t.teams.length,
+      t.courts,
+      t.pools.length * 2 + 1,
+    );
   }
 
   matchesB = matchesB.map(match => {
@@ -286,25 +292,62 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   });
 
   const firstRound = matchesB.filter(m => m.round === 200);
-  const used = new Set<string>();
-  firstRound.forEach(m => {
-    if (m.team1Id) used.add(m.team1Id);
-    if (m.team2Id) used.add(m.team2Id);
-  });
-  const positions: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
-  firstRound.forEach((m, idx) => {
-    if (!m.team1Id) positions.push({ matchIndex: idx, position: 'team1' });
-  });
-  firstRound.forEach((m, idx) => {
-    if (!m.team2Id) positions.push({ matchIndex: idx, position: 'team2' });
-  });
-  const newTeams = bottomTeams.filter(t => !used.has(t.id));
-  newTeams.forEach(team => {
-    if (positions.length === 0) return;
-    const pos = positions.shift()!;
-    const match = firstRound[pos.matchIndex];
-    firstRound[pos.matchIndex] = { ...match, [pos.position + 'Id']: team.id } as Match;
-  });
+  if (rebuildBracket) {
+    const bracketSize = 1 << Math.ceil(Math.log2(bottomCount));
+    const byesNeeded = bracketSize - bottomCount;
+    const sorted = [...bottomTeams];
+    let teamIdx = 0;
+    for (let i = 0; i < firstRound.length; i++) {
+      const match = firstRound[i];
+      if (teamIdx < byesNeeded) {
+        const team = sorted[teamIdx++];
+        firstRound[i] = {
+          ...match,
+          team1Id: team?.id || '',
+          team2Id: team?.id || '',
+          team1Score: 13,
+          team2Score: 0,
+          completed: true,
+          isBye: true,
+        } as Match;
+      } else {
+        const t1 = sorted[teamIdx++];
+        const t2 = sorted[teamIdx++];
+        firstRound[i] = {
+          ...match,
+          team1Id: t1?.id || '',
+          team2Id: t2?.id || '',
+          team1Score: undefined,
+          team2Score: undefined,
+          completed: false,
+          isBye: false,
+        } as Match;
+      }
+    }
+  } else {
+    const used = new Set<string>();
+    firstRound.forEach(m => {
+      if (m.team1Id) used.add(m.team1Id);
+      if (m.team2Id) used.add(m.team2Id);
+    });
+    const positions: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
+    firstRound.forEach((m, idx) => {
+      if (!m.team1Id) positions.push({ matchIndex: idx, position: 'team1' });
+    });
+    firstRound.forEach((m, idx) => {
+      if (!m.team2Id) positions.push({ matchIndex: idx, position: 'team2' });
+    });
+    const newTeams = bottomTeams.filter(bt => !used.has(bt.id));
+    newTeams.forEach(team => {
+      if (positions.length === 0) return;
+      const pos = positions.shift()!;
+      const match = firstRound[pos.matchIndex];
+      firstRound[pos.matchIndex] = {
+        ...match,
+        [pos.position + 'Id']: team.id,
+      } as Match;
+    });
+  }
 
   const others = matchesB.filter(m => m.round > 200);
   const propagated = initializeCategoryBBracket(
