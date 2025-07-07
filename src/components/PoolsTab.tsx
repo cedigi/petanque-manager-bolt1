@@ -16,6 +16,7 @@ interface PoolsTabProps {
 
 export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateScore, onUpdateCourt }: PoolsTabProps) {
   const isSolo = tournament.type === 'melee' || tournament.type === 'tete-a-tete';
+  const [showCatB, setShowCatB] = useState(false);
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
@@ -214,6 +215,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
   };
 
   const qualifiedTeams = getCurrentQualifiedTeams();
+  const bottomTeams = teams.filter(t => t.poolId && !qualifiedTeams.some(q => q.id === t.id));
 
   return (
     <div className="p-6">
@@ -268,9 +270,18 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
           <CourtAvailability courts={tournament.courts} matches={tournament.matches} />
 
           {/* Phases finales - TOUJOURS affichées avec remplissage progressif */}
+          <div className="flex justify-end mb-2">
+            <button
+              onClick={() => setShowCatB(!showCatB)}
+              className="glass-button-secondary px-4 py-1 text-sm"
+            >
+              {showCatB ? 'Voir Catégorie A' : 'Voir Catégorie B'}
+            </button>
+          </div>
           <FinalPhases
-            qualifiedTeams={qualifiedTeams}
+            qualifiedTeams={showCatB ? bottomTeams : qualifiedTeams}
             tournament={tournament}
+            matches={showCatB ? tournament.matchesB : tournament.matches.filter(m => !m.poolId && m.round >= 100 && m.round < 200)}
             onUpdateScore={onUpdateScore}
             onUpdateCourt={onUpdateCourt}
             totalTeams={teams.length}
@@ -325,12 +336,13 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
 interface FinalPhasesProps {
   qualifiedTeams: Team[];
   tournament: Tournament;
+  matches: Match[];
   onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
   onUpdateCourt?: (matchId: string, court: number) => void;
   totalTeams: number;
 }
 
-function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, onUpdateCourt, totalTeams }: FinalPhasesProps) {
+function FinalPhases({ qualifiedTeams, tournament, matches, onUpdateScore, onUpdateCourt, totalTeams }: FinalPhasesProps) {
   // Calculer la structure du tableau en fonction du nombre total d'équipes
   const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
   const expectedQualified = (poolsOf4 + poolsOf3) * 2;
@@ -347,8 +359,8 @@ function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, onUpdateCourt,
 
   const config = getPhaseConfiguration(expectedQualified);
 
-  // Trouver les matchs des phases finales (ceux sans poolId et round >= 100)
-  const finalMatches = tournament.matches.filter(m => !m.poolId && m.round >= 100);
+  // Matches of the selected category finals
+  const finalMatches = matches;
 
   const handlePrintFinals = () => {
     const printWindow = window.open('', '_blank');
@@ -447,7 +459,8 @@ interface PhaseSectionProps {
 }
 
 function PhaseSection({ phaseName, phaseIndex, matches, tournament, onUpdateScore, onUpdateCourt, expectedQualified }: PhaseSectionProps) {
-  const phaseMatches = matches.filter(m => m.round === phaseIndex + 100); // 100+ pour les phases finales
+  const baseRound = matches.length > 0 ? Math.min(...matches.map(m => m.round)) : 100;
+  const phaseMatches = matches.filter(m => m.round === baseRound + phaseIndex);
   
   // Calculer le nombre de matchs attendus pour cette phase
   const getExpectedMatches = () => {
@@ -457,7 +470,7 @@ function PhaseSection({ phaseName, phaseIndex, matches, tournament, onUpdateScor
       return bracketSize / 2;
     } else {
       // Phases suivantes : moitié de la phase précédente
-      const previousPhaseMatches = matches.filter(m => m.round === phaseIndex + 99);
+      const previousPhaseMatches = matches.filter(m => m.round === baseRound + phaseIndex - 1);
       return Math.floor(previousPhaseMatches.length / 2);
     }
   };

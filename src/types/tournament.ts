@@ -66,6 +66,7 @@ export interface Tournament {
   courts: number;
   teams: Team[];
   matches: Match[];
+  matchesB: Match[];
   pools: Pool[];
   currentRound: number;
   completed: boolean;

@@ -21,6 +21,9 @@ export function useTournament() {
           parsed.pools = [];
           parsed.poolsGenerated = false;
         }
+        if (!parsed.matchesB) {
+          parsed.matchesB = [];
+        }
         setTournament(parsed);
       } catch (e) {
         console.warn('Failed to parse saved tournament:', e);
@@ -43,6 +46,7 @@ export function useTournament() {
       courts,
       teams: [],
       matches: [],
+      matchesB: [],
       pools: [],
       currentRound: 0,
       completed: false,
@@ -221,12 +225,14 @@ export function useTournament() {
     // Créer immédiatement les cadres vides des phases finales
     const finalPhasesStart = pools.length * 2 + 1;
     const finalPhasesMatches = createEmptyFinalPhases(tournament.teams.length, tournament.courts, finalPhasesStart);
+    const finalPhasesMatchesB = createEmptyFinalPhasesB(tournament.teams.length, tournament.courts, finalPhasesStart);
 
     const updatedTournament = {
       ...tournament,
       teams: updatedTeams,
       pools,
       matches: [...allMatches, ...finalPhasesMatches],
+      matchesB: finalPhasesMatchesB,
       poolsGenerated: true,
       currentRound: 1,
     };
@@ -272,6 +278,42 @@ export function useTournament() {
       round++;
     }
     
+    return matches;
+  };
+
+  // Create empty bracket for Category B (rounds >=200)
+  const createEmptyFinalPhasesB = (totalTeams: number, courts: number, startCourt = 1) => {
+    const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
+    const expectedQualified = (poolsOf4 + poolsOf3) * 2;
+    const bottomTeams = totalTeams - expectedQualified;
+    const matches: Match[] = [];
+    if (bottomTeams <= 1) return matches;
+
+    const bracketSize = 1 << Math.ceil(Math.log2(bottomTeams));
+    let currentTeamCount = bracketSize;
+    let round = 200;
+    let courtIndex = startCourt;
+
+    while (currentTeamCount > 1) {
+      const matchesInRound = Math.floor(currentTeamCount / 2);
+      for (let i = 0; i < matchesInRound; i++) {
+        matches.push({
+          id: generateUuid(),
+          round,
+          court: courtIndex,
+          team1Id: '',
+          team2Id: '',
+          completed: false,
+          isBye: false,
+          battleIntensity: 0,
+          hackingAttempts: 0,
+        });
+        courtIndex = (courtIndex % courts) + 1;
+      }
+      currentTeamCount = matchesInRound + (currentTeamCount % 2);
+      round++;
+    }
+
     return matches;
   };
 
@@ -458,7 +500,7 @@ export function useTournament() {
         ...updatedTournament,
         matches: [...poolMatches, ...cleanedFinalMatches],
       };
-      return propagateWinnersToNextPhases(baseTournament);
+      return updateCategoryBPhases(propagateWinnersToNextPhases(baseTournament));
     }
 
     // Rassembler les positions disponibles en donnant la priorité à une équipe par match
@@ -539,8 +581,9 @@ export function useTournament() {
       matches: allUpdatedMatches,
     };
 
-    // NOUVEAU : Propager les gagnants vers les phases suivantes
-    return propagateWinnersToNextPhases(result);
+    // Propager les gagnants et mettre à jour la catégorie B
+    const afterA = propagateWinnersToNextPhases(result);
+    return updateCategoryBPhases(afterA);
   };
 
   // NOUVELLE FONCTION : Propager les gagnants des phases finales vers les phases suivantes
@@ -675,6 +718,91 @@ export function useTournament() {
     });
 
     return qualified;
+  };
+
+  // Teams not qualified yet are considered for Category B
+  const getCurrentBottomTeams = (tournament: Tournament): Team[] => {
+    const qualified = new Set(getCurrentQualifiedTeams(tournament).map(t => t.id));
+    return tournament.teams.filter(team => team.poolId && !qualified.has(team.id));
+  };
+
+  const propagateWinnersList = (matches: Match[]): Match[] => {
+    const byRound: { [round: number]: Match[] } = {};
+    matches.forEach(m => {
+      if (!byRound[m.round]) byRound[m.round] = [];
+      byRound[m.round].push(m);
+    });
+    const rounds = Object.keys(byRound).map(Number).sort((a, b) => a - b);
+    const updated = [...matches];
+    let changed = false;
+
+    for (let i = 0; i < rounds.length - 1; i++) {
+      const current = rounds[i];
+      const next = rounds[i + 1];
+      const currentMatches = byRound[current].sort((a, b) => a.court - b.court);
+      const nextMatches = byRound[next].sort((a, b) => a.court - b.court);
+
+      currentMatches.forEach((m, idx) => {
+        if (!m.completed) return;
+        const winnerId = m.team1Score! > m.team2Score! ? m.team1Id : m.team2Id;
+        const target = nextMatches[Math.floor(idx / 2)];
+        const tIndex = updated.findIndex(x => x.id === target.id);
+        if (tIndex === -1) return;
+        if (idx % 2 === 0) {
+          if (updated[tIndex].team1Id !== winnerId) {
+            updated[tIndex] = { ...updated[tIndex], team1Id: winnerId };
+            changed = true;
+          }
+        } else {
+          if (updated[tIndex].team2Id !== winnerId) {
+            updated[tIndex] = { ...updated[tIndex], team2Id: winnerId };
+            changed = true;
+          }
+        }
+      });
+    }
+
+    return changed ? updated : matches;
+  };
+
+  const updateCategoryBPhases = (t: Tournament): Tournament => {
+    const bottomTeams = getCurrentBottomTeams(t);
+    const { poolsOf4, poolsOf3 } = calculateOptimalPools(t.teams.length);
+    const expectedQualified = (poolsOf4 + poolsOf3) * 2;
+    const bottomCount = t.teams.length - expectedQualified;
+    if (bottomCount <= 1) return t;
+
+    let matchesB = t.matchesB;
+    if (matchesB.length === 0) {
+      matchesB = createEmptyFinalPhasesB(t.teams.length, t.courts, t.pools.length * 2 + 1);
+    }
+
+    const firstRound = matchesB.filter(m => m.round === 200);
+    const used = new Set<string>();
+    firstRound.forEach(m => { if (m.team1Id) used.add(m.team1Id); if (m.team2Id) used.add(m.team2Id); });
+    const positions: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
+    firstRound.forEach((m, idx) => {
+      if (!m.team1Id) positions.push({ matchIndex: idx, position: 'team1' });
+      if (!m.team2Id) positions.push({ matchIndex: idx, position: 'team2' });
+    });
+    const newTeams = bottomTeams.filter(t => !used.has(t.id));
+    newTeams.forEach(team => {
+      if (positions.length === 0) return;
+      const pos = positions.shift()!;
+      const match = firstRound[pos.matchIndex];
+      firstRound[pos.matchIndex] = { ...match, [pos.position + 'Id']: team.id } as Match;
+    });
+
+    const pending = t.matches.filter(m => m.poolId && !m.completed).length;
+    const withByes = applyByeLogic(firstRound, bottomTeams.length, bottomCount, pending);
+    for (let i = 0; i < firstRound.length; i++) {
+      firstRound[i] = withByes[i];
+    }
+
+    const others = matchesB.filter(m => m.round > 200);
+    const combined = [...firstRound, ...others];
+    const propagated = propagateWinnersList(combined);
+    return { ...t, matchesB: propagated };
   };
 
   // Fonction pour générer automatiquement les matchs suivants quand on met à jour un score
