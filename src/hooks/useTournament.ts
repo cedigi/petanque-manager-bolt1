@@ -1156,23 +1156,39 @@ export function useTournament() {
   const updateMatchScore = (matchId: string, team1Score: number, team2Score: number) => {
     if (!tournament) return;
 
-    const updatedMatches = tournament.matches.map(match => {
-      if (match.id === matchId) {
-        return {
-          ...match,
-          team1Score,
-          team2Score,
-          completed: true,
-          battleIntensity: 50,
-          hackingAttempts: 0,
-        };
-      }
-      return match;
-    });
+    let updatedMatches = [...tournament.matches];
+    let updatedMatchesB = [...tournament.matchesB];
+
+    const idxA = updatedMatches.findIndex(m => m.id === matchId);
+    const idxB = updatedMatchesB.findIndex(m => m.id === matchId);
+
+    if (idxA !== -1) {
+      updatedMatches[idxA] = {
+        ...updatedMatches[idxA],
+        team1Score,
+        team2Score,
+        completed: true,
+        battleIntensity: 50,
+        hackingAttempts: 0,
+      };
+    } else if (idxB !== -1) {
+      updatedMatchesB[idxB] = {
+        ...updatedMatchesB[idxB],
+        team1Score,
+        team2Score,
+        completed: true,
+        battleIntensity: 50,
+        hackingAttempts: 0,
+      };
+    } else {
+      return;
+    }
+
+    const allMatches = [...updatedMatches, ...updatedMatchesB];
 
     // Update team statistics
     const updatedTeams = tournament.teams.map(team => {
-      const teamMatches = updatedMatches.filter(
+      const teamMatches = allMatches.filter(
         match =>
           match.completed &&
           (
@@ -1231,11 +1247,13 @@ export function useTournament() {
     let updatedTournament = {
       ...tournament,
       matches: updatedMatches,
+      matchesB: updatedMatchesB,
       teams: updatedTeams,
     };
 
     // Générer automatiquement les matchs suivants et mettre à jour les phases finales
     updatedTournament = autoGenerateNextMatches(updatedTournament);
+    updatedTournament = updateCategoryBPhases(updatedTournament);
 
     saveTournament(updatedTournament);
   };
@@ -1243,16 +1261,24 @@ export function useTournament() {
   const updateMatchCourt = (matchId: string, court: number) => {
     if (!tournament) return;
 
-    const updatedMatches = tournament.matches.map(match => {
-      if (match.id === matchId) {
-        return { ...match, court };
-      }
-      return match;
-    });
+    const updatedMatches = [...tournament.matches];
+    const updatedMatchesB = [...tournament.matchesB];
+
+    const idxA = updatedMatches.findIndex(m => m.id === matchId);
+    const idxB = updatedMatchesB.findIndex(m => m.id === matchId);
+
+    if (idxA !== -1) {
+      updatedMatches[idxA] = { ...updatedMatches[idxA], court };
+    } else if (idxB !== -1) {
+      updatedMatchesB[idxB] = { ...updatedMatchesB[idxB], court };
+    } else {
+      return;
+    }
 
     const updatedTournament = {
       ...tournament,
       matches: updatedMatches,
+      matchesB: updatedMatchesB,
     };
     saveTournament(updatedTournament);
   };
