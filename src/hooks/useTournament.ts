@@ -16,6 +16,13 @@ import {
   updateMatchScore as updateMatchScoreLogic,
   updateMatchCourt as updateMatchCourtLogic,
 } from './matchUpdates';
+import {
+  createEmptyFinalPhasesB,
+  getCurrentBottomTeams,
+  propagateWinnersList,
+} from './finalsLogic';
+import { calculateOptimalPools } from '../utils/poolGeneration';
+import { applyByeLogic } from '../utils/finals';
 
 const STORAGE_KEY = 'petanque-tournament';
 
@@ -75,18 +82,37 @@ export function useTournament() {
 
   const generateRound = () => {
     if (!tournament) return;
+    let updated = tournament;
     const isPool =
       tournament.type === 'doublette-poule' || tournament.type === 'triplette-poule';
     if (isPool) {
-      saveTournament(generateRoundLogic(tournament));
+      updated = generateRoundLogic(tournament);
     } else {
       const newMatches = generateMatches(tournament);
-      saveTournament({
+      updated = {
         ...tournament,
         matches: [...tournament.matches, ...newMatches],
         currentRound: tournament.currentRound + 1,
-      });
+      };
     }
+
+    const t = updated;
+    const bottomTeams = getCurrentBottomTeams(t);
+    const bottomIds = new Set(bottomTeams.map(bt => bt.id));
+    const { poolsOf4, poolsOf3 } = calculateOptimalPools(t.teams.length);
+    const expectedQualified = (poolsOf4 + poolsOf3) * 2;
+    const bottomCount = t.teams.length - expectedQualified;
+
+    if (bottomTeams.length === t.teams.length || bottomCount <= 1) {
+      saveTournament(t);
+      return;
+    }
+
+    let matchesB = t.matchesB;
+    if (matchesB.length === 0) {
+      matchesB = createEmptyFinalPhasesB(t.teams.length, t.courts, t.pools.length * 2 + 1);
+    }
+
     matchesB = matchesB.map(match => {
       let changed = false;
       let { team1Id, team2Id } = match;
@@ -157,7 +183,7 @@ export function useTournament() {
     const others = matchesB.filter(m => m.round > 200);
     const combined = [...firstRound, ...others];
     const propagated = propagateWinnersList(combined);
-    return { ...t, matchesB: propagated };
+    saveTournament({ ...t, matchesB: propagated });
   };
 
   // Fonction pour générer automatiquement les matchs suivants quand on met à jour un score
