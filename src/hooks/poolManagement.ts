@@ -178,6 +178,69 @@ export function generateRound(tournament: Tournament): Tournament {
             hackingAttempts: 0,
           });
         }
+
+        const winnersMatch = allMatches.find(
+          m =>
+            m.poolId === pool.id &&
+            ((m.team1Id === winner1vs4.id && m.team2Id === winner2vs3.id) ||
+              (m.team1Id === winner2vs3.id && m.team2Id === winner1vs4.id)),
+        );
+        const losersMatch = allMatches.find(
+          m =>
+            m.poolId === pool.id &&
+            ((m.team1Id === loser1vs4.id && m.team2Id === loser2vs3.id) ||
+              (m.team1Id === loser2vs3.id && m.team2Id === loser1vs4.id)),
+        );
+
+        if (winnersMatch?.completed && losersMatch?.completed) {
+          const allPoolMatches = allMatches.filter(
+            m => m.poolId === pool.id && m.completed,
+          );
+
+          const teamStats = [team1, team2, team3, team4].map(team => {
+            const teamMatches = allPoolMatches.filter(
+              m => m.team1Id === team.id || m.team2Id === team.id,
+            );
+
+            let wins = 0;
+            teamMatches.forEach(match => {
+              const isTeam1 = match.team1Id === team.id;
+              const teamScore = isTeam1 ? match.team1Score! : match.team2Score!;
+              const opponentScore = isTeam1 ? match.team2Score! : match.team1Score!;
+              if (teamScore > opponentScore) wins++;
+            });
+
+            return { team, wins, matches: teamMatches.length };
+          });
+
+          const teamsWithOneWin = teamStats.filter(stat => stat.wins === 1);
+          if (teamsWithOneWin.length === 2) {
+            const barrageExists = allMatches.some(
+              m =>
+                m.poolId === pool.id &&
+                m.round === 3 &&
+                ((m.team1Id === teamsWithOneWin[0].team.id &&
+                  m.team2Id === teamsWithOneWin[1].team.id) ||
+                  (m.team1Id === teamsWithOneWin[1].team.id &&
+                    m.team2Id === teamsWithOneWin[0].team.id)),
+            );
+
+            if (!barrageExists) {
+              allMatches.push({
+                id: generateUuid(),
+                round: 3,
+                court: baseCourt,
+                team1Id: teamsWithOneWin[0].team.id,
+                team2Id: teamsWithOneWin[1].team.id,
+                completed: false,
+                isBye: false,
+                poolId: pool.id,
+                battleIntensity: Math.floor(Math.random() * 50) + 25,
+                hackingAttempts: 0,
+              });
+            }
+          }
+        }
       }
     } else if (poolTeams.length === 3) {
       const [team1, team2, team3] = poolTeams;
