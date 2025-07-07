@@ -121,4 +121,19 @@ describe('applyByeLogic', () => {
     const byeMatches = withByes.filter(m => m.isBye);
     expect(byeMatches).toHaveLength(4);
   });
+
+  it('removes empty matches when BYEs can fill remaining slots', () => {
+    const matches = [
+      makeMatch('m1', 't1', 't2'),
+      makeMatch('m2'),
+      makeMatch('m3', 't3'),
+      makeMatch('m4'),
+    ];
+
+    const result = applyByeLogic(matches, 3, 6, 0);
+    const empty = result.filter(m => !m.team1Id && !m.team2Id && !m.isBye);
+    expect(empty).toHaveLength(0);
+    const byeMatches = result.filter(m => m.isBye);
+    expect(byeMatches).toHaveLength(3);
+  });
 });

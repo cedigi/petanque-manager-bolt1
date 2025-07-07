@@ -13,17 +13,30 @@ export function applyByeLogic(matches: Match[], qualifiedCount: number, expected
 
   if (pendingPoolMatches === 0 && qualifiedCount + remainingSlots >= expectedQualified) {
     return matches.map(match => {
-      if (!match.completed && ((match.team1Id && !match.team2Id) || (!match.team1Id && match.team2Id))) {
-        const solo = match.team1Id || match.team2Id || '';
-        return {
-          ...match,
-          team1Id: solo,
-          team2Id: solo,
-          team1Score: 13,
-          team2Score: 0,
-          completed: true,
-          isBye: true,
-        };
+      if (!match.completed) {
+        if ((match.team1Id && !match.team2Id) || (!match.team1Id && match.team2Id)) {
+          const solo = match.team1Id || match.team2Id || '';
+          return {
+            ...match,
+            team1Id: solo,
+            team2Id: solo,
+            team1Score: 13,
+            team2Score: 0,
+            completed: true,
+            isBye: true,
+          };
+        }
+        if (!match.team1Id && !match.team2Id) {
+          return {
+            ...match,
+            team1Id: '',
+            team2Id: '',
+            team1Score: 13,
+            team2Score: 0,
+            completed: true,
+            isBye: true,
+          };
+        }
       }
       return match;
     });
