@@ -239,6 +239,9 @@ export function MatchesTab({
                                 onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
                                 className="glass-select text-sm border-0 font-medium"
                               >
+                                {match.court === 0 && (
+                                  <option value={0} className="bg-slate-800">Choisir</option>
+                                )}
                                 {Array.from({ length: courts }, (_, i) => i + 1).map(court => (
                                   <option key={court} value={court} className="bg-slate-800">{court}</option>
                                 ))}

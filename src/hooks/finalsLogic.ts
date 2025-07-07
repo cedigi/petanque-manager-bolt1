@@ -12,7 +12,6 @@ export function createEmptyFinalPhases(totalTeams: number, courts: number, start
   const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
   let currentTeamCount = bracketSize;
   let round = 100;
-  let courtIndex = startCourt;
 
   while (currentTeamCount > 1) {
     const matchesInRound = Math.floor(currentTeamCount / 2);
@@ -20,7 +19,7 @@ export function createEmptyFinalPhases(totalTeams: number, courts: number, start
       matches.push({
         id: generateUuid(),
         round,
-        court: courtIndex,
+        court: 0,
         team1Id: '',
         team2Id: '',
         completed: false,
@@ -28,7 +27,6 @@ export function createEmptyFinalPhases(totalTeams: number, courts: number, start
         battleIntensity: 0,
         hackingAttempts: 0,
       });
-      courtIndex = (courtIndex % courts) + 1;
     }
     currentTeamCount = matchesInRound + (currentTeamCount % 2);
     round++;
@@ -47,7 +45,7 @@ export function createEmptyFinalPhasesB(totalTeams: number, courts: number, star
   const bracketSize = 1 << Math.ceil(Math.log2(bottomTeams));
   let currentTeamCount = bracketSize;
   let round = 200;
-  let courtIndex = startCourt;
+  // Courts for Category B finals are chosen manually
 
   while (currentTeamCount > 1) {
     const matchesInRound = Math.floor(currentTeamCount / 2);
@@ -55,7 +53,7 @@ export function createEmptyFinalPhasesB(totalTeams: number, courts: number, star
       matches.push({
         id: generateUuid(),
         round,
-        court: courtIndex,
+        court: 0,
         team1Id: '',
         team2Id: '',
         completed: false,
@@ -63,7 +61,6 @@ export function createEmptyFinalPhasesB(totalTeams: number, courts: number, star
         battleIntensity: 0,
         hackingAttempts: 0,
       });
-      courtIndex = (courtIndex % courts) + 1;
     }
     currentTeamCount = matchesInRound + (currentTeamCount % 2);
     round++;
