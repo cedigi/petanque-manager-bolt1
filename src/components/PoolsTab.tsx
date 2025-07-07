@@ -16,11 +16,9 @@ interface PoolsTabProps {
 
 export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateScore, onUpdateCourt }: PoolsTabProps) {
   const isSolo = tournament.type === 'melee' || tournament.type === 'tete-a-tete';
-        codex/ajouter-gestion-des-matchs-de-catégorie-b
   const [showCatB, setShowCatB] = useState(false);
 
   const [showCategoryB, setShowCategoryB] = useState(false);
-        main
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
@@ -273,7 +271,6 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
 
           <CourtAvailability courts={tournament.courts} matches={tournament.matches} />
 
-        codex/ajouter-gestion-des-matchs-de-catégorie-b
           {/* Phases finales - TOUJOURS affichées avec remplissage progressif */}
           <div className="flex justify-end mb-2">
             <button
@@ -286,10 +283,11 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
           <FinalPhases
             qualifiedTeams={showCatB ? bottomTeams : qualifiedTeams}
             tournament={tournament}
-            matches={showCatB ? tournament.matchesB : tournament.matches.filter(m => !m.poolId && m.round >= 100 && m.round < 200)}
             onUpdateScore={onUpdateScore}
             onUpdateCourt={onUpdateCourt}
             totalTeams={teams.length}
+            title={showCatB ? 'Catégorie B' : 'Catégorie A'}
+            roundOffset={showCatB ? 200 : 100}
           />
 
           {/* Catégorie A / B toggle */}
@@ -325,7 +323,6 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
               roundOffset={100}
             />
           )}
-        main
 
           {/* Statistiques des poules */}
           <div className="glass-card p-6 mt-8">
@@ -376,7 +373,6 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
 interface FinalPhasesProps {
   qualifiedTeams: Team[];
   tournament: Tournament;
-  matches: Match[];
   onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
   onUpdateCourt?: (matchId: string, court: number) => void;
   totalTeams: number;
@@ -384,11 +380,7 @@ interface FinalPhasesProps {
   roundOffset?: number;
 }
 
-        codex/ajouter-gestion-des-matchs-de-catégorie-b
-function FinalPhases({ qualifiedTeams, tournament, matches, onUpdateScore, onUpdateCourt, totalTeams }: FinalPhasesProps) {
-
 function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, onUpdateCourt, totalTeams, title, roundOffset = 100 }: FinalPhasesProps) {
-        main
   // Calculer la structure du tableau en fonction du nombre total d'équipes
   const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
   const expectedQualified = (poolsOf4 + poolsOf3) * 2;
@@ -405,15 +397,10 @@ function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, onUpdateCourt,
 
   const config = getPhaseConfiguration(expectedQualified);
 
-        codex/ajouter-gestion-des-matchs-de-catégorie-b
-  // Matches of the selected category finals
-  const finalMatches = matches;
-
   // Trouver les matchs des phases finales pour la catégorie donnée
   const finalMatches = tournament.matches.filter(
     m => !m.poolId && m.round >= roundOffset && m.round < roundOffset + 100
   );
-        main
 
   const handlePrintFinals = () => {
     const printWindow = window.open('', '_blank');
@@ -513,14 +500,8 @@ interface PhaseSectionProps {
   roundOffset: number;
 }
 
-        codex/ajouter-gestion-des-matchs-de-catégorie-b
-function PhaseSection({ phaseName, phaseIndex, matches, tournament, onUpdateScore, onUpdateCourt, expectedQualified }: PhaseSectionProps) {
-  const baseRound = matches.length > 0 ? Math.min(...matches.map(m => m.round)) : 100;
-  const phaseMatches = matches.filter(m => m.round === baseRound + phaseIndex);
-
 function PhaseSection({ phaseName, phaseIndex, matches, tournament, onUpdateScore, onUpdateCourt, expectedQualified, roundOffset }: PhaseSectionProps) {
   const phaseMatches = matches.filter(m => m.round === phaseIndex + roundOffset); // 100+ pour les phases finales
-        main
   
   // Calculer le nombre de matchs attendus pour cette phase
   const getExpectedMatches = () => {
@@ -530,13 +511,9 @@ function PhaseSection({ phaseName, phaseIndex, matches, tournament, onUpdateScor
       return bracketSize / 2;
     } else {
       // Phases suivantes : moitié de la phase précédente
-        codex/ajouter-gestion-des-matchs-de-catégorie-b
-      const previousPhaseMatches = matches.filter(m => m.round === baseRound + phaseIndex - 1);
-
       const previousPhaseMatches = matches.filter(
         m => m.round === phaseIndex + roundOffset - 1
       );
-        main
       return Math.floor(previousPhaseMatches.length / 2);
     }
   };

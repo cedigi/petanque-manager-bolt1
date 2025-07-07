@@ -24,6 +24,7 @@ describe('createEmptyFinalPhases edge case', () => {
       courts: 2,
       teams: [team('A'), team('B')],
       matches: [],
+      matchesB: [],
       pools: [],
       currentRound: 0,
       completed: false,
