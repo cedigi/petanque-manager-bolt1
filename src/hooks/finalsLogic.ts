@@ -225,6 +225,23 @@ export function propagateWinnersToNextPhases(tournament: Tournament): Tournament
   return tournament;
 }
 
+export function initializeCategoryBBracket(
+  tournament: Tournament,
+  firstRound: Match[],
+  others: Match[],
+  bottomTeams: Team[],
+  bottomCount: number,
+): Match[] {
+  const pending = tournament.matches.filter(m => m.poolId && !m.completed).length;
+  const withByes = applyByeLogic(firstRound, bottomTeams.length, bottomCount, pending);
+  for (let i = 0; i < firstRound.length; i++) {
+    firstRound[i] = withByes[i];
+  }
+
+  const combined = [...firstRound, ...others];
+  return propagateWinnersList(combined);
+}
+
 export function updateCategoryBPhases(t: Tournament): Tournament {
   const bottomTeams = getCurrentBottomTeams(t);
   const bottomIds = new Set(bottomTeams.map(bt => bt.id));
@@ -289,15 +306,14 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
     firstRound[pos.matchIndex] = { ...match, [pos.position + 'Id']: team.id } as Match;
   });
 
-  const pending = t.matches.filter(m => m.poolId && !m.completed).length;
-  const withByes = applyByeLogic(firstRound, bottomTeams.length, bottomCount, pending);
-  for (let i = 0; i < firstRound.length; i++) {
-    firstRound[i] = withByes[i];
-  }
-
   const others = matchesB.filter(m => m.round > 200);
-  const combined = [...firstRound, ...others];
-  const propagated = propagateWinnersList(combined);
+  const propagated = initializeCategoryBBracket(
+    t,
+    firstRound,
+    others,
+    bottomTeams,
+    bottomCount,
+  );
   return { ...t, matchesB: propagated };
 }
 

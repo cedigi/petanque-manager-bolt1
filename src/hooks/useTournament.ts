@@ -19,10 +19,9 @@ import {
 import {
   createEmptyFinalPhasesB,
   getCurrentBottomTeams,
-  propagateWinnersList,
+  initializeCategoryBBracket,
 } from './finalsLogic';
 import { calculateOptimalPools } from '../utils/poolGeneration';
-import { applyByeLogic } from '../utils/finals';
 
 const STORAGE_KEY = 'petanque-tournament';
 
@@ -174,15 +173,14 @@ export function useTournament() {
       }
     }
 
-    const pending = t.matches.filter(m => m.poolId && !m.completed).length;
-    const withByes = applyByeLogic(firstRound, bottomTeams.length, bottomCount, pending);
-    for (let i = 0; i < firstRound.length; i++) {
-      firstRound[i] = withByes[i];
-    }
-
     const others = matchesB.filter(m => m.round > 200);
-    const combined = [...firstRound, ...others];
-    const propagated = propagateWinnersList(combined);
+    const propagated = initializeCategoryBBracket(
+      t,
+      firstRound,
+      others,
+      bottomTeams,
+      bottomCount,
+    );
     saveTournament({ ...t, matchesB: propagated });
   };
 
