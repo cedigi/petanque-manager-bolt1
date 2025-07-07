@@ -289,16 +289,22 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
               />
             </>
           ) : (
-            <FinalPhases
-              qualifiedTeams={qualifiedTeams}
-              tournament={tournament}
-              matches={tournament.matches}
-              onUpdateScore={onUpdateScore}
-              onUpdateCourt={onUpdateCourt}
-              totalTeams={teams.length}
-              title="Catégorie A"
-              roundOffset={100}
-            />
+            <>
+              <CourtAvailability
+                courts={tournament.courts}
+                matches={tournament.matches}
+              />
+              <FinalPhases
+                qualifiedTeams={qualifiedTeams}
+                tournament={tournament}
+                matches={tournament.matches}
+                onUpdateScore={onUpdateScore}
+                onUpdateCourt={onUpdateCourt}
+                totalTeams={teams.length}
+                title="Catégorie A"
+                roundOffset={100}
+              />
+            </>
           )}
 
           {/* Statistiques des poules */}
