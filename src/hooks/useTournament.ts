@@ -86,9 +86,6 @@ export function useTournament() {
         currentRound: tournament.currentRound + 1,
       });
     }
-        codex/refactor-usetournament.ts-into-modules
-
-
     matchesB = matchesB.map(match => {
       let changed = false;
       let { team1Id, team2Id } = match;
@@ -473,7 +470,6 @@ export function useTournament() {
     result = updateFinalPhasesWithQualified(result);
 
     return result;
-        main
   };
 
   const updateMatchScore = (matchId: string, team1Score: number, team2Score: number) => {
