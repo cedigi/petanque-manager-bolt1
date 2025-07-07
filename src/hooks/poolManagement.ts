@@ -179,6 +179,164 @@ export function generateRound(tournament: Tournament): Tournament {
           });
         }
       }
+    } else if (poolTeams.length === 3) {
+      const [team1, team2, team3] = poolTeams;
+
+      const firstRoundMatch = poolMatches.find(
+        m =>
+          m.round === 1 &&
+          !m.isBye &&
+          ((m.team1Id === team1.id && m.team2Id === team2.id) ||
+            (m.team1Id === team2.id && m.team2Id === team1.id)),
+      );
+
+      if (firstRoundMatch?.completed) {
+        const getWinner = (match: Match, a: Team, b: Team) => {
+          const isFirst = match.team1Id === a.id;
+          const scoreA = isFirst ? match.team1Score! : match.team2Score!;
+          const scoreB = isFirst ? match.team2Score! : match.team1Score!;
+          return scoreA > scoreB ? a : b;
+        };
+        const getLoser = (match: Match, a: Team, b: Team) => {
+          const isFirst = match.team1Id === a.id;
+          const scoreA = isFirst ? match.team1Score! : match.team2Score!;
+          const scoreB = isFirst ? match.team2Score! : match.team1Score!;
+          return scoreA < scoreB ? a : b;
+        };
+
+        const winner = getWinner(firstRoundMatch, team1, team2);
+        const loser = getLoser(firstRoundMatch, team1, team2);
+
+        const winnersMatchExists = allMatches.some(
+          m =>
+            m.poolId === pool.id &&
+            m.round === 2 &&
+            ((m.team1Id === winner.id && m.team2Id === team3.id) ||
+              (m.team1Id === team3.id && m.team2Id === winner.id)),
+        );
+
+        if (!winnersMatchExists) {
+          allMatches.push({
+            id: generateUuid(),
+            round: 2,
+            court: baseCourt,
+            team1Id: winner.id,
+            team2Id: team3.id,
+            completed: false,
+            isBye: false,
+            poolId: pool.id,
+            battleIntensity: Math.floor(Math.random() * 50) + 25,
+            hackingAttempts: 0,
+          });
+        }
+
+        const loserByeExists = allMatches.some(
+          m =>
+            m.poolId === pool.id &&
+            m.round === 2 &&
+            m.isBye &&
+            m.team1Id === loser.id &&
+            m.team2Id === loser.id,
+        );
+
+        if (!loserByeExists) {
+          allMatches.push({
+            id: generateUuid(),
+            round: 2,
+            court: 0,
+            team1Id: loser.id,
+            team2Id: loser.id,
+            team1Score: 13,
+            team2Score: 0,
+            completed: true,
+            isBye: true,
+            poolId: pool.id,
+            battleIntensity: 0,
+            hackingAttempts: 0,
+          });
+        }
+
+        const finalMatch = allMatches.find(
+          m =>
+            m.poolId === pool.id &&
+            m.round === 2 &&
+            !m.isBye &&
+            ((m.team1Id === winner.id && m.team2Id === team3.id) ||
+              (m.team1Id === team3.id && m.team2Id === winner.id)),
+        );
+
+        if (finalMatch?.completed) {
+          const getTeamStats = (team: Team) => {
+            const teamMatches = allMatches.filter(
+              m =>
+                m.poolId === pool.id &&
+                m.completed &&
+                !m.isBye &&
+                (m.team1Id === team.id || m.team2Id === team.id),
+            );
+
+            const byeMatches = allMatches.filter(
+              m =>
+                m.poolId === pool.id &&
+                m.completed &&
+                m.isBye &&
+                (m.team1Id === team.id || m.team2Id === team.id) &&
+                ((m.team1Id === team.id && (m.team1Score || 0) > (m.team2Score || 0)) ||
+                  (m.team2Id === team.id && (m.team2Score || 0) > (m.team1Score || 0))),
+            );
+
+            let wins = 0;
+            teamMatches.forEach(match => {
+              const isTeam1 = match.team1Id === team.id;
+              const teamScore = isTeam1 ? match.team1Score! : match.team2Score!;
+              const opponentScore = isTeam1 ? match.team2Score! : match.team1Score!;
+
+              if (teamScore > opponentScore) wins++;
+            });
+
+            wins += byeMatches.length;
+
+            return { wins, matches: teamMatches.length + byeMatches.length };
+          };
+
+          const team1Stats = getTeamStats(team1);
+          const team2Stats = getTeamStats(team2);
+          const team3Stats = getTeamStats(team3);
+
+          const allStats = [
+            { team: team1, ...team1Stats },
+            { team: team2, ...team2Stats },
+            { team: team3, ...team3Stats },
+          ];
+
+          const teamsWithOneWin = allStats.filter(stat => stat.wins === 1);
+
+          if (teamsWithOneWin.length === 2) {
+            const barrageExists = allMatches.some(
+              m =>
+                m.poolId === pool.id &&
+                m.round === 3 &&
+                ((m.team1Id === teamsWithOneWin[0].team.id && m.team2Id === teamsWithOneWin[1].team.id) ||
+                  (m.team1Id === teamsWithOneWin[1].team.id && m.team2Id === teamsWithOneWin[0].team.id)),
+            );
+
+            if (!barrageExists) {
+              allMatches.push({
+                id: generateUuid(),
+                round: 3,
+                court: baseCourt,
+                team1Id: teamsWithOneWin[0].team.id,
+                team2Id: teamsWithOneWin[1].team.id,
+                completed: false,
+                isBye: false,
+                poolId: pool.id,
+                battleIntensity: Math.floor(Math.random() * 50) + 25,
+                hackingAttempts: 0,
+              });
+            }
+          }
+        }
+      }
     }
   });
 
