@@ -283,6 +283,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
           <FinalPhases
             qualifiedTeams={showCatB ? bottomTeams : qualifiedTeams}
             tournament={tournament}
+            matches={showCatB ? tournament.matchesB : tournament.matches}
             onUpdateScore={onUpdateScore}
             onUpdateCourt={onUpdateCourt}
             totalTeams={teams.length}
@@ -306,6 +307,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
             <FinalPhases
               qualifiedTeams={qualifiedTeams}
               tournament={tournament}
+              matches={tournament.matchesB}
               onUpdateScore={onUpdateScore}
               onUpdateCourt={onUpdateCourt}
               totalTeams={teams.length}
@@ -316,6 +318,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
             <FinalPhases
               qualifiedTeams={qualifiedTeams}
               tournament={tournament}
+              matches={tournament.matches}
               onUpdateScore={onUpdateScore}
               onUpdateCourt={onUpdateCourt}
               totalTeams={teams.length}
@@ -373,6 +376,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
 interface FinalPhasesProps {
   qualifiedTeams: Team[];
   tournament: Tournament;
+  matches: Match[];
   onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
   onUpdateCourt?: (matchId: string, court: number) => void;
   totalTeams: number;
@@ -380,7 +384,7 @@ interface FinalPhasesProps {
   roundOffset?: number;
 }
 
-function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, onUpdateCourt, totalTeams, title, roundOffset = 100 }: FinalPhasesProps) {
+function FinalPhases({ qualifiedTeams, tournament, matches, onUpdateScore, onUpdateCourt, totalTeams, title, roundOffset = 100 }: FinalPhasesProps) {
   // Calculer la structure du tableau en fonction du nombre total d'équipes
   const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
   const expectedQualified = (poolsOf4 + poolsOf3) * 2;
@@ -398,7 +402,7 @@ function FinalPhases({ qualifiedTeams, tournament, onUpdateScore, onUpdateCourt,
   const config = getPhaseConfiguration(expectedQualified);
 
   // Trouver les matchs des phases finales pour la catégorie donnée
-  const finalMatches = tournament.matches.filter(
+  const finalMatches = matches.filter(
     m => !m.poolId && m.round >= roundOffset && m.round < roundOffset + 100
   );
 
