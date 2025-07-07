@@ -53,6 +53,7 @@ describe('pool BYE creation', () => {
         } as Match,
       ],
       pools: [{ id: 'p1', name: 'Poule 1', teamIds: ['A', 'B', 'C'], matches: [] }],
+      matchesB: [],
       currentRound: 1,
       completed: false,
       createdAt: new Date(),

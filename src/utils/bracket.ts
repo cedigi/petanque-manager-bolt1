@@ -107,3 +107,34 @@ export function createKnockoutBracket(teams: Team[], startingRound = 1): Match[]
 
   return matches;
 }
+
+// Generate empty bracket for Category B finals starting at round >=200
+export function createCategoryBBracket(teamCount: number, startingRound = 200): Match[] {
+  const matches: Match[] = [];
+  if (teamCount <= 1) return matches;
+
+  const bracketSize = 1 << Math.ceil(Math.log2(teamCount));
+  let current = bracketSize;
+  let round = startingRound;
+
+  while (current > 1) {
+    const matchesInRound = Math.floor(current / 2);
+    for (let i = 0; i < matchesInRound; i++) {
+      matches.push({
+        id: generateUuid(),
+        round,
+        court: 0,
+        team1Id: '',
+        team2Id: '',
+        completed: false,
+        isBye: false,
+        battleIntensity: 0,
+        hackingAttempts: 0,
+      });
+    }
+    current = matchesInRound + (current % 2);
+    round += 1;
+  }
+
+  return matches;
+}

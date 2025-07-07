@@ -34,6 +34,7 @@ describe('updateTeam', () => {
       courts: 2,
       teams: [team],
       matches: [],
+      matchesB: [],
       pools: [],
       currentRound: 0,
       completed: false,
