@@ -277,6 +277,8 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   const positions: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
   firstRound.forEach((m, idx) => {
     if (!m.team1Id) positions.push({ matchIndex: idx, position: 'team1' });
+  });
+  firstRound.forEach((m, idx) => {
     if (!m.team2Id) positions.push({ matchIndex: idx, position: 'team2' });
   });
   const newTeams = bottomTeams.filter(t => !used.has(t.id));
