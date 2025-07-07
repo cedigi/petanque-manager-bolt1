@@ -582,7 +582,7 @@ function ProgressiveFinalMatchBox({ match, tournament, onUpdateScore, onUpdateCo
                 ) : null}
                 {Array.from({ length: tournament.courts }, (_, i) => i + 1).map(court => (
                   <option key={court} value={court} className="bg-slate-800">
-                    {court}
+                    T{court}
                   </option>
                 ))}
               </select>
@@ -1084,7 +1084,7 @@ function CompactMatchBox({ team1, team2, match, bgColor = "bg-white/5", onUpdate
                 ) : null}
                 {Array.from({ length: courts }, (_, i) => i + 1).map((court) => (
                   <option key={court} value={court} className="bg-slate-800">
-                    {court}
+                    T{court}
                   </option>
                 ))}
               </select>
