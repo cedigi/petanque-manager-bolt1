@@ -234,12 +234,20 @@ export function useTournament() {
   };
 
   // Nouvelle fonction pour créer les cadres vides des phases finales
-  const createEmptyFinalPhases = (totalTeams: number, courts: number, startCourt = 1) => {
+  const createEmptyFinalPhases = (
+    totalTeams: number,
+    courts: number,
+    startCourt = 1
+  ) => {
     const matches: Match[] = [];
 
     // Calculer le nombre d'équipes qualifiées attendues
     const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
     const expectedQualified = (poolsOf4 + poolsOf3) * 2;
+
+    if (expectedQualified <= 1) {
+      return matches;
+    }
 
     // Taille du tableau : puissance de deux immédiatement supérieure
     const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
