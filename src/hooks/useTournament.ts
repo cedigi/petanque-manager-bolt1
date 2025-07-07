@@ -775,6 +775,7 @@ export function useTournament() {
 
   const updateCategoryBPhases = (t: Tournament): Tournament => {
     const bottomTeams = getCurrentBottomTeams(t);
+    const bottomIds = new Set(bottomTeams.map(bt => bt.id));
     const { poolsOf4, poolsOf3 } = calculateOptimalPools(t.teams.length);
     const expectedQualified = (poolsOf4 + poolsOf3) * 2;
     const bottomCount = t.teams.length - expectedQualified;
@@ -784,6 +785,32 @@ export function useTournament() {
     if (matchesB.length === 0) {
       matchesB = createEmptyFinalPhasesB(t.teams.length, t.courts, t.pools.length * 2 + 1);
     }
+
+    matchesB = matchesB.map(match => {
+      let changed = false;
+      let { team1Id, team2Id } = match;
+
+      if (team1Id && !bottomIds.has(team1Id)) {
+        team1Id = '';
+        changed = true;
+      }
+      if (team2Id && !bottomIds.has(team2Id)) {
+        team2Id = '';
+        changed = true;
+      }
+
+      return changed
+        ? {
+            ...match,
+            team1Id,
+            team2Id,
+            team1Score: undefined,
+            team2Score: undefined,
+            completed: false,
+            isBye: false,
+          }
+        : match;
+    });
 
     const firstRound = matchesB.filter(m => m.round === 200);
     const used = new Set<string>();
