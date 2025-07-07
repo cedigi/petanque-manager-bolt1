@@ -231,6 +231,10 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   const { poolsOf4, poolsOf3 } = calculateOptimalPools(t.teams.length);
   const expectedQualified = (poolsOf4 + poolsOf3) * 2;
   const bottomCount = t.teams.length - expectedQualified;
+  // If no team has qualified yet, don't populate category B
+  if (bottomTeams.length === t.teams.length) {
+    return t;
+  }
   if (bottomCount <= 1) return t;
 
   let matchesB = t.matchesB;
