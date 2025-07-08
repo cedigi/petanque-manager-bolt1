@@ -1,6 +1,10 @@
 import { updateCategoryBPhases } from '../finalsLogic';
 import { Tournament, Team, Player, Pool, Match } from '../../types/tournament';
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 describe('Category B recompute when bottom count changes', () => {
   it('rebuilds first round to correct BYE count', () => {
     const makeTeam = (id: string): Team => ({

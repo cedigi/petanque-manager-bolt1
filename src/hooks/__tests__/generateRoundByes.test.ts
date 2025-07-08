@@ -2,6 +2,10 @@ import { renderHook, act } from '@testing-library/react';
 import { useTournament } from '../useTournament';
 import { Tournament, Team, Player, Pool, Match } from '../../types/tournament';
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 describe('generateRound BYE creation', () => {
   it('creates BYE matches for bottom bracket', () => {
     const makeTeam = (id: string): Team => ({

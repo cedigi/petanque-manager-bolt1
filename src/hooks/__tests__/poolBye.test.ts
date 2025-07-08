@@ -2,6 +2,10 @@ import { renderHook, act } from '@testing-library/react';
 import { useTournament } from '../useTournament';
 import { Tournament, Team, Player, Match } from '../../types/tournament';
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 describe('pool BYE creation', () => {
   it('creates BYE for first match loser in pool of three', () => {
     const teamTemplate = (id: string): Team => ({

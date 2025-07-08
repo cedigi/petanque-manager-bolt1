@@ -1,6 +1,10 @@
 import { updateCategoryBPhases } from '../finalsLogic';
 import { Tournament, Team, Player, Pool, Match } from '../../types/tournament';
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 describe('Category B BYE generation for 35 teams', () => {
   it('creates 15 BYE matches automatically', () => {
     const makeTeam = (id: string): Team => ({

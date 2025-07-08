@@ -2,6 +2,10 @@ import { renderHook, act } from '@testing-library/react';
 import { useTournament } from '../useTournament';
 import { Tournament, Team, Player } from '../../types/tournament';
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 describe('updateTeam', () => {
   it('updates player names and team name', () => {
     const makePlayer = (id: string, name: string): Player => ({
