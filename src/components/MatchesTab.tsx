@@ -8,7 +8,6 @@ interface MatchesTabProps {
   currentRound: number;
   courts: number;
   onGenerateRound: () => void;
-  onDeleteCurrentRound: () => void;
   onDeleteRound: (round: number) => void;
   onUpdateScore: (matchId: string, team1Score: number, team2Score: number) => void;
   onUpdateCourt: (matchId: string, court: number) => void;
@@ -20,7 +19,6 @@ export function MatchesTab({
   currentRound,
   courts,
   onGenerateRound,
-  onDeleteCurrentRound,
   onDeleteRound,
   onUpdateScore,
   onUpdateCourt
