@@ -104,7 +104,7 @@ export function MatchesTab({
             th, td { padding: 12px; border: 1px solid #ddd; }
             th { background-color: #f2f2f2; font-weight: bold; }
             th.terrain, td.terrain { width: 10%; text-align: center; }
-            th.team, td.team { width: 35%; }
+            th.team, td.team { width: 40%; }
             th.score, td.score { width: 10%; text-align: center; font-size: 18px; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
             @media print { body { margin: 0; } }
