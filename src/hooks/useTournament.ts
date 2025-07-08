@@ -36,6 +36,7 @@ export interface UseTournamentReturn {
   updateTeam: (teamId: string, players: Player[], name?: string) => void;
   generateTournamentPools: () => void;
   generateRound: () => void;
+  deleteCurrentRound: () => void;
   updateMatchScore: (matchId: string, team1Score: number, team2Score: number) => void;
   updateMatchCourt: (matchId: string, court: number) => void;
   deleteCurrentRound: () => void;
@@ -201,6 +202,14 @@ export function useTournament(): UseTournamentReturn {
     saveTournament({ ...t, matchesB: propagated });
   };
 
+  const deleteCurrentRound = (): void => {
+    if (!tournament) return;
+    if (tournament.currentRound === 0) return;
+    const roundToDelete = tournament.currentRound;
+    const remaining = tournament.matches.filter(m => m.round !== roundToDelete);
+    saveTournament({ ...tournament, matches: remaining, currentRound: roundToDelete - 1 });
+  };
+
   const updateMatchScore = (matchId: string, team1Score: number, team2Score: number): void => {
     if (!tournament) return;
     const updated = updateMatchScoreLogic(tournament, matchId, team1Score, team2Score);
@@ -313,6 +322,7 @@ export function useTournament(): UseTournamentReturn {
     updateTeam,
     generateTournamentPools,
     generateRound,
+    deleteCurrentRound,
     updateMatchScore,
     updateMatchCourt,
     deleteCurrentRound,
