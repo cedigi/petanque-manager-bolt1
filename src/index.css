@@ -425,16 +425,16 @@
     position: absolute;
     border-radius: 50%;
     opacity: 0.15;
-    background: radial-gradient(circle at 30% 30%, 
-      rgba(200, 200, 200, 0.8) 0%, 
-      rgba(150, 150, 150, 0.6) 40%, 
-      rgba(100, 100, 100, 0.4) 70%, 
+    background: radial-gradient(circle at 30% 30%,
+      rgba(200, 200, 200, 0.8) 0%,
+      rgba(150, 150, 150, 0.6) 40%,
+      rgba(100, 100, 100, 0.4) 70%,
       rgba(80, 80, 80, 0.3) 100%);
-    box-shadow: 
+    box-shadow:
       inset -10px -10px 20px rgba(0, 0, 0, 0.3),
       inset 10px 10px 20px rgba(255, 255, 255, 0.2),
       0 0 30px rgba(0, 0, 0, 0.2);
-    animation: floatPetanque 25s infinite linear;
+    animation: floatPetanque 18s infinite linear;
   }
 
   /* Effet de reflet métallique sur les boules */
@@ -460,7 +460,7 @@
     top: 15%;
     left: 10%;
     animation-delay: 0s;
-    animation-duration: 30s;
+    animation-duration: 21s;
   }
 
   .petanque-ball:nth-child(2) {
@@ -469,7 +469,7 @@
     top: 60%;
     right: 15%;
     animation-delay: -8s;
-    animation-duration: 35s;
+    animation-duration: 24s;
   }
 
   .petanque-ball:nth-child(3) {
@@ -478,7 +478,7 @@
     bottom: 25%;
     left: 20%;
     animation-delay: -15s;
-    animation-duration: 28s;
+    animation-duration: 20s;
   }
 
   .petanque-ball:nth-child(4) {
@@ -487,7 +487,7 @@
     top: 35%;
     right: 25%;
     animation-delay: -22s;
-    animation-duration: 32s;
+    animation-duration: 22s;
   }
 
   .petanque-ball:nth-child(5) {
@@ -496,7 +496,7 @@
     top: 70%;
     left: 60%;
     animation-delay: -5s;
-    animation-duration: 26s;
+    animation-duration: 18s;
   }
 
   .petanque-ball:nth-child(6) {
@@ -505,7 +505,16 @@
     top: 20%;
     left: 70%;
     animation-delay: -12s;
-    animation-duration: 33s;
+    animation-duration: 23s;
+  }
+
+  .petanque-ball:nth-child(7) {
+    width: 50px;
+    height: 50px;
+    bottom: 10%;
+    right: 40%;
+    animation-delay: -18s;
+    animation-duration: 21s;
   }
 
   @keyframes floatPetanque {
@@ -534,7 +543,7 @@
 
   .petanque-ball:nth-child(odd) {
     animation-name: floatPetanque, shimmer;
-    animation-duration: 25s, 4s;
+    animation-duration: 18s, 4s;
     animation-iteration-count: infinite, infinite;
     animation-timing-function: linear, ease-in-out;
   }
