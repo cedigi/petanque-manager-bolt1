@@ -1,5 +1,5 @@
 import { Tournament, Team, Match } from '../types/tournament';
-import { generatePools, calculateOptimalPools } from '../utils/poolGeneration';
+import { generatePools } from '../utils/poolGeneration';
 import { generateUuid } from '../utils/uuid';
 import { createEmptyFinalPhases, createEmptyFinalPhasesB } from './finalsLogic';
 
