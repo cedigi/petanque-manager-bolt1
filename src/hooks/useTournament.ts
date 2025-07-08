@@ -19,6 +19,7 @@ import {
   createEmptyFinalPhasesB,
   getCurrentBottomTeams,
   initializeCategoryBBracket,
+  autoGenerateNextMatches,
 } from './finalsLogic';
 import { calculateOptimalPools } from '../utils/poolGeneration';
 
@@ -198,7 +199,9 @@ export function useTournament(): UseTournamentReturn {
 
   const updateMatchScore = (matchId: string, team1Score: number, team2Score: number): void => {
     if (!tournament) return;
-    saveTournament(updateMatchScoreLogic(tournament, matchId, team1Score, team2Score));
+    const updated = updateMatchScoreLogic(tournament, matchId, team1Score, team2Score);
+    const auto = autoGenerateNextMatches(updated);
+    saveTournament(auto);
   };
 
   const updateMatchCourt = (matchId: string, court: number): void => {
