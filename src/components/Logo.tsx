@@ -1,4 +1,5 @@
 import React from 'react';
+import logoUrl from '../../logo1.png';
 
 interface LogoProps {
   className?: string;
@@ -6,6 +7,6 @@ interface LogoProps {
 
 export function Logo({ className = "w-12 h-12" }: LogoProps) {
   return (
-    <img src="/logo1.png" alt="Logo" className={className} />
+    <img src={logoUrl} alt="Logo" className={className} />
   );
 }
