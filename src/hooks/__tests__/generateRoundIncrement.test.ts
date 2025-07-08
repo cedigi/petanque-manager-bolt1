@@ -2,6 +2,10 @@ import { renderHook, act } from '@testing-library/react';
 import { useTournament } from '../useTournament';
 import { Tournament, Team, Player } from '../../types/tournament';
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 describe('generateRound increments currentRound', () => {
   it('increments currentRound for pool tournaments', () => {
     const makeTeam = (id: string): Team => ({

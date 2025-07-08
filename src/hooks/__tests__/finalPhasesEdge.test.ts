@@ -2,6 +2,10 @@ import { renderHook, act } from '@testing-library/react';
 import { useTournament } from '../useTournament';
 import { Tournament, Team, Player } from '../../types/tournament';
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 describe('createEmptyFinalPhases edge case', () => {
   it('does not create final phase matches when less than two teams qualify', () => {
     const team = (id: string): Team => ({

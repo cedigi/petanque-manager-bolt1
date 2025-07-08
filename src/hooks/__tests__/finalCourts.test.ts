@@ -1,5 +1,9 @@
 import { createEmptyFinalPhases, createEmptyFinalPhasesB } from '../finalsLogic';
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 describe('final phase court assignment', () => {
   it('assigns sequential courts in category A finals', () => {
     const start = 5;

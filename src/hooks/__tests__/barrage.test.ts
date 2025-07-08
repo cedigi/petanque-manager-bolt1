@@ -2,6 +2,10 @@ import { renderHook, act } from '@testing-library/react';
 import { useTournament } from '../useTournament';
 import { Tournament, Team, Player, Match } from '../../types/tournament';
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 describe('barrage generation', () => {
   it('creates round 3 match when two teams have one win each', () => {
     const team = (id: string): Team => ({
