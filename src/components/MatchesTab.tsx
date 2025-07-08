@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Match, Team } from '../types/tournament';
-import { Play, Edit3, MapPin, Trophy, Printer, ChevronDown } from 'lucide-react';
+import { Play, Edit3, MapPin, Trophy, Printer, ChevronDown, Trash2 } from 'lucide-react';
 
 interface MatchesTabProps {
   matches: Match[];
@@ -8,6 +8,7 @@ interface MatchesTabProps {
   currentRound: number;
   courts: number;
   onGenerateRound: () => void;
+  onDeleteCurrentRound: () => void;
   onUpdateScore: (matchId: string, team1Score: number, team2Score: number) => void;
   onUpdateCourt: (matchId: string, court: number) => void;
 }
@@ -18,6 +19,7 @@ export function MatchesTab({
   currentRound,
   courts,
   onGenerateRound,
+  onDeleteCurrentRound,
   onUpdateScore,
   onUpdateCourt
 }: MatchesTabProps) {
@@ -165,14 +167,25 @@ export function MatchesTab({
     <div className="p-6">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-bold text-white tracking-wider">Matchs</h2>
-        <button
-          onClick={onGenerateRound}
-          className="glass-button flex items-center space-x-2 px-6 py-3 font-bold tracking-wide hover:scale-105 transition-all duration-300"
-          disabled={teams.length < 2}
-        >
-          <Play className="w-5 h-5" />
-          <span>Générer tour {currentRound + 1}</span>
-        </button>
+        <div className="flex space-x-4">
+          {currentRound > 0 && (
+            <button
+              onClick={onDeleteCurrentRound}
+              className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold tracking-wide hover:scale-105 transition-all duration-300 text-red-300 hover:text-red-200"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Supprimer le tour</span>
+            </button>
+          )}
+          <button
+            onClick={onGenerateRound}
+            className="glass-button flex items-center space-x-2 px-6 py-3 font-bold tracking-wide hover:scale-105 transition-all duration-300"
+            disabled={teams.length < 2}
+          >
+            <Play className="w-5 h-5" />
+            <span>Générer tour {currentRound + 1}</span>
+          </button>
+        </div>
       </div>
 
       {teams.length < 2 && (
