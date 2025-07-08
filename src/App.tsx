@@ -145,10 +145,13 @@ function App() {
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
+        gc9qdc-codex/ajouter-6-7-boules-au-fond-anime
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
+
+        main
       </div>
 
       <Header animationsPaused={animationsPaused} onToggleAnimations={toggleAnimations} />

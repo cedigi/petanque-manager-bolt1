@@ -515,6 +515,7 @@
     right: 40%;
     animation-delay: -18s;
     animation-duration: 21s;
+        gc9qdc-codex/ajouter-6-7-boules-au-fond-anime
   }
 
   .petanque-ball:nth-child(8) {
@@ -551,6 +552,8 @@
     left: 50%;
     animation-delay: -18s;
     animation-duration: 23s;
+
+        main
   }
 
   @keyframes floatPetanque {
