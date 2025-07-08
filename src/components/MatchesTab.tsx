@@ -124,15 +124,15 @@ export function MatchesTab({
                 <tr>
                   <td>${match.isBye ? '-' : match.court}</td>
                   <td>
-                    ${match.team1Ids ? getGroupLabel(match.team1Ids) : getTeamName(match.team1Id)}
-                    ${!match.team1Ids ? `<br/><small>${getTeamPlayers(match.team1Id)}</small>` : ''}
-                  </td>
-                  <td class="score">${match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}</td>
-                  <td>
-                    ${match.isBye ? 'BYE' : match.team2Ids ? getGroupLabel(match.team2Ids) : `${getTeamName(match.team2Id)}<br/><small>${getTeamPlayers(match.team2Id)}</small>`}
-                  </td>
-                </tr>
-              `).join('')}
+                      ${match.team1Ids ? getGroupLabel(match.team1Ids) : getTeamName(match.team1Id)}
+                      ${!match.team1Ids && !isSolo ? `<br/><small>${getTeamPlayers(match.team1Id)}</small>` : ''}
+                    </td>
+                    <td class="score">${match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}</td>
+                    <td>
+                      ${match.isBye ? 'BYE' : match.team2Ids ? getGroupLabel(match.team2Ids) : `${getTeamName(match.team2Id)}${!isSolo ? `<br/><small>${getTeamPlayers(match.team2Id)}</small>` : ''}`}
+                    </td>
+                  </tr>
+                `).join('')}
             </tbody>
           </table>
         </body>
@@ -263,16 +263,18 @@ export function MatchesTab({
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        {match.team1Ids ? (
-                          <span className="font-bold text-white">{getGroupLabel(match.team1Ids)}</span>
-                        ) : (
-                          <>
-                            <span className="font-bold text-white">{getTeamName(match.team1Id)}</span>
-                            <div className="mt-1 text-xs text-white/70">
-                              {getTeamPlayers(match.team1Id)}
-                            </div>
-                          </>
-                        )}
+                          {match.team1Ids ? (
+                            <span className="font-bold text-white">{getGroupLabel(match.team1Ids)}</span>
+                          ) : (
+                            <>
+                              <span className="font-bold text-white">{getTeamName(match.team1Id)}</span>
+                              {!isSolo && (
+                                <div className="mt-1 text-xs text-white/70">
+                                  {getTeamPlayers(match.team1Id)}
+                                </div>
+                              )}
+                            </>
+                          )}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-center">
                         {editingMatch === match.id ? (
@@ -302,18 +304,20 @@ export function MatchesTab({
                         )}
                       </td>
                       <td className="pl-8 pr-6 py-4 whitespace-nowrap text-center">
-                        {match.isBye ? (
-                          <span className="text-white/50 italic font-bold">BYE</span>
-                        ) : match.team2Ids ? (
-                          <span className="font-bold text-white">{getGroupLabel(match.team2Ids)}</span>
-                        ) : (
-                          <>
-                            <span className="font-bold text-white">{getTeamName(match.team2Id)}</span>
-                            <div className="mt-1 text-xs text-white/70">
-                              {getTeamPlayers(match.team2Id)}
-                            </div>
-                          </>
-                        )}
+                          {match.isBye ? (
+                            <span className="text-white/50 italic font-bold">BYE</span>
+                          ) : match.team2Ids ? (
+                            <span className="font-bold text-white">{getGroupLabel(match.team2Ids)}</span>
+                          ) : (
+                            <>
+                              <span className="font-bold text-white">{getTeamName(match.team2Id)}</span>
+                              {!isSolo && (
+                                <div className="mt-1 text-xs text-white/70">
+                                  {getTeamPlayers(match.team2Id)}
+                                </div>
+                              )}
+                            </>
+                          )}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-center">
                         {!match.isBye && (
