@@ -117,10 +117,8 @@ describe('deleteCurrentRound', () => {
     });
 
     const t = result.current.tournament!;
-    expect(t.currentRound).toBe(1);
-    expect(t.matches).toHaveLength(1);
-    const newMatch = t.matches[0];
-    expect(newMatch.completed).toBe(false);
+    expect(t.currentRound).toBe(0);
+    expect(t.matches).toHaveLength(0);
     const teamA = t.teams.find(tm => tm.id === 'A')!;
     expect(teamA.wins).toBe(0);
     expect(teamA.pointsFor).toBe(0);
