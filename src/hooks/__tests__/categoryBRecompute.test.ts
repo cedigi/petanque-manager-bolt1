@@ -39,7 +39,7 @@ describe('Category B recompute when bottom count changes', () => {
     const matches: Match[] = [];
     let mId = 0;
     pools.forEach((pool, idx) => {
-      const [t1, t2, t3] = pool.teamIds;
+      const [t1, t2] = pool.teamIds;
       // give two BYE wins to first team in each pool
       [t1].forEach(id => {
         for (let i = 0; i < 2; i++) {
@@ -100,7 +100,7 @@ describe('Category B recompute when bottom count changes', () => {
     };
 
     // initial call with only 17 qualifiers (last pool second team missing)
-    let interim = updateCategoryBPhases(tournament);
+    const interim = updateCategoryBPhases(tournament);
 
     // now add wins for T34 to reach expected 18 qualifiers
     ['T34'].forEach(id => {

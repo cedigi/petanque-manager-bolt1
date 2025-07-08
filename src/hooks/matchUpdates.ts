@@ -11,8 +11,8 @@ export function updateMatchScore(
   team1Score: number,
   team2Score: number,
 ): Tournament {
-  let updatedMatches = [...tournament.matches];
-  let updatedMatchesB = [...tournament.matchesB];
+  const updatedMatches = [...tournament.matches];
+  const updatedMatchesB = [...tournament.matchesB];
 
   const idxA = updatedMatches.findIndex(m => m.id === matchId);
   const idxB = updatedMatchesB.findIndex(m => m.id === matchId);

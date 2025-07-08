@@ -207,22 +207,22 @@ export function MatchesTab({
               </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="glass-table w-full">
+              <table className="glass-table w-full table-fixed">
                 <thead>
                   <tr>
-                    <th className="px-6 py-4 text-left font-bold tracking-wider">
+                    <th className="w-1/12 px-2 py-4 text-left font-bold tracking-wider">
                       Terrain
                     </th>
-                    <th className="px-6 py-4 text-center font-bold tracking-wider">
+                    <th className="w-4/12 px-4 py-4 text-center font-bold tracking-wider">
                       {isSolo ? 'Joueur' : 'Équipe'}
                     </th>
-                    <th className="px-4 py-4 text-center font-bold tracking-wider">
+                    <th className="w-2/12 px-2 py-4 text-center font-bold tracking-wider">
                       Score
                     </th>
-                    <th className="px-6 py-4 text-center font-bold tracking-wider">
+                    <th className="w-4/12 px-4 py-4 text-center font-bold tracking-wider">
                       {isSolo ? 'Joueur' : 'Équipe'}
                     </th>
-                    <th className="px-4 py-4 text-center font-bold tracking-wider">
+                    <th className="w-1/12 px-2 py-4 text-center font-bold tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -230,7 +230,7 @@ export function MatchesTab({
                 <tbody>
                   {groupedMatches[round].map((match) => (
                     <tr key={match.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="w-1/12 px-2 py-4 whitespace-nowrap">
                         {match.isBye ? (
                           <span className="text-white/50">-</span>
                         ) : (
@@ -240,7 +240,7 @@ export function MatchesTab({
                               <select
                                 value={match.court}
                                 onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
-                                className="glass-select text-sm border-0 font-medium"
+                                className="glass-select w-16 text-sm border-0 font-medium"
                               >
                                 <option value={match.court}>{`Libre ${match.court - courts}`}</option>
                                 {Array.from({ length: courts }, (_, i) => i + 1).map(court => (
@@ -251,7 +251,7 @@ export function MatchesTab({
                               <select
                                 value={match.court}
                                 onChange={(e) => onUpdateCourt(match.id, Number(e.target.value))}
-                                className="glass-select text-sm border-0 font-medium"
+                                className="glass-select w-16 text-sm border-0 font-medium"
                               >
                                 {match.court === 0 && (
                                   <option value={0} className="bg-slate-800">Choisir</option>
@@ -264,7 +264,7 @@ export function MatchesTab({
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <td className="w-4/12 px-4 py-4 whitespace-nowrap text-center">
                           {match.team1Ids ? (
                             <span className="font-bold text-white">{getGroupLabel(match.team1Ids)}</span>
                           ) : (
@@ -278,7 +278,7 @@ export function MatchesTab({
                             </>
                           )}
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-center">
+                      <td className="w-2/12 px-2 py-4 whitespace-nowrap text-center">
                         {editingMatch === match.id ? (
                           <div className="flex items-center justify-center space-x-2">
                             <input
@@ -305,7 +305,7 @@ export function MatchesTab({
                           </span>
                         )}
                       </td>
-                      <td className="pl-8 pr-6 py-4 whitespace-nowrap text-center">
+                      <td className="w-4/12 px-4 py-4 whitespace-nowrap text-center">
                           {match.isBye ? (
                             <span className="text-white/50 italic font-bold">BYE</span>
                           ) : match.team2Ids ? (
@@ -321,7 +321,7 @@ export function MatchesTab({
                             </>
                           )}
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-center">
+                      <td className="w-1/12 px-2 py-4 whitespace-nowrap text-center">
                         {!match.isBye && (
                           <div className="flex justify-center space-x-2">
                             {editingMatch === match.id ? (
