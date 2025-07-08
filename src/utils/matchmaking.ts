@@ -332,19 +332,39 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
 
   if (groups.length === 1) {
     const teamIds = groups.shift()!;
-    matchesResult.push({
-      id: generateUuid(),
-      round,
-      court: courtIndex,
-      team1Id: teamIds[0],
-      team2Id: teamIds[0],
-      team1Ids: teamIds,
-      team2Ids: teamIds,
-      completed: false,
-      isBye: false,
-      battleIntensity: 0,
-      hackingAttempts: 0,
-    });
+
+    if (teamIds.length === 2) {
+      matchesResult.push({
+        id: generateUuid(),
+        round,
+        court: courtIndex,
+        team1Id: teamIds[0],
+        team2Id: teamIds[1],
+        team1Ids: [teamIds[0]],
+        team2Ids: [teamIds[1]],
+        completed: false,
+        isBye: false,
+        battleIntensity: Math.floor(Math.random() * 100) + 50,
+        hackingAttempts: 0,
+      });
+    } else if (teamIds.length === 3) {
+      matchesResult.push({
+        id: generateUuid(),
+        round,
+        court: courtIndex,
+        team1Id: teamIds[0],
+        team2Id: teamIds[0],
+        team1Ids: teamIds,
+        team2Ids: teamIds,
+        team1Score: 13,
+        team2Score: 0,
+        completed: true,
+        isBye: true,
+        battleIntensity: 0,
+        hackingAttempts: 0,
+      });
+    }
+
     courtIndex++;
   }
 
