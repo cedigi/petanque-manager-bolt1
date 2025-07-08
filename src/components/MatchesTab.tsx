@@ -104,7 +104,8 @@ export function MatchesTab({
             th, td { padding: 12px; border: 1px solid #000; }
             th { background-color: #f2f2f2; font-weight: bold; }
             th.terrain, td.terrain { width: 10%; text-align: center; }
-            th.team, td.team { width: 40%; }
+            th.team1, td.team1 { width: 35%; }
+            th.team2, td.team2 { width: 45%; }
             th.score, td.score { width: 10%; text-align: center; font-size: 18px; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
             @media print { body { margin: 0; } }
@@ -116,21 +117,21 @@ export function MatchesTab({
             <thead>
               <tr>
                 <th class="terrain">Terrain</th>
-                <th class="team">${isSolo ? 'Joueur' : 'Équipe'}</th>
+                <th class="team1">${isSolo ? 'Joueur' : 'Équipe'}</th>
                 <th class="score">Score</th>
-                <th class="team">${isSolo ? 'Joueur' : 'Équipe'}</th>
+                <th class="team2">${isSolo ? 'Joueur' : 'Équipe'}</th>
               </tr>
             </thead>
             <tbody>
               ${roundMatches.map(match => `
                 <tr>
                   <td class="terrain">${match.isBye ? '-' : match.court}</td>
-                  <td class="team">
+                  <td class="team1">
                       ${match.team1Ids ? getGroupLabel(match.team1Ids) : getTeamName(match.team1Id)}
                       ${!match.team1Ids && !isSolo ? `<br/><small>${getTeamPlayers(match.team1Id)}</small>` : ''}
                     </td>
                     <td class="score">${match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}</td>
-                    <td class="team">
+                    <td class="team2">
                       ${match.isBye ? 'BYE' : match.team2Ids ? getGroupLabel(match.team2Ids) : `${getTeamName(match.team2Id)}${!isSolo ? `<br/><small>${getTeamPlayers(match.team2Id)}</small>` : ''}`}
                     </td>
                   </tr>
