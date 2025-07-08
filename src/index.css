@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @layer base {
   * {
@@ -515,7 +515,6 @@
     right: 40%;
     animation-delay: -18s;
     animation-duration: 21s;
-        gc9qdc-codex/ajouter-6-7-boules-au-fond-anime
   }
 
   .petanque-ball:nth-child(8) {
@@ -552,8 +551,6 @@
     left: 50%;
     animation-delay: -18s;
     animation-duration: 23s;
-
-        main
   }
 
   @keyframes floatPetanque {
