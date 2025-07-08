@@ -43,7 +43,7 @@ export function MatchesTab({
     if (!team) return '';
     return team.players
       .map(player => (player.label ? `[${player.label}] ${player.name}` : player.name))
-      .join(', ');
+      .join(' - ');
   };
 
   const getGroupLabel = (ids: string[]) => {
