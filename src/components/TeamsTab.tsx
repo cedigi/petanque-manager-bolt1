@@ -44,12 +44,10 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
             .teams {
-              column-count: 2;
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
               column-gap: 40px;
-              column-rule: 1px solid #ccc;
-              -webkit-column-count: 2;
-              -webkit-column-gap: 40px;
-              -webkit-column-rule: 1px solid #ccc;
+              row-gap: 4px;
             }
             .team {
               display: block;
