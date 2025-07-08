@@ -35,6 +35,8 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
+    const twoColumns = teams.length > 25;
+
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -45,7 +47,11 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
             h1 { text-align: center; margin-bottom: 20px; }
             .teams {
               display: grid;
-              grid-template-columns: repeat(2, 1fr);
+              ${twoColumns
+                ? `grid-template-columns: repeat(2, 1fr);
+              grid-template-rows: repeat(25, auto);
+              grid-auto-flow: column;`
+                : `grid-template-columns: 1fr;`}
               column-gap: 40px;
               row-gap: 4px;
             }
