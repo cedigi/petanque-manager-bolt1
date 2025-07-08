@@ -11,12 +11,12 @@ export function TabNavigation({ activeTab, onTabChange, tournamentType }: TabNav
   const isPoolTournament = tournamentType === 'doublette-poule' || tournamentType === 'triplette-poule';
   
   const tabs = [
-    { id: 'teams', label: 'Teams', icon: Users },
+    { id: 'teams', label: 'Équipes', icon: Users },
     ...(isPoolTournament ? [{ id: 'pools', label: 'Poules', icon: Grid3X3 }] : []),
     ...(!isPoolTournament
       ? [
-          { id: 'matches', label: 'Matches', icon: Gamepad2 },
-          { id: 'standings', label: 'Standings', icon: Trophy },
+          { id: 'matches', label: 'Matchs', icon: Gamepad2 },
+          { id: 'standings', label: 'Classement', icon: Trophy },
         ]
       : []),
   ];

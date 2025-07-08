@@ -100,8 +100,8 @@ export function MatchesTab({
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
-            th, td { padding: 12px; border: 1px solid #ddd; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; border: 1px solid #000; }
+            th, td { padding: 12px; border: 1px solid #000; }
             th { background-color: #f2f2f2; font-weight: bold; }
             th.terrain, td.terrain { width: 10%; text-align: center; }
             th.team, td.team { width: 40%; }
