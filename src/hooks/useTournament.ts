@@ -15,6 +15,7 @@ import {
 import {
   updateMatchScore as updateMatchScoreLogic,
   updateMatchCourt as updateMatchCourtLogic,
+  deleteCurrentRound as deleteCurrentRoundLogic,
 } from './matchUpdates';
 import {
   createEmptyFinalPhasesB,
@@ -224,6 +225,9 @@ export function useTournament(): UseTournamentReturn {
 
   const deleteCurrentRound = (): void => {
     if (!tournament) return;
+        codex/extract-helper-computeteamstats
+    const updated = deleteCurrentRoundLogic(tournament);
+
     const roundToDelete = tournament.currentRound;
     if (roundToDelete <= 0) return;
 
@@ -305,6 +309,7 @@ export function useTournament(): UseTournamentReturn {
     updated = { ...updated, matches: nextMatches };
     updated = updateFinalPhasesWithQualified(updated);
     updated = updateCategoryBPhases(updated);
+        main
     const auto = autoGenerateNextMatches(updated);
     saveTournament(auto);
   };
