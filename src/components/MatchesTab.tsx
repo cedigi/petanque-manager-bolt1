@@ -28,8 +28,14 @@ export function MatchesTab({
   const isSolo = teams.every(t => t.players.length === 1);
 
   const getTeamName = (teamId: string) => {
-    const team = teams.find(t => t.id === teamId);
-    return team?.name || (isSolo ? 'Joueur inconnu' : 'Équipe inconnue');
+    const index = teams.findIndex(t => t.id === teamId);
+    const team = teams[index];
+    if (!team) return isSolo ? 'Joueur inconnu' : 'Équipe inconnue';
+    if (isSolo) {
+      const player = team.players[0];
+      return `${index + 1} : ${player.name}`;
+    }
+    return team.name;
   };
 
   const getTeamPlayers = (teamId: string) => {
@@ -42,10 +48,16 @@ export function MatchesTab({
 
   const getGroupLabel = (ids: string[]) => {
     const labels = ids.map(id => {
-      const team = teams.find(t => t.id === id);
-      return team?.name || team?.players[0]?.name || 'Inconnu';
+      const index = teams.findIndex(t => t.id === id);
+      const team = teams[index];
+      if (!team) return 'Inconnu';
+      if (isSolo) {
+        const player = team.players[0];
+        return `${index + 1} : ${player.name}`;
+      }
+      return team.name || team.players[0]?.name || 'Inconnu';
     });
-    return labels.join(' + ');
+    return labels.join(isSolo ? ' - ' : ' + ');
   };
 
   const handleEditScore = (match: Match) => {
