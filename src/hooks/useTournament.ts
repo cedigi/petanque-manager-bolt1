@@ -14,6 +14,7 @@ import {
 import {
   updateMatchScore as updateMatchScoreLogic,
   updateMatchCourt as updateMatchCourtLogic,
+  deleteCurrentRound as deleteCurrentRoundLogic,
 } from './matchUpdates';
 import {
   createEmptyFinalPhasesB,
@@ -35,6 +36,7 @@ export interface UseTournamentReturn {
   generateRound: () => void;
   updateMatchScore: (matchId: string, team1Score: number, team2Score: number) => void;
   updateMatchCourt: (matchId: string, court: number) => void;
+  deleteCurrentRound: () => void;
   resetTournament: () => void;
 }
 
@@ -209,6 +211,13 @@ export function useTournament(): UseTournamentReturn {
     saveTournament(updateMatchCourtLogic(tournament, matchId, court));
   };
 
+  const deleteCurrentRound = (): void => {
+    if (!tournament) return;
+    const updated = deleteCurrentRoundLogic(tournament);
+    const auto = autoGenerateNextMatches(updated);
+    saveTournament(auto);
+  };
+
   const resetTournament = (): void => {
     localStorage.removeItem(STORAGE_KEY);
     setTournament(null);
@@ -224,6 +233,7 @@ export function useTournament(): UseTournamentReturn {
     generateRound,
     updateMatchScore,
     updateMatchCourt,
+    deleteCurrentRound,
     resetTournament,
   };
 }
