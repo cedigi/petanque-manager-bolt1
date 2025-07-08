@@ -144,6 +144,11 @@ function App() {
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
         <div className="petanque-ball"></div>
+        <div className="petanque-ball"></div>
+        <div className="petanque-ball"></div>
+        <div className="petanque-ball"></div>
+        <div className="petanque-ball"></div>
+        <div className="petanque-ball"></div>
       </div>
 
       <Header animationsPaused={animationsPaused} onToggleAnimations={toggleAnimations} />
