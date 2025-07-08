@@ -25,6 +25,7 @@ function App() {
     generateTournamentPools,
     generateRound,
     deleteCurrentRound,
+    deleteRound,
     updateMatchScore,
     updateMatchCourt,
     resetTournament,
@@ -121,6 +122,7 @@ function App() {
             courts={tournament.courts}
             onGenerateRound={generateRound}
             onDeleteCurrentRound={deleteCurrentRound}
+            onDeleteRound={deleteRound}
             onUpdateScore={updateMatchScore}
             onUpdateCourt={updateMatchCourt}
           />

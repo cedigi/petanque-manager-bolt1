@@ -9,6 +9,7 @@ interface MatchesTabProps {
   courts: number;
   onGenerateRound: () => void;
   onDeleteCurrentRound: () => void;
+  onDeleteRound: (round: number) => void;
   onUpdateScore: (matchId: string, team1Score: number, team2Score: number) => void;
   onUpdateCourt: (matchId: string, court: number) => void;
 }
@@ -20,6 +21,7 @@ export function MatchesTab({
   courts,
   onGenerateRound,
   onDeleteCurrentRound,
+  onDeleteRound,
   onUpdateScore,
   onUpdateCourt
 }: MatchesTabProps) {
@@ -160,6 +162,10 @@ export function MatchesTab({
     printWindow.print();
   };
 
+  const handleDeleteRound = (round: number) => {
+    onDeleteRound(round);
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-8">
@@ -223,13 +229,21 @@ export function MatchesTab({
               <h3 className="text-xl font-bold text-white tracking-wide">
                 Tour {round}
               </h3>
-              <button
-                onClick={() => handlePrintRound(round)}
-                className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300"
-              >
-                <Printer className="w-4 h-4" />
-                <span>Imprimer</span>
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handlePrintRound(round)}
+                  className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Imprimer</span>
+                </button>
+                <button
+                  onClick={() => handleDeleteRound(round)}
+                  className="glass-button-secondary flex items-center space-x-2 px-3 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300 text-red-300 hover:text-red-200"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="glass-table w-full table-fixed">
