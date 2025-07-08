@@ -43,24 +43,20 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
-            .team { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
-            .team-name { font-weight: bold; font-size: 18px; margin-bottom: 10px; }
-            .player { margin: 5px 0; padding: 8px; background: #f5f5f5; border-radius: 4px; }
+            .team { display: inline-block; margin: 4px; padding: 2px 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
             @media print { body { margin: 0; } }
           </style>
         </head>
         <body>
           <h1>Liste des ${isSolo ? 'Joueurs' : 'Équipes'}</h1>
-          ${teams.map(team => `
-            <div class="team">
-              <div class="team-name">${team.name}</div>
-              ${team.players.map(player => `
-                <div class="player">
-                  ${player.name} ${player.label ? `[${player.label}]` : ''}
-                </div>
-              `).join('')}
-            </div>
-          `).join('')}
+          ${teams
+            .map(
+              (team, idx) =>
+                `<div class="team">${idx + 1} : ${team.players
+                  .map(p => `${p.name}${p.label ? ` [${p.label}]` : ''}`)
+                  .join(' - ')}</div>`
+            )
+            .join('')}
         </body>
       </html>
     `;
@@ -106,20 +102,20 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
       )}
 
       <div className="space-y-2">
-        {teams.map(team => (
+        {teams.map((team, idx) => (
           <React.Fragment key={team.id}>
             <div className="glass-card p-3 hover:scale-[1.01] transition-all duration-300">
               <div className="flex items-center justify-between">
               {/* Partie gauche : Icône + Nom équipe + Joueurs sur une ligne */}
               <div className="flex items-center space-x-3 flex-1 min-w-0">
                 <Users className="w-5 h-5 text-white flex-shrink-0" />
-                
+
                 {/* Nom de l'équipe et joueurs sur la même ligne */}
                 <div className="flex items-center space-x-2 min-w-0 flex-1">
                   <span className="font-bold text-white text-lg flex-shrink-0">
-                    {team.name} :
+                    {idx + 1} :
                   </span>
-                  
+
                   {/* Liste des joueurs avec labels */}
                   <div className="flex items-center space-x-2 min-w-0 flex-1">
                     {team.players.map((player, index) => (
