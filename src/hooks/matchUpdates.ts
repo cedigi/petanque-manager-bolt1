@@ -104,3 +104,30 @@ export function deleteCurrentRound(tournament: Tournament): Tournament {
   return updatedTournament;
 }
 
+export function deleteRound(tournament: Tournament, round: number): Tournament {
+  const updatedMatches = tournament.matches.filter(m => m.round !== round);
+  const updatedMatchesB = tournament.matchesB.filter(m => m.round !== round);
+
+  const allMatches = [...updatedMatches, ...updatedMatchesB];
+  const updatedTeams = computeTeamStats(
+    { ...tournament, matches: updatedMatches, matchesB: updatedMatchesB },
+    allMatches,
+  );
+
+  const maxRound = allMatches.length > 0 ? Math.max(...allMatches.map(m => m.round)) : 0;
+
+  let updatedTournament: Tournament = {
+    ...tournament,
+    matches: updatedMatches,
+    matchesB: updatedMatchesB,
+    teams: updatedTeams,
+    currentRound: maxRound,
+  };
+
+  const nextMatches = generateNextPoolMatches(updatedTournament);
+  updatedTournament = { ...updatedTournament, matches: nextMatches };
+  updatedTournament = updateFinalPhasesWithQualified(updatedTournament);
+  updatedTournament = updateCategoryBPhases(updatedTournament);
+  return updatedTournament;
+}
+

@@ -10,20 +10,18 @@ import {
 import {
   generateTournamentPools as generateTournamentPoolsLogic,
   generateRound as generateRoundLogic,
-  generateNextPoolMatches,
 } from './poolManagement';
 import {
   updateMatchScore as updateMatchScoreLogic,
   updateMatchCourt as updateMatchCourtLogic,
   deleteCurrentRound as deleteCurrentRoundLogic,
+  deleteRound as deleteRoundLogic,
 } from './matchUpdates';
 import {
   createEmptyFinalPhasesB,
   getCurrentBottomTeams,
   initializeCategoryBBracket,
   autoGenerateNextMatches,
-  updateFinalPhasesWithQualified,
-  updateCategoryBPhases,
 } from './finalsLogic';
 import { calculateOptimalPools } from '../utils/poolGeneration';
 
@@ -38,6 +36,7 @@ export interface UseTournamentReturn {
   generateTournamentPools: () => void;
   generateRound: () => void;
   deleteCurrentRound: () => void;
+  deleteRound: (round: number) => void;
   updateMatchScore: (matchId: string, team1Score: number, team2Score: number) => void;
   updateMatchCourt: (matchId: string, court: number) => void;
   resetTournament: () => void;
@@ -222,6 +221,13 @@ export function useTournament(): UseTournamentReturn {
     saveTournament(auto);
   };
 
+  const deleteRound = (round: number): void => {
+    if (!tournament) return;
+    const updated = deleteRoundLogic(tournament, round);
+    const auto = autoGenerateNextMatches(updated);
+    saveTournament(auto);
+  };
+
   const resetTournament = (): void => {
     localStorage.removeItem(STORAGE_KEY);
     setTournament(null);
@@ -236,6 +242,7 @@ export function useTournament(): UseTournamentReturn {
     generateTournamentPools,
     generateRound,
     deleteCurrentRound,
+    deleteRound,
     updateMatchScore,
     updateMatchCourt,
     resetTournament,
