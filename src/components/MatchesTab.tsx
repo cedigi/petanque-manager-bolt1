@@ -106,7 +106,11 @@ export function MatchesTab({
             th.terrain, td.terrain { width: 10%; text-align: center; }
             th.team1, td.team1 { width: 35%; }
             th.team2, td.team2 { width: 45%; }
-            th.score, td.score { width: 10%; text-align: center; font-size: 18px; font-weight: bold; }
+            th.score { width: 10%; text-align: center; font-size: 18px; font-weight: bold; }
+            td.score { width: 10%; text-align: center; font-size: 18px; font-weight: bold; position: relative; padding: 0; }
+            td.score::after { content: ''; position: absolute; top: 4px; bottom: 4px; left: 50%; border-left: 1px solid #000; }
+            td.score .score-box { display: flex; height: 100%; }
+            td.score .score-box span { flex: 1; padding: 8px 4px; }
             tr:nth-child(even) { background-color: #f9f9f9; }
             @media print { body { margin: 0; } }
           </style>
@@ -130,7 +134,7 @@ export function MatchesTab({
                       ${match.team1Ids ? getGroupLabel(match.team1Ids) : getTeamName(match.team1Id)}
                       ${!match.team1Ids && !isSolo ? `<br/><small>${getTeamPlayers(match.team1Id)}</small>` : ''}
                     </td>
-                    <td class="score">${match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}</td>
+                    <td class="score"><div class="score-box"><span>${match.completed ? match.team1Score : ''}</span><span>${match.completed ? match.team2Score : ''}</span></div></td>
                     <td class="team2">
                       ${match.isBye ? 'BYE' : match.team2Ids ? getGroupLabel(match.team2Ids) : `${getTeamName(match.team2Id)}${!isSolo ? `<br/><small>${getTeamPlayers(match.team2Id)}</small>` : ''}`}
                     </td>
