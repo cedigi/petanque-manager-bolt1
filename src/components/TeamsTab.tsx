@@ -43,20 +43,39 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
-            .team { display: inline-block; margin: 4px; padding: 2px 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+            .teams {
+              column-count: 2;
+              column-gap: 40px;
+              column-rule: 1px solid #ccc;
+              -webkit-column-count: 2;
+              -webkit-column-gap: 40px;
+              -webkit-column-rule: 1px solid #ccc;
+            }
+            .team {
+              display: block;
+              margin: 4px 0;
+              padding: 2px 6px;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+              font-size: 14px;
+              break-inside: avoid;
+              -webkit-column-break-inside: avoid;
+            }
             @media print { body { margin: 0; } }
           </style>
         </head>
         <body>
           <h1>Liste des ${isSolo ? 'Joueurs' : 'Équipes'}</h1>
-          ${teams
-            .map(
-              (team, idx) =>
-                `<div class="team">${idx + 1} : ${team.players
-                  .map(p => `${p.name}${p.label ? ` [${p.label}]` : ''}`)
-                  .join(' - ')}</div>`
-            )
-            .join('')}
+          <div class="teams">
+            ${teams
+              .map(
+                (team, idx) =>
+                  `<div class="team">${idx + 1} : ${team.players
+                    .map(p => `${p.name}${p.label ? ` [${p.label}]` : ''}`)
+                    .join(' - ')}</div>`
+              )
+              .join('')}
+          </div>
         </body>
       </html>
     `;
