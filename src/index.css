@@ -515,6 +515,45 @@
     right: 40%;
     animation-delay: -18s;
     animation-duration: 21s;
+        gc9qdc-codex/ajouter-6-7-boules-au-fond-anime
+  }
+
+  .petanque-ball:nth-child(8) {
+    width: 70px;
+    height: 70px;
+    top: 50%;
+    left: 30%;
+    animation-delay: -25s;
+    animation-duration: 24s;
+  }
+
+  .petanque-ball:nth-child(9) {
+    width: 55px;
+    height: 55px;
+    bottom: 40%;
+    right: 20%;
+    animation-delay: -10s;
+    animation-duration: 19s;
+  }
+
+  .petanque-ball:nth-child(10) {
+    width: 65px;
+    height: 65px;
+    top: 10%;
+    right: 50%;
+    animation-delay: -30s;
+    animation-duration: 25s;
+  }
+
+  .petanque-ball:nth-child(11) {
+    width: 75px;
+    height: 75px;
+    bottom: 55%;
+    left: 50%;
+    animation-delay: -18s;
+    animation-duration: 23s;
+
+        main
   }
 
   @keyframes floatPetanque {
