@@ -43,10 +43,25 @@ function generateStandardMatches(tournament: Tournament): Match[] {
       });
     }
 
+    const baseOrder = teams.map(t => t.id);
     let courtIndex = 1;
     for (let i = 0; i < remainingTeams.length - 1; i += 2) {
       const team1 = remainingTeams[i];
-      const team2 = remainingTeams[i + 1];
+      let team2 = remainingTeams[i + 1];
+
+      if (
+        Math.abs(baseOrder.indexOf(team1.id) - baseOrder.indexOf(team2.id)) === 1 &&
+        i + 2 < remainingTeams.length
+      ) {
+        const swapIdx = remainingTeams.slice(i + 2).findIndex(t =>
+          Math.abs(baseOrder.indexOf(team1.id) - baseOrder.indexOf(t.id)) !== 1
+        );
+        if (swapIdx !== -1) {
+          const actual = i + 2 + swapIdx;
+          [remainingTeams[i + 1], remainingTeams[actual]] = [remainingTeams[actual], remainingTeams[i + 1]];
+          team2 = remainingTeams[i + 1];
+        }
+      }
       newMatches.push({
         id: generateUuid(),
         round,
