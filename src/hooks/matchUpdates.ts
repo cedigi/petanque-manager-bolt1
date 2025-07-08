@@ -1,5 +1,9 @@
 import { Tournament, Match } from '../types/tournament';
-import { autoGenerateNextMatches, updateCategoryBPhases } from './finalsLogic';
+import {
+  updateFinalPhasesWithQualified,
+  updateCategoryBPhases,
+} from './finalsLogic';
+import { generateNextPoolMatches } from './poolManagement';
 
 export function updateMatchScore(
   tournament: Tournament,
@@ -97,7 +101,9 @@ export function updateMatchScore(
     teams: updatedTeams,
   };
 
-  updatedTournament = autoGenerateNextMatches(updatedTournament);
+  const nextMatches = generateNextPoolMatches(updatedTournament);
+  updatedTournament = { ...updatedTournament, matches: nextMatches };
+  updatedTournament = updateFinalPhasesWithQualified(updatedTournament);
   updatedTournament = updateCategoryBPhases(updatedTournament);
   return updatedTournament;
 }
