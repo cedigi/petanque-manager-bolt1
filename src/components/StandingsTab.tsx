@@ -40,8 +40,17 @@ export function StandingsTab({ teams }: StandingsTabProps) {
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { padding: 12px; text-align: left; border: 1px solid #ddd; }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+              border: 1px solid #555;
+            }
+            th, td {
+              padding: 12px;
+              text-align: left;
+              border: 1px solid #555;
+            }
             th { background-color: #f2f2f2; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
             .podium { background-color: #fff3cd; }
