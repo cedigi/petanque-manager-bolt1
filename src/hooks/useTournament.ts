@@ -164,8 +164,8 @@ export function useTournament(): UseTournamentReturn {
         const team = sortedTeams[teamIdx++];
         firstRound[i] = {
           ...match,
-          team1Id: team.id,
-          team2Id: team.id,
+          team1Id: team ? team.id : '',
+          team2Id: team ? team.id : '',
           team1Score: 13,
           team2Score: 0,
           completed: true,
@@ -176,8 +176,8 @@ export function useTournament(): UseTournamentReturn {
         const t2 = sortedTeams[teamIdx++];
         firstRound[i] = {
           ...match,
-          team1Id: t1?.id || '',
-          team2Id: t2?.id || '',
+          team1Id: t1 ? t1.id : '',
+          team2Id: t2 ? t2.id : '',
           team1Score: undefined,
           team2Score: undefined,
           completed: false,
