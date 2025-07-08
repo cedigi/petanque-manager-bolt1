@@ -100,11 +100,13 @@ export function MatchesTab({
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { padding: 12px; text-align: left; border: 1px solid #ddd; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
+            th, td { padding: 12px; border: 1px solid #ddd; }
             th { background-color: #f2f2f2; font-weight: bold; }
+            th.terrain, td.terrain { width: 10%; text-align: center; }
+            th.team, td.team { width: 35%; }
+            th.score, td.score { width: 10%; text-align: center; font-size: 18px; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
-            .score { font-size: 18px; font-weight: bold; text-align: center; }
             @media print { body { margin: 0; } }
           </style>
         </head>
@@ -113,22 +115,22 @@ export function MatchesTab({
           <table>
             <thead>
               <tr>
-                <th>Terrain</th>
-                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
-                <th>Score</th>
-                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
+                <th class="terrain">Terrain</th>
+                <th class="team">${isSolo ? 'Joueur' : 'Équipe'}</th>
+                <th class="score">Score</th>
+                <th class="team">${isSolo ? 'Joueur' : 'Équipe'}</th>
               </tr>
             </thead>
             <tbody>
               ${roundMatches.map(match => `
                 <tr>
-                  <td>${match.isBye ? '-' : match.court}</td>
-                  <td>
+                  <td class="terrain">${match.isBye ? '-' : match.court}</td>
+                  <td class="team">
                       ${match.team1Ids ? getGroupLabel(match.team1Ids) : getTeamName(match.team1Id)}
                       ${!match.team1Ids && !isSolo ? `<br/><small>${getTeamPlayers(match.team1Id)}</small>` : ''}
                     </td>
                     <td class="score">${match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}</td>
-                    <td>
+                    <td class="team">
                       ${match.isBye ? 'BYE' : match.team2Ids ? getGroupLabel(match.team2Ids) : `${getTeamName(match.team2Id)}${!isSolo ? `<br/><small>${getTeamPlayers(match.team2Id)}</small>` : ''}`}
                     </td>
                   </tr>
