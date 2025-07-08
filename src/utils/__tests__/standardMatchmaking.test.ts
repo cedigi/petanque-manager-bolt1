@@ -75,4 +75,24 @@ describe('generateStandardMatches first round', () => {
     });
     expect(Array.from(ids).sort()).toEqual(teams.map(t => t.id).sort());
   });
+
+  it('avoids pairing consecutive teams when possible', () => {
+    const teams = [makeTeam('A'), makeTeam('B'), makeTeam('C'), makeTeam('D')];
+    const tournament = baseTournament(teams);
+
+    const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.4);
+
+    const matches = generateMatches(tournament);
+    randomSpy.mockRestore();
+
+    const baseOrder = teams.map(t => t.id);
+    const hasSequential = matches.some(m => {
+      if (m.isBye) return false;
+      const diff = Math.abs(
+        baseOrder.indexOf(m.team1Id) - baseOrder.indexOf(m.team2Id)
+      );
+      return diff === 1;
+    });
+    expect(hasSequential).toBe(false);
+  });
 });
