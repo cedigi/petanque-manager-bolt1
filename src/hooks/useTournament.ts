@@ -25,7 +25,20 @@ import { calculateOptimalPools } from '../utils/poolGeneration';
 
 const STORAGE_KEY = 'petanque-tournament';
 
-export function useTournament() {
+export interface UseTournamentReturn {
+  tournament: Tournament | null;
+  createTournament: (type: TournamentType, courts: number) => void;
+  addTeam: (players: Player[]) => void;
+  removeTeam: (teamId: string) => void;
+  updateTeam: (teamId: string, players: Player[], name?: string) => void;
+  generateTournamentPools: () => void;
+  generateRound: () => void;
+  updateMatchScore: (matchId: string, team1Score: number, team2Score: number) => void;
+  updateMatchCourt: (matchId: string, court: number) => void;
+  resetTournament: () => void;
+}
+
+export function useTournament(): UseTournamentReturn {
   const [tournament, setTournament] = useState<Tournament | null>(null);
 
   useEffect(() => {
@@ -49,37 +62,37 @@ export function useTournament() {
     }
   }, []);
 
-  const saveTournament = (t: Tournament) => {
+  const saveTournament = (t: Tournament): void => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(t));
     setTournament(t);
   };
 
-  const createTournament = (type: TournamentType, courts: number) => {
+  const createTournament = (type: TournamentType, courts: number): void => {
     const newTournament = createTournamentData(type, courts);
     saveTournament(newTournament);
   };
 
-  const addTeam = (players: Player[]) => {
+  const addTeam = (players: Player[]): void => {
     if (!tournament) return;
     saveTournament(addTeamLogic(tournament, players));
   };
 
-  const removeTeam = (teamId: string) => {
+  const removeTeam = (teamId: string): void => {
     if (!tournament) return;
     saveTournament(removeTeamLogic(tournament, teamId));
   };
 
-  const updateTeam = (teamId: string, players: Player[], name?: string) => {
+  const updateTeam = (teamId: string, players: Player[], name?: string): void => {
     if (!tournament) return;
     saveTournament(updateTeamLogic(tournament, teamId, players, name));
   };
 
-  const generateTournamentPools = () => {
+  const generateTournamentPools = (): void => {
     if (!tournament) return;
     saveTournament(generateTournamentPoolsLogic(tournament));
   };
 
-  const generateRound = () => {
+  const generateRound = (): void => {
     if (!tournament) return;
     let updated = tournament;
     const isPool =
@@ -185,7 +198,7 @@ export function useTournament() {
   };
 
   // Fonction pour générer automatiquement les matchs suivants quand on met à jour un score
-  const autoGenerateNextMatches = (updatedTournament: Tournament) => {
+  const autoGenerateNextMatches = (updatedTournament: Tournament): Tournament => {
     const isPoolTournament = updatedTournament.type === 'doublette-poule' || updatedTournament.type === 'triplette-poule';
     
     if (!isPoolTournament || updatedTournament.pools.length === 0) {
@@ -497,17 +510,17 @@ export function useTournament() {
     return result;
   };
 
-  const updateMatchScore = (matchId: string, team1Score: number, team2Score: number) => {
+  const updateMatchScore = (matchId: string, team1Score: number, team2Score: number): void => {
     if (!tournament) return;
     saveTournament(updateMatchScoreLogic(tournament, matchId, team1Score, team2Score));
   };
 
-  const updateMatchCourt = (matchId: string, court: number) => {
+  const updateMatchCourt = (matchId: string, court: number): void => {
     if (!tournament) return;
     saveTournament(updateMatchCourtLogic(tournament, matchId, court));
   };
 
-  const resetTournament = () => {
+  const resetTournament = (): void => {
     localStorage.removeItem(STORAGE_KEY);
     setTournament(null);
   };
