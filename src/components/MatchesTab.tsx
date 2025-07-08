@@ -104,6 +104,7 @@ export function MatchesTab({
             th, td { padding: 12px; border: 1px solid #000; }
             th { background-color: #f2f2f2; font-weight: bold; }
             th.terrain, td.terrain { width: 10%; text-align: center; }
+        codex/centrer-les-noms-des-equipes-dans-l-impression
             th.team1, td.team1 { width: 35%; text-align: center; }
             th.team2, td.team2 { width: 45%; text-align: center; }
         lyekm9-codex/ajouter-ligne-verticale-dans-colonne-score
@@ -111,10 +112,13 @@ export function MatchesTab({
             td.score { width: 10%; text-align: center; font-size: 18px; font-weight: bold; position: relative; padding: 0; }
             td.score::after { content: ''; position: absolute; top: 4px; bottom: 4px; left: 50%; border-left: 1px solid #000; }
 
+
+            th.team1, td.team1 { width: 35%; }
+            th.team2, td.team2 { width: 45%; }
+        main
             th.score, td.score { width: 10%; text-align: center; font-size: 18px; font-weight: bold; position: relative; }
             td.score { padding: 0; }
-            th.score::after, td.score::after { content: ''; position: absolute; top: 4px; bottom: 4px; left: 50%; border-left: 1px solid #000; }
-        main
+            td.score::after { content: ''; position: absolute; top: 4px; bottom: 4px; left: 50%; border-left: 1px solid #000; }
             td.score .score-box { display: flex; height: 100%; }
             td.score .score-box span { flex: 1; padding: 8px 4px; }
             tr:nth-child(even) { background-color: #f9f9f9; }
