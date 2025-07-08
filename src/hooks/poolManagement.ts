@@ -413,6 +413,6 @@ export function generateRound(tournament: Tournament): Tournament {
 
   const allMatches = generateNextPoolMatches(tournament);
 
-  return { ...tournament, matches: allMatches };
+  return { ...tournament, matches: allMatches, currentRound: tournament.currentRound + 1 };
 }
 
