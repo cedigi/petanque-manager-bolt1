@@ -3,7 +3,11 @@ import { calculateOptimalPools } from '../utils/poolGeneration';
 import { applyByeLogic } from '../utils/finals';
 import { generateUuid } from '../utils/uuid';
 
-export function createEmptyFinalPhases(totalTeams: number, courts: number, startCourt = 1): Match[] {
+export function createEmptyFinalPhases(
+  totalTeams: number,
+  courts: number,
+  startCourt = 1,
+): Match[] {
   const matches: Match[] = [];
   const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
   const expectedQualified = (poolsOf4 + poolsOf3) * 2;
@@ -12,6 +16,7 @@ export function createEmptyFinalPhases(totalTeams: number, courts: number, start
   const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
   let currentTeamCount = bracketSize;
   let round = 100;
+  let court = startCourt;
 
   while (currentTeamCount > 1) {
     const matchesInRound = Math.floor(currentTeamCount / 2);
@@ -19,7 +24,7 @@ export function createEmptyFinalPhases(totalTeams: number, courts: number, start
       matches.push({
         id: generateUuid(),
         round,
-        court: 0,
+        court: court++,
         team1Id: '',
         team2Id: '',
         completed: false,
@@ -35,7 +40,11 @@ export function createEmptyFinalPhases(totalTeams: number, courts: number, start
   return matches;
 }
 
-export function createEmptyFinalPhasesB(totalTeams: number, courts: number, startCourt = 1): Match[] {
+export function createEmptyFinalPhasesB(
+  totalTeams: number,
+  courts: number,
+  startCourt = 1,
+): Match[] {
   const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
   const expectedQualified = (poolsOf4 + poolsOf3) * 2;
   const bottomTeams = totalTeams - expectedQualified;
@@ -45,6 +54,7 @@ export function createEmptyFinalPhasesB(totalTeams: number, courts: number, star
   const bracketSize = 1 << Math.ceil(Math.log2(bottomTeams));
   let currentTeamCount = bracketSize;
   let round = 200;
+  let court = startCourt;
   // Courts for Category B finals are chosen manually
 
   while (currentTeamCount > 1) {
@@ -53,7 +63,7 @@ export function createEmptyFinalPhasesB(totalTeams: number, courts: number, star
       matches.push({
         id: generateUuid(),
         round,
-        court: 0,
+        court: court++,
         team1Id: '',
         team2Id: '',
         completed: false,
