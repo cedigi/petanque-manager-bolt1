@@ -16,16 +16,18 @@ function generateStandardMatches(tournament: Tournament): Match[] {
   const { teams, matches, currentRound } = tournament;
   const round = currentRound + 1;
 
-  // Sort teams by performance (best to worst)
-  const sortedTeams = [...teams].sort((a, b) => b.performance - a.performance);
+  const remainingTeams =
+    round === 1
+      ? [...teams].sort(() => Math.random() - 0.5)
+      : [...teams].sort((a, b) => b.performance - a.performance);
 
-  const remainingTeams = [...sortedTeams];
   const newMatches: Match[] = [];
 
   if (round === 1) {
-    // Handle BYE if the number of teams is odd
+    // Handle BYE if the number of teams is odd by randomly selecting a team
     if (remainingTeams.length % 2 === 1) {
-      const byeTeam = remainingTeams.pop() as Team;
+      const byeIndex = Math.floor(Math.random() * remainingTeams.length);
+      const [byeTeam] = remainingTeams.splice(byeIndex, 1);
       newMatches.push({
         id: generateUuid(),
         round,
@@ -42,49 +44,15 @@ function generateStandardMatches(tournament: Tournament): Match[] {
     }
 
     let courtIndex = 1;
-
-    // Pair by groups of four using the 1 vs 3, 2 vs 4 pattern
-    let i = 0;
-    for (; i + 3 < remainingTeams.length; i += 4) {
-      const t1 = remainingTeams[i];
-      const t2 = remainingTeams[i + 2];
+    for (let i = 0; i < remainingTeams.length - 1; i += 2) {
+      const team1 = remainingTeams[i];
+      const team2 = remainingTeams[i + 1];
       newMatches.push({
         id: generateUuid(),
         round,
         court: courtIndex++,
-        team1Id: t1.id,
-        team2Id: t2.id,
-        completed: false,
-        isBye: false,
-        battleIntensity: Math.floor(Math.random() * 50) + 25,
-        hackingAttempts: 0,
-      });
-
-      const t3 = remainingTeams[i + 1];
-      const t4 = remainingTeams[i + 3];
-      newMatches.push({
-        id: generateUuid(),
-        round,
-        court: courtIndex++,
-        team1Id: t3.id,
-        team2Id: t4.id,
-        completed: false,
-        isBye: false,
-        battleIntensity: Math.floor(Math.random() * 50) + 25,
-        hackingAttempts: 0,
-      });
-    }
-
-    // Pair any remaining teams sequentially
-    for (; i < remainingTeams.length - 1; i += 2) {
-      const t1 = remainingTeams[i];
-      const t2 = remainingTeams[i + 1];
-      newMatches.push({
-        id: generateUuid(),
-        round,
-        court: courtIndex++,
-        team1Id: t1.id,
-        team2Id: t2.id,
+        team1Id: team1.id,
+        team2Id: team2.id,
         completed: false,
         isBye: false,
         battleIntensity: Math.floor(Math.random() * 50) + 25,
