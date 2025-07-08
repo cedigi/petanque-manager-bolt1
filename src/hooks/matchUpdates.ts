@@ -114,7 +114,8 @@ export function deleteRound(tournament: Tournament, round: number): Tournament {
     allMatches,
   );
 
-  const maxRound = allMatches.length > 0 ? Math.max(...allMatches.map(m => m.round)) : 0;
+  const mainRounds = updatedMatches.filter(m => m.round < 100).map(m => m.round);
+  const maxRound = mainRounds.length > 0 ? Math.max(...mainRounds) : 0;
 
   let updatedTournament: Tournament = {
     ...tournament,

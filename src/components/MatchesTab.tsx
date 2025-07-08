@@ -171,15 +171,7 @@ export function MatchesTab({
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-bold text-white tracking-wider">Matchs</h2>
         <div className="flex space-x-4">
-          {currentRound > 0 && (
-            <button
-              onClick={onDeleteCurrentRound}
-              className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold tracking-wide hover:scale-105 transition-all duration-300 text-red-300 hover:text-red-200"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Supprimer le tour</span>
-            </button>
-          )}
+          {/* Delete current round button removed */}
           <button
             onClick={onGenerateRound}
             className="glass-button flex items-center space-x-2 px-6 py-3 font-bold tracking-wide hover:scale-105 transition-all duration-300"
