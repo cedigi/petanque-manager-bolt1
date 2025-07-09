@@ -85,7 +85,28 @@ document.querySelectorAll('.download-btn').forEach(btn => {
 // Demo button
 document.querySelector('.demo-btn')?.addEventListener('click', function(e) {
     e.preventDefault();
-    alert('Démo interactive bientôt disponible !');
+    const demoFrame = document.getElementById('demo-frame');
+    const demoPlaceholder = document.getElementById('demo-placeholder');
+    
+    if (demoFrame && demoPlaceholder) {
+        demoFrame.src = './demo.html';
+        demoFrame.style.display = 'block';
+        demoPlaceholder.style.display = 'none';
+    }
+});
+
+// Écouter les messages de la démo pour la fermer
+window.addEventListener('message', function(event) {
+    if (event.data === 'closeDemo') {
+        const demoFrame = document.getElementById('demo-frame');
+        const demoPlaceholder = document.getElementById('demo-placeholder');
+        
+        if (demoFrame && demoPlaceholder) {
+            demoFrame.src = '';
+            demoFrame.style.display = 'none';
+            demoPlaceholder.style.display = 'flex';
+        }
+    }
 });
 
 // Pricing CTA buttons
