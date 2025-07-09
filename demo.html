@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Démo Interactive - Pétanque Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #ff8c00 0%, #1a5490 25%, #004080 50%, #8b0000 75%, #ff4500 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .demo-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .demo-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-button {
+            background: rgba(59, 130, 246, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+            cursor: pointer;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .glass-button:hover {
+            background: rgba(59, 130, 246, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .glass-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .demo-steps {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .steps-sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .step-item {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .step-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .step-item.active {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .step-item.completed {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.4);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: rgba(59, 130, 246, 0.8);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 0.75rem;
+        }
+
+        .step-item.completed .step-number {
+            background: rgba(34, 197, 94, 0.8);
+        }
+
+        .demo-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            min-height: 500px;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .team-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .pools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .pool-card {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .pool-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #93c5fd;
+        }
+
+        .matches-list {
+            margin-top: 1rem;
+        }
+
+        .match-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .match-teams {
+            font-weight: 600;
+        }
+
+        .match-score {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+
+        .standings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .standings-table th,
+        .standings-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .standings-table th {
+            background: rgba(59, 130, 246, 0.2);
+            font-weight: bold;
+        }
+
+        .standings-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .success-message {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: #86efac;
+        }
+
+        .close-demo {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(239, 68, 68, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-demo:hover {
+            background: rgba(239, 68, 68, 0.9);
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .demo-steps {
+                grid-template-columns: 1fr;
+            }
+            
+            .steps-sidebar {
+                order: 2;
+            }
+            
+            .demo-content {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="close-demo" onclick="closeDemo()">&times;</button>
+    
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1 class="demo-title">Démo Interactive</h1>
+            <p class="demo-subtitle">Découvrez comment organiser un tournoi avec Pétanque Manager</p>
+        </div>
+
+        <div class="demo-steps">
+            <div class="steps-sidebar">
+                <div class="step-item active" data-step="1">
+                    <span class="step-number">1</span>
+                    Configuration
+                </div>
+                <div class="step-item" data-step="2">
+                    <span class="step-number">2</span>
+                    Équipes
+                </div>
+                <div class="step-item" data-step="3">
+                    <span class="step-number">3</span>
+                    Poules
+                </div>
+                <div class="step-item" data-step="4">
+                    <span class="step-number">4</span>
+                    Matchs
+                </div>
+                <div class="step-item" data-step="5">
+                    <span class="step-number">5</span>
+                    Classement
+                </div>
+            </div>
+
+            <div class="demo-content">
+                <!-- Étape 1: Configuration -->
+                <div class="step-content active" id="step-1">
+                    <h2>Configuration du tournoi</h2>
+                    <p>Commençons par configurer votre tournoi de pétanque.</p>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Type de tournoi</label>
+                        <select class="form-select" id="tournament-type">
+                            <option value="doublette-poule">Doublette en poule</option>
+                            <option value="triplette-poule">Triplette en poule</option>
+                            <option value="doublette">Doublette</option>
+                            <option value="triplette">Triplette</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Nombre de terrains</label>
+                        <select class="form-select" id="courts-count">
+                            <option value="2">2 terrains</option>
+                            <option value="4" selected>4 terrains</option>
+                            <option value="6">6 terrains</option>
+                            <option value="8">8 terrains</option>
+                        </select>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="glass-button" onclick="nextStep()">Continuer</button>
+                    </div>
+                </div>
+
+                <!-- Étape 2: Équipes -->
+                <div class="step-content" id="step-2">
+                    <h2>Inscription des équipes</h2>
+                    <p>Ajoutez les équipes participantes au tournoi.</p>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Nom de l'équipe</label>
+                        <input type="text" class="form-input" id="team-name" placeholder="Ex: Les Boules d'Or">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Joueur 1</label>
+                        <input type="text" class="form-input" id="player1" placeholder="Nom du joueur 1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Joueur 2</label>
+                        <input type="text" class="form-input" id="player2" placeholder="Nom du joueur 2">
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="glass-button" onclick="addTeam()">Ajouter équipe</button>
+                        <button class="glass-button" onclick="generateSampleTeams()">Générer équipes d'exemple</button>
+                    </div>
+                    
+                    <div class="teams-grid" id="teams-list"></div>
+                    
+                    <div class="action-buttons" style="margin-top: 2rem;">
+                        <button class="glass-button" onclick="prevStep()">Précédent</button>
+                        <button class="glass-button" onclick="nextStep()" id="teams-next" disabled>Continuer</button>
+                    </div>
+                </div>
+
+                <!-- Étape 3: Poules -->
+                <div class="step-content" id="step-3">
+                    <h2>Génération des poules</h2>
+                    <p>Les poules ont été générées automatiquement selon le nombre d'équipes.</p>
+                    
+                    <div class="action-buttons">
+                        <button class="glass-button" onclick="generatePools()">Générer les poules</button>
+                    </div>
+                    
+                    <div class="pools-grid" id="pools-list"></div>
+                    
+                    <div class="action-buttons" style="margin-top: 2rem;">
+                        <button class="glass-button" onclick="prevStep()">Précédent</button>
+                        <button class="glass-button" onclick="nextStep()" id="pools-next" disabled>Continuer</button>
+                    </div>
+                </div>
+
+                <!-- Étape 4: Matchs -->
+                <div class="step-content" id="step-4">
+                    <h2>Gestion des matchs</h2>
+                    <p>Suivez l'avancement des matchs et saisissez les scores.</p>
+                    
+                    <div class="action-buttons">
+                        <button class="glass-button" onclick="simulateMatches()">Simuler les matchs</button>
+                    </div>
+                    
+                    <div class="matches-list" id="matches-list"></div>
+                    
+                    <div class="action-buttons" style="margin-top: 2rem;">
+                        <button class="glass-button" onclick="prevStep()">Précédent</button>
+                        <button class="glass-button" onclick="nextStep()" id="matches-next" disabled>Voir le classement</button>
+                    </div>
+                </div>
+
+                <!-- Étape 5: Classement -->
+                <div class="step-content" id="step-5">
+                    <h2>Classement final</h2>
+                    <p>Voici le classement final de votre tournoi.</p>
+                    
+                    <table class="standings-table" id="standings-table">
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Équipe</th>
+                                <th>Victoires</th>
+                                <th>Défaites</th>
+                                <th>Points +</th>
+                                <th>Points -</th>
+                                <th>Différentiel</th>
+                            </tr>
+                        </thead>
+                        <tbody id="standings-body"></tbody>
+                    </table>
+                    
+                    <div class="success-message">
+                        <strong>Félicitations !</strong> Vous avez terminé la démo de Pétanque Manager. 
+                        Le logiciel vous permet d'organiser facilement vos tournois avec toutes ces fonctionnalités et bien plus encore.
+                    </div>
+                    
+                    <div class="action-buttons" style="margin-top: 2rem;">
+                        <button class="glass-button" onclick="prevStep()">Précédent</button>
+                        <button class="glass-button" onclick="restartDemo()">Recommencer la démo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let teams = [];
+        let pools = [];
+        let matches = [];
+
+        function nextStep() {
+            if (currentStep < 5) {
+                document.querySelector(`[data-step="${currentStep}"]`).classList.add('completed');
+                document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
+                
+                currentStep++;
+                
+                document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
+                document.querySelector(`#step-${currentStep - 1}`).classList.remove('active');
+                document.querySelector(`#step-${currentStep}`).classList.add('active');
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
+                
+                currentStep--;
+                
+                document.querySelector(`[data-step="${currentStep}"]`).classList.remove('completed');
+                document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
+                document.querySelector(`#step-${currentStep + 1}`).classList.remove('active');
+                document.querySelector(`#step-${currentStep}`).classList.add('active');
+            }
+        }
+
+        function addTeam() {
+            const teamName = document.getElementById('team-name').value;
+            const player1 = document.getElementById('player1').value;
+            const player2 = document.getElementById('player2').value;
+
+            if (teamName && player1 && player2) {
+                teams.push({
+                    id: teams.length + 1,
+                    name: teamName,
+                    players: [player1, player2],
+                    wins: 0,
+                    losses: 0,
+                    pointsFor: 0,
+                    pointsAgainst: 0
+                });
+
+                document.getElementById('team-name').value = '';
+                document.getElementById('player1').value = '';
+                document.getElementById('player2').value = '';
+
+                updateTeamsList();
+                checkTeamsNext();
+            }
+        }
+
+        function generateSampleTeams() {
+            const sampleTeams = [
+                { name: "Les Boules d'Or", players: ["Pierre Martin", "Jean Dupont"] },
+                { name: "Les Pointeurs", players: ["Marie Durand", "Paul Moreau"] },
+                { name: "Les Tireurs", players: ["Sophie Bernard", "Luc Petit"] },
+                { name: "Les Champions", players: ["Anne Leroy", "Michel Roux"] },
+                { name: "Les Pros", players: ["Claire Simon", "David Laurent"] },
+                { name: "Les Experts", players: ["Julie Blanc", "Thomas Girard"] },
+                { name: "Les Maîtres", players: ["Isabelle Faure", "Nicolas Morel"] },
+                { name: "Les Vainqueurs", players: ["Sylvie Fournier", "Alain Mercier"] }
+            ];
+
+            teams = [];
+            sampleTeams.forEach((team, index) => {
+                teams.push({
+                    id: index + 1,
+                    name: team.name,
+                    players: team.players,
+                    wins: 0,
+                    losses: 0,
+                    pointsFor: 0,
+                    pointsAgainst: 0
+                });
+            });
+
+            updateTeamsList();
+            checkTeamsNext();
+        }
+
+        function updateTeamsList() {
+            const teamsList = document.getElementById('teams-list');
+            teamsList.innerHTML = '';
+
+            teams.forEach(team => {
+                const teamCard = document.createElement('div');
+                teamCard.className = 'team-card';
+                teamCard.innerHTML = `
+                    <h4>${team.name}</h4>
+                    <p>${team.players.join(' - ')}</p>
+                `;
+                teamsList.appendChild(teamCard);
+            });
+        }
+
+        function checkTeamsNext() {
+            const nextButton = document.getElementById('teams-next');
+            nextButton.disabled = teams.length < 4;
+        }
+
+        function generatePools() {
+            pools = [];
+            const teamsPerPool = 4;
+            const numPools = Math.ceil(teams.length / teamsPerPool);
+
+            // Mélanger les équipes
+            const shuffledTeams = [...teams].sort(() => Math.random() - 0.5);
+
+            for (let i = 0; i < numPools; i++) {
+                const poolTeams = shuffledTeams.slice(i * teamsPerPool, (i + 1) * teamsPerPool);
+                pools.push({
+                    id: i + 1,
+                    name: `Poule ${i + 1}`,
+                    teams: poolTeams
+                });
+            }
+
+            updatePoolsList();
+            document.getElementById('pools-next').disabled = false;
+        }
+
+        function updatePoolsList() {
+            const poolsList = document.getElementById('pools-list');
+            poolsList.innerHTML = '';
+
+            pools.forEach(pool => {
+                const poolCard = document.createElement('div');
+                poolCard.className = 'pool-card';
+                poolCard.innerHTML = `
+                    <div class="pool-title">${pool.name}</div>
+                    ${pool.teams.map(team => `<div>${team.name}</div>`).join('')}
+                `;
+                poolsList.appendChild(poolCard);
+            });
+        }
+
+        function simulateMatches() {
+            matches = [];
+
+            // Générer les matchs pour chaque poule
+            pools.forEach(pool => {
+                const poolTeams = pool.teams;
+                for (let i = 0; i < poolTeams.length; i++) {
+                    for (let j = i + 1; j < poolTeams.length; j++) {
+                        const team1Score = Math.floor(Math.random() * 8) + 6; // 6-13
+                        const team2Score = Math.floor(Math.random() * 8) + 6; // 6-13
+                        
+                        // Assurer qu'il y a un gagnant
+                        const finalTeam1Score = team1Score === team2Score ? team1Score + 1 : team1Score;
+                        const finalTeam2Score = team1Score === team2Score ? team2Score : team2Score;
+
+                        matches.push({
+                            team1: poolTeams[i],
+                            team2: poolTeams[j],
+                            team1Score: finalTeam1Score,
+                            team2Score: finalTeam2Score,
+                            pool: pool.name
+                        });
+
+                        // Mettre à jour les statistiques
+                        if (finalTeam1Score > finalTeam2Score) {
+                            poolTeams[i].wins++;
+                            poolTeams[j].losses++;
+                        } else {
+                            poolTeams[j].wins++;
+                            poolTeams[i].losses++;
+                        }
+
+                        poolTeams[i].pointsFor += finalTeam1Score;
+                        poolTeams[i].pointsAgainst += finalTeam2Score;
+                        poolTeams[j].pointsFor += finalTeam2Score;
+                        poolTeams[j].pointsAgainst += finalTeam1Score;
+                    }
+                }
+            });
+
+            updateMatchesList();
+            document.getElementById('matches-next').disabled = false;
+        }
+
+        function updateMatchesList() {
+            const matchesList = document.getElementById('matches-list');
+            matchesList.innerHTML = '';
+
+            matches.forEach(match => {
+                const matchItem = document.createElement('div');
+                matchItem.className = 'match-item';
+                matchItem.innerHTML = `
+                    <div class="match-teams">${match.team1.name} vs ${match.team2.name}</div>
+                    <div class="match-score">${match.team1Score} - ${match.team2Score}</div>
+                `;
+                matchesList.appendChild(matchItem);
+            });
+        }
+
+        function updateStandings() {
+            const standingsBody = document.getElementById('standings-body');
+            standingsBody.innerHTML = '';
+
+            // Trier toutes les équipes par performance
+            const allTeams = teams.sort((a, b) => {
+                if (b.wins !== a.wins) return b.wins - a.wins;
+                return (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst);
+            });
+
+            allTeams.forEach((team, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${team.name}</td>
+                    <td>${team.wins}</td>
+                    <td>${team.losses}</td>
+                    <td>${team.pointsFor}</td>
+                    <td>${team.pointsAgainst}</td>
+                    <td>${team.pointsFor - team.pointsAgainst}</td>
+                `;
+                standingsBody.appendChild(row);
+            });
+        }
+
+        function restartDemo() {
+            currentStep = 1;
+            teams = [];
+            pools = [];
+            matches = [];
+
+            // Réinitialiser l'interface
+            document.querySelectorAll('.step-item').forEach(item => {
+                item.classList.remove('active', 'completed');
+            });
+            document.querySelector('[data-step="1"]').classList.add('active');
+
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('step-1').classList.add('active');
+
+            // Vider les listes
+            document.getElementById('teams-list').innerHTML = '';
+            document.getElementById('pools-list').innerHTML = '';
+            document.getElementById('matches-list').innerHTML = '';
+            document.getElementById('standings-body').innerHTML = '';
+
+            // Réinitialiser les boutons
+            document.getElementById('teams-next').disabled = true;
+            document.getElementById('pools-next').disabled = true;
+            document.getElementById('matches-next').disabled = true;
+        }
+
+        function closeDemo() {
+            window.parent.postMessage('closeDemo', '*');
+        }
+
+        // Observer pour mettre à jour le classement quand on arrive à l'étape 5
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.target.id === 'step-5' && mutation.target.classList.contains('active')) {
+                    updateStandings();
+                }
+            });
+        });
+
+        document.querySelectorAll('.step-content').forEach(element => {
+            observer.observe(element, { attributes: true, attributeFilter: ['class'] });
+        });
+
+        // Permettre la navigation par clic sur les étapes
+        document.querySelectorAll('.step-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const stepNumber = parseInt(item.dataset.step);
+                if (stepNumber <= currentStep || item.classList.contains('completed')) {
+                    // Permettre de revenir aux étapes précédentes ou complétées
+                    document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
+                    document.querySelector(`#step-${currentStep}`).classList.remove('active');
+                    
+                    currentStep = stepNumber;
+                    
+                    document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
+                    document.querySelector(`#step-${currentStep}`).classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
