@@ -1,13 +1,585 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./petanque-icon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pétanque Manager</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pétanque Manager - Logiciel de gestion de tournois</title>
+    <meta name="description" content="Pétanque Manager - Le logiciel professionnel pour organiser et gérer vos tournois de pétanque. Interface moderne, gestion des poules, phases finales automatiques.">
+    <link rel="icon" type="image/x-icon" href="./logo1.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="./logo1.png" alt="Pétanque Manager" class="nav-logo">
+                <span class="nav-title">Pétanque Manager</span>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="#accueil" class="nav-link">Accueil</a>
+                <a href="#fonctionnalites" class="nav-link">Fonctionnalités</a>
+                <a href="#tarifs" class="nav-link">Tarifs</a>
+                <a href="#demo" class="nav-link">Démo</a>
+                <a href="#contact" class="nav-link">Contact</a>
+                <a href="#telecharger" class="nav-cta">Télécharger</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="accueil" class="hero">
+        <div class="hero-background">
+            <div class="floating-balls">
+                <div class="ball ball-1"></div>
+                <div class="ball ball-2"></div>
+                <div class="ball ball-3"></div>
+                <div class="ball ball-4"></div>
+                <div class="ball ball-5"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        Gérez vos tournois de pétanque
+                        <span class="gradient-text">comme un pro</span>
+                    </h1>
+                    <p class="hero-description">
+                        Pétanque Manager est le logiciel de référence pour organiser et gérer vos tournois de pétanque. 
+                        Interface moderne, gestion automatique des poules et phases finales.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="#telecharger" class="btn btn-primary">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7,10 12,15 17,10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Télécharger gratuitement
+                        </a>
+                        <a href="#demo" class="btn btn-secondary">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polygon points="5,3 19,12 5,21"/>
+                            </svg>
+                            Voir la démo
+                        </a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Clubs utilisateurs</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">10k+</span>
+                            <span class="stat-label">Tournois organisés</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">50k+</span>
+                            <span class="stat-label">Joueurs gérés</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="app-mockup">
+                        <div class="mockup-header">
+                            <div class="mockup-controls">
+                                <span class="control red"></span>
+                                <span class="control yellow"></span>
+                                <span class="control green"></span>
+                            </div>
+                            <span class="mockup-title">Pétanque Manager</span>
+                        </div>
+                        <div class="mockup-content">
+                            <div class="mockup-screenshot">
+                                <div class="tournament-card">
+                                    <h3>Tournoi du Club</h3>
+                                    <div class="tournament-info">
+                                        <span class="badge">Doublette en poule</span>
+                                        <span class="courts">4 terrains</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 65%"></div>
+                                    </div>
+                                    <p>Tour 2/3 - 16 équipes</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="fonctionnalites" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Fonctionnalités complètes</h2>
+                <p class="section-description">
+                    Tout ce dont vous avez besoin pour organiser des tournois professionnels
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Gestion des équipes</h3>
+                    <p class="feature-description">
+                        Inscrivez facilement vos équipes et joueurs. Support pour tous les formats : 
+                        tête-à-tête, doublette, triplette, quadrette et mêlée.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Poules automatiques</h3>
+                    <p class="feature-description">
+                        Génération automatique des poules optimisées. Gestion intelligente des matchs 
+                        avec système de barrage intégré.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Phases finales</h3>
+                    <p class="feature-description">
+                        Tableaux de phases finales automatiques avec catégories A et B. 
+                        Gestion des BYE et propagation des gagnants.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Impression & Export</h3>
+                    <p class="feature-description">
+                        Imprimez vos feuilles de matchs, classements et poules. 
+                        Export des données pour vos rapports.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Interface moderne</h3>
+                    <p class="feature-description">
+                        Interface utilisateur intuitive et moderne. Thème cyber-futuriste 
+                        avec animations fluides et design responsive.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12,6 12,12 16,14"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Temps réel</h3>
+                    <p class="feature-description">
+                        Mise à jour en temps réel des scores et classements. 
+                        Suivi de l'avancement du tournoi en direct.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="tarifs" class="pricing">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Tarifs simples et transparents</h2>
+                <p class="section-description">
+                    Choisissez la formule qui correspond à vos besoins
+                </p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3 class="pricing-title">Gratuit</h3>
+                        <div class="pricing-price">
+                            <span class="price">0€</span>
+                            <span class="period">pour toujours</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="feature-included">Jusqu'à 32 équipes</li>
+                        <li class="feature-included">Tous les formats de jeu</li>
+                        <li class="feature-included">Gestion des poules</li>
+                        <li class="feature-included">Phases finales</li>
+                        <li class="feature-included">Impression basique</li>
+                        <li class="feature-excluded">Support prioritaire</li>
+                        <li class="feature-excluded">Fonctions avancées</li>
+                    </ul>
+                    <a href="#telecharger" class="btn btn-outline">Télécharger</a>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">Recommandé</div>
+                    <div class="pricing-header">
+                        <h3 class="pricing-title">Pro</h3>
+                        <div class="pricing-price">
+                            <span class="price">29€</span>
+                            <span class="period">licence unique</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="feature-included">Équipes illimitées</li>
+                        <li class="feature-included">Tous les formats de jeu</li>
+                        <li class="feature-included">Gestion avancée des poules</li>
+                        <li class="feature-included">Phases finales complètes</li>
+                        <li class="feature-included">Impression professionnelle</li>
+                        <li class="feature-included">Support prioritaire</li>
+                        <li class="feature-included">Mises à jour gratuites</li>
+                    </ul>
+                    <a href="#contact" class="btn btn-primary">Acheter maintenant</a>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3 class="pricing-title">Club</h3>
+                        <div class="pricing-price">
+                            <span class="price">99€</span>
+                            <span class="period">licence club</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="feature-included">5 licences incluses</li>
+                        <li class="feature-included">Toutes les fonctionnalités Pro</li>
+                        <li class="feature-included">Gestion multi-tournois</li>
+                        <li class="feature-included">Statistiques avancées</li>
+                        <li class="feature-included">Formation personnalisée</li>
+                        <li class="feature-included">Support dédié</li>
+                        <li class="feature-included">Personnalisation</li>
+                    </ul>
+                    <a href="#contact" class="btn btn-outline">Nous contacter</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo">
+        <div class="container">
+            <div class="demo-content">
+                <div class="demo-text">
+                    <h2 class="demo-title">Découvrez Pétanque Manager en action</h2>
+                    <p class="demo-description">
+                        Regardez comment organiser un tournoi complet en quelques clics. 
+                        De l'inscription des équipes aux phases finales, tout est automatisé.
+                    </p>
+                    <div class="demo-features">
+                        <div class="demo-feature">
+                            <svg class="demo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="20,6 9,17 4,12"/>
+                            </svg>
+                            <span>Configuration rapide en 2 minutes</span>
+                        </div>
+                        <div class="demo-feature">
+                            <svg class="demo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="20,6 9,17 4,12"/>
+                            </svg>
+                            <span>Génération automatique des matchs</span>
+                        </div>
+                        <div class="demo-feature">
+                            <svg class="demo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="20,6 9,17 4,12"/>
+                            </svg>
+                            <span>Suivi en temps réel</span>
+                        </div>
+                    </div>
+                    <a href="#" class="btn btn-primary demo-btn">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polygon points="5,3 19,12 5,21"/>
+                        </svg>
+                        Lancer la démo interactive
+                    </a>
+                </div>
+                <div class="demo-video">
+                    <div class="video-container">
+                        <div class="video-placeholder">
+                            <svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polygon points="5,3 19,12 5,21"/>
+                            </svg>
+                            <p>Vidéo de démonstration</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Ce que disent nos utilisateurs</h2>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"Pétanque Manager a révolutionné l'organisation de nos tournois. Plus de calculs manuels, tout est automatique !"</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">JM</div>
+                        <div class="author-info">
+                            <h4>Jean-Michel Dubois</h4>
+                            <p>Président, Club de Marseille</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"Interface très intuitive, même pour quelqu'un qui n'est pas à l'aise avec l'informatique. Parfait !"</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">ML</div>
+                        <div class="author-info">
+                            <h4>Marie Lefebvre</h4>
+                            <p>Secrétaire, AS Toulouse</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"Le système de poules automatique nous fait gagner des heures. Indispensable pour nos gros tournois !"</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">PD</div>
+                        <div class="author-info">
+                            <h4>Pierre Durand</h4>
+                            <p>Organisateur, Fédération Régionale</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="telecharger" class="download">
+        <div class="container">
+            <div class="download-content">
+                <div class="download-text">
+                    <h2 class="download-title">Téléchargez Pétanque Manager</h2>
+                    <p class="download-description">
+                        Disponible pour Windows, Mac et Linux. Installation simple et rapide.
+                    </p>
+                    <div class="system-requirements">
+                        <h3>Configuration requise :</h3>
+                        <ul>
+                            <li>Windows 10/11, macOS 10.14+ ou Linux Ubuntu 18.04+</li>
+                            <li>4 GB de RAM minimum</li>
+                            <li>500 MB d'espace disque</li>
+                            <li>Connexion internet pour les mises à jour</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="download-buttons">
+                    <a href="#" class="download-btn windows">
+                        <svg class="download-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3,12V6.75L9,5.43V11.91L3,12M20,3V11.75L10,11.9V5.21L20,3M3,13L9,13.09V19.9L3,18.75V13M20,13.25V22L10,20.09V13.1L20,13.25Z"/>
+                        </svg>
+                        <div>
+                            <span class="platform">Windows</span>
+                            <span class="version">Version 1.0.0</span>
+                        </div>
+                    </a>
+                    <a href="#" class="download-btn mac">
+                        <svg class="download-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.09,16.67C20.06,16.74 19.67,18.11 18.71,19.5M13,3.5C13.73,2.67 14.94,2.04 15.94,2C16.07,3.17 15.6,4.35 14.9,5.19C14.21,6.04 13.07,6.7 11.95,6.61C11.8,5.46 12.36,4.26 13,3.5Z"/>
+                        </svg>
+                        <div>
+                            <span class="platform">macOS</span>
+                            <span class="version">Version 1.0.0</span>
+                        </div>
+                    </a>
+                    <a href="#" class="download-btn linux">
+                        <svg class="download-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M14.62,8.35C14.52,8.35 14.44,8.43 14.44,8.53C14.44,8.63 14.52,8.71 14.62,8.71C14.72,8.71 14.8,8.63 14.8,8.53C14.8,8.43 14.72,8.35 14.62,8.35M9.38,8.35C9.28,8.35 9.2,8.43 9.2,8.53C9.2,8.63 9.28,8.71 9.38,8.71C9.48,8.71 9.56,8.63 9.56,8.53C9.56,8.43 9.48,8.35 9.38,8.35M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4.07C16.06,4.07 19.37,7.38 19.37,11.44C19.37,15.5 16.06,18.81 12,18.81C7.94,18.81 4.63,15.5 4.63,11.44C4.63,7.38 7.94,4.07 12,4.07Z"/>
+                        </svg>
+                        <div>
+                            <span class="platform">Linux</span>
+                            <span class="version">Version 1.0.0</span>
+                        </div>
+                    </a>
+                </div>
+                <p class="download-note">
+                    Version gratuite avec toutes les fonctionnalités de base. 
+                    <a href="#tarifs">Voir les tarifs</a> pour les fonctionnalités avancées.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h2 class="contact-title">Contactez-nous</h2>
+                    <p class="contact-description">
+                        Une question ? Besoin d'aide ? Notre équipe est là pour vous accompagner.
+                    </p>
+                    <div class="contact-methods">
+                        <div class="contact-method">
+                            <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                            <div>
+                                <h3>Email</h3>
+                                <p>support@petanque-manager.fr</p>
+                            </div>
+                        </div>
+                        <div class="contact-method">
+                            <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                            </svg>
+                            <div>
+                                <h3>Téléphone</h3>
+                                <p>+33 1 23 45 67 89</p>
+                            </div>
+                        </div>
+                        <div class="contact-method">
+                            <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="10" r="3"/>
+                                <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/>
+                            </svg>
+                            <div>
+                                <h3>Adresse</h3>
+                                <p>123 Avenue de la Pétanque<br>13000 Marseille, France</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <form class="contact-form">
+                    <div class="form-group">
+                        <label for="name">Nom complet</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Sujet</label>
+                        <select id="subject" name="subject" required>
+                            <option value="">Choisissez un sujet</option>
+                            <option value="support">Support technique</option>
+                            <option value="sales">Question commerciale</option>
+                            <option value="feature">Demande de fonctionnalité</option>
+                            <option value="other">Autre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22,2 15,22 11,13 2,9"/>
+                        </svg>
+                        Envoyer le message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="./logo1.png" alt="Pétanque Manager" class="footer-logo">
+                    <h3>Pétanque Manager</h3>
+                    <p>Le logiciel de référence pour vos tournois de pétanque</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Produit</h4>
+                        <ul>
+                            <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+                            <li><a href="#tarifs">Tarifs</a></li>
+                            <li><a href="#telecharger">Télécharger</a></li>
+                            <li><a href="#demo">Démo</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Support</h4>
+                        <ul>
+                            <li><a href="#contact">Contact</a></li>
+                            <li><a href="#">Documentation</a></li>
+                            <li><a href="#">FAQ</a></li>
+                            <li><a href="#">Tutoriels</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Légal</h4>
+                        <ul>
+                            <li><a href="#">Mentions légales</a></li>
+                            <li><a href="#">Politique de confidentialité</a></li>
+                            <li><a href="#">CGU</a></li>
+                            <li><a href="#">CGV</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Pétanque Manager. Tous droits réservés.</p>
+                <div class="footer-social">
+                    <a href="#" class="social-link">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
 </html>
