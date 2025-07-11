@@ -62,11 +62,12 @@ describe('generateQuadretteMatches', () => {
     const matches = generateMatches(tournament);
     expect(matches).toHaveLength(2);
     expect(matches.every(m => m.team1Id !== m.team2Id)).toBe(true);
-    const withGroup = matches.find(m => m.team1Ids);
-    const solo = matches.find(m => !m.team1Ids);
-    expect(withGroup).toBeDefined();
-    expect(withGroup!.team1Ids).toHaveLength(3);
-    expect(solo).toBeDefined();
+    const triplette = matches.find(m => m.team1Ids && m.team1Ids.length === 3);
+    const tete = matches.find(m => m.team1Ids && m.team1Ids.length === 1);
+    expect(triplette).toBeDefined();
+    expect(triplette!.team2Ids).toHaveLength(3);
+    expect(tete).toBeDefined();
+    expect(tete!.team2Ids).toHaveLength(1);
   });
 
   it('avoids pairing the same teams more than once', () => {
