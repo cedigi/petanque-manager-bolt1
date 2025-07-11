@@ -34,7 +34,7 @@ export function MatchesTab({
       .map((p, idx) => {
         const label = p.label ? p.label.toLowerCase() : '';
         const prefix = label
-          ? `${label}${idx === 0 && teamNumber ? teamNumber : ''} - `
+          ? `${idx === 0 ? `${teamNumber ?? ''}${label}` : label} - `
           : '';
         return `${prefix}${p.name}`;
       })
