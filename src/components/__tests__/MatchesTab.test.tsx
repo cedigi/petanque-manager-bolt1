@@ -78,7 +78,7 @@ describe('MatchesTab display', () => {
     // screen.debug();
 
     const text = document.body.textContent || '';
-    expect(text).toContain('a1 - T1-A');
-    expect(text).toContain('a2 - T2-A');
+    expect(text).toContain('1 : A - T1-A');
+    expect(text).toContain('2 : A - T2-A');
   });
 });
