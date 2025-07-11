@@ -192,8 +192,8 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
         hackingAttempts: 0,
       };
 
-      if (ids1.length > 1) match.team1Ids = ids1;
-      if (ids2.length > 1) match.team2Ids = ids2;
+      match.team1Ids = ids1;
+      match.team2Ids = ids2;
 
       newMatches.push(match);
       courtIndex++;
