@@ -71,6 +71,35 @@ describe('generateQuadretteMatches', () => {
     expect(tete!.team2Ids).toHaveLength(1);
   });
 
+  it('can pair a team with different opponents for triplette and tête-à-tête', () => {
+    const teams = [makeTeam('A'), makeTeam('B'), makeTeam('C'), makeTeam('D')];
+    const tournament = baseTournament(teams);
+
+    const seq = [0, 0, 0, 0.75, 0.75, 0.75, 0.1, 0.2, 0.3, 0.4];
+    let idx = 0;
+    jest.spyOn(Math, 'random').mockImplementation(() => seq[idx++] ?? 0);
+
+    const matches = generateMatches(tournament);
+
+    const triplette = matches.filter(m => m.team1Ids && m.team1Ids.length === 3);
+    const tete = matches.filter(m => m.team1Ids && m.team1Ids.length === 1);
+
+    const tripMap: Record<string, string> = {};
+    triplette.forEach(m => {
+      tripMap[m.team1Id] = m.team2Id;
+      tripMap[m.team2Id] = m.team1Id;
+    });
+
+    const teteMap: Record<string, string> = {};
+    tete.forEach(m => {
+      teteMap[m.team1Id] = m.team2Id;
+      teteMap[m.team2Id] = m.team1Id;
+    });
+
+    const hasDifferent = Object.keys(tripMap).some(id => tripMap[id] !== teteMap[id]);
+    expect(hasDifferent).toBe(true);
+  });
+
   it('avoids pairing the same teams more than once', () => {
     const teams = [makeTeam('A'), makeTeam('B'), makeTeam('C'), makeTeam('D')];
     const tournament = baseTournament(teams);
