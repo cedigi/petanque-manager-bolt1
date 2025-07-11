@@ -34,7 +34,7 @@ export function MatchesTab({
       .map((p, idx) => {
         const label = p.label ? p.label.toLowerCase() : '';
         const prefix = label
-          ? `${label}${idx === 0 && teamNumber ? teamNumber : ''} - `
+          ? `${idx === 0 ? `${teamNumber ?? ''}${label}` : label} - `
           : '';
         return `${prefix}${p.name}`;
       })
@@ -49,16 +49,23 @@ export function MatchesTab({
 
   const getGroupLabel = (ids: string[]) => {
     const players: Player[] = [];
-    ids.forEach(id => {
-      for (const team of teams) {
+    let teamNumber: number | undefined;
+
+    ids.forEach((id, idx) => {
+      for (let i = 0; i < teams.length; i++) {
+        const team = teams[i];
         const player = team.players.find(p => p.id === id);
         if (player) {
           players.push(player);
+          if (idx === 0) {
+            teamNumber = i + 1;
+          }
           break;
         }
       }
     });
-    return formatPlayers(players);
+
+    return formatPlayers(players, teamNumber);
   };
 
   const handleEditScore = (match: Match) => {
