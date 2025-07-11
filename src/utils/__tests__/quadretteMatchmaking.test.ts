@@ -94,4 +94,30 @@ describe('generateQuadretteMatches', () => {
     const matches = generateMatches(tournament);
     expect(matches).toHaveLength(0);
   });
+
+  it('generates matches for multiple rounds covering all teams', () => {
+    const teams = [makeTeam('A'), makeTeam('B'), makeTeam('C'), makeTeam('D')];
+    const tournament = baseTournament(teams);
+
+    const patternsPerRound = 2; // schedule defines two match patterns per round
+    const roundsToPlay = 3;
+
+    for (let r = 0; r < roundsToPlay; r++) {
+      const newMatches = generateMatches(tournament);
+
+      // number of matches should equal (team count / 2) * patternsPerRound
+      expect(newMatches).toHaveLength((teams.length / 2) * patternsPerRound);
+
+      // every team should appear in the round's matches
+      teams.forEach(team => {
+        const involved = newMatches.some(
+          m => m.team1Id === team.id || m.team2Id === team.id
+        );
+        expect(involved).toBe(true);
+      });
+
+      tournament.matches.push(...newMatches);
+      tournament.currentRound += 1;
+    }
+  });
 });
