@@ -133,65 +133,70 @@ function generateStandardMatches(tournament: Tournament): Match[] {
 }
 
 function generateQuadretteMatches(tournament: Tournament): Match[] {
-  const { teams, currentRound, courts } = tournament;
+  const { teams, matches, currentRound, courts } = tournament;
   const round = currentRound + 1;
 
-  const schedule: { [key: number]: string[][] } = {
-    1: [['ABC'], ['D']],
-    2: [['AB'], ['CD']],
-    3: [['ABD'], ['C']],
-    4: [['AC'], ['BD']],
-    5: [['ACD'], ['B']],
-    6: [['AD'], ['BC']],
-    7: [['BCD'], ['A']],
+  const schedule: { [key: number]: string[] } = {
+    1: ['ABC', 'D'],
+    2: ['AB', 'CD'],
+    3: ['ABD', 'C'],
+    4: ['AC', 'BD'],
+    5: ['ACD', 'B'],
+    6: ['AD', 'BC'],
+    7: ['BCD', 'A'],
   };
 
   if (round > 7) return [];
 
-  const roundSchedule = schedule[round];
+  const roundPatterns = schedule[round];
   const newMatches: Match[] = [];
 
-  const quadretteTeams: { [teamId: string]: { [label: string]: string } } = {};
-  
+  const playerMap: Record<string, Record<string, string>> = {};
   teams.forEach(team => {
+    playerMap[team.id] = {};
     team.players.forEach(player => {
       if (player.label) {
-        const baseTeamId = team.id.split('-')[0];
-        if (!quadretteTeams[baseTeamId]) {
-          quadretteTeams[baseTeamId] = {};
-        }
-        quadretteTeams[baseTeamId][player.label] = team.id;
+        playerMap[team.id][player.label] = player.id;
       }
     });
   });
 
+  const remaining = [...teams];
+  const pairings: [Team, Team][] = [];
+
+  while (remaining.length > 1) {
+    const team1 = remaining.shift() as Team;
+    const idx = remaining.findIndex(t => !haveBaseTeamsPlayedBefore(team1.id, t.id, matches));
+    if (idx === -1) {
+      continue; // no available opponent
+    }
+    const team2 = remaining.splice(idx, 1)[0];
+    pairings.push([team1, team2]);
+  }
+
   let courtIndex = 1;
-  Object.keys(quadretteTeams).forEach(baseTeamId => {
-    const teamLabels = quadretteTeams[baseTeamId];
-    
-    roundSchedule.forEach((patterns) => {
-      const pattern = patterns[0];
-      
-      if (pattern.length > 1) {
-        const subTeamIds = pattern.split('').map(label => teamLabels[label]).filter(Boolean);
-        
-        for (let i = 0; i < subTeamIds.length - 1; i += 2) {
-          if (subTeamIds[i + 1]) {
-            newMatches.push({
-              id: generateUuid(),
-              round,
-              court: ((courtIndex - 1) % courts) + 1,
-              team1Id: subTeamIds[i],
-              team2Id: subTeamIds[i + 1],
-              completed: false,
-              isBye: false,
-              battleIntensity: Math.floor(Math.random() * 100) + 50,
-              hackingAttempts: 0,
-            });
-            courtIndex++;
-          }
-        }
-      }
+  pairings.forEach(([t1, t2]) => {
+    roundPatterns.forEach(pattern => {
+      const ids1 = pattern.split('').map(l => playerMap[t1.id][l]).filter(Boolean);
+      const ids2 = pattern.split('').map(l => playerMap[t2.id][l]).filter(Boolean);
+
+      const match: Match = {
+        id: generateUuid(),
+        round,
+        court: ((courtIndex - 1) % courts) + 1,
+        team1Id: t1.id,
+        team2Id: t2.id,
+        completed: false,
+        isBye: false,
+        battleIntensity: Math.floor(Math.random() * 100) + 50,
+        hackingAttempts: 0,
+      };
+
+      if (ids1.length > 1) match.team1Ids = ids1;
+      if (ids2.length > 1) match.team2Ids = ids2;
+
+      newMatches.push(match);
+      courtIndex++;
     });
   });
 
@@ -355,6 +360,13 @@ function generateMeleeMatches(tournament: Tournament): Match[] {
 }
 
 function havePlayedBefore(team1Id: string, team2Id: string, matches: Match[]): boolean {
+  return matches.some(match =>
+    (match.team1Id === team1Id && match.team2Id === team2Id) ||
+    (match.team1Id === team2Id && match.team2Id === team1Id)
+  );
+}
+
+function haveBaseTeamsPlayedBefore(team1Id: string, team2Id: string, matches: Match[]): boolean {
   return matches.some(match =>
     (match.team1Id === team1Id && match.team2Id === team2Id) ||
     (match.team1Id === team2Id && match.team2Id === team1Id)
