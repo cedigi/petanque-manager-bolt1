@@ -50,14 +50,13 @@ export function MatchesTab({
 
   const getGroupLabel = (ids: string[]) => {
     const labels = ids.map(id => {
-      const index = teams.findIndex(t => t.id === id);
-      const team = teams[index];
-      if (!team) return 'Inconnu';
-      if (isSolo) {
-        const player = team.players[0];
-        return `${index + 1} : ${player.name}`;
+      for (const team of teams) {
+        const player = team.players.find(p => p.id === id);
+        if (player) {
+          return player.label ? `[${player.label}] ${player.name}` : player.name;
+        }
       }
-      return team.name || team.players[0]?.name || 'Inconnu';
+      return 'Inconnu';
     });
     return labels.join(isSolo ? ' - ' : ' + ');
   };
