@@ -182,15 +182,13 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
     });
   });
 
-  const remaining = [...teams];
+  const remaining = [...teams].sort(() => Math.random() - 0.5);
   const pairings: [Team, Team][] = [];
 
   while (remaining.length > 1) {
     const team1 = remaining.shift() as Team;
-    const idx = remaining.findIndex(t => !haveBaseTeamsPlayedBefore(team1.id, t.id, matches));
-    if (idx === -1) {
-      continue; // no available opponent
-    }
+    let idx = remaining.findIndex(t => !haveBaseTeamsPlayedBefore(team1.id, t.id, matches));
+    if (idx === -1) idx = 0;
     const team2 = remaining.splice(idx, 1)[0];
     pairings.push([team1, team2]);
   }

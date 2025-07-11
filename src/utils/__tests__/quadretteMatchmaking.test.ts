@@ -87,6 +87,23 @@ describe('generateQuadretteMatches', () => {
     expect(pairs.size * 2).toBe(tournament.matches.length);
   });
 
+  it('includes every team in each generated round', () => {
+    const teams = [makeTeam('A'), makeTeam('B'), makeTeam('C'), makeTeam('D')];
+    const tournament = baseTournament(teams);
+
+    for (let i = 0; i < 5; i++) {
+      const roundMatches = generateMatches(tournament);
+      const ids = new Set<string>();
+      roundMatches.forEach(m => {
+        ids.add(m.team1Id);
+        ids.add(m.team2Id);
+      });
+      expect(Array.from(ids).sort()).toEqual(teams.map(t => t.id).sort());
+      tournament.matches.push(...roundMatches);
+      tournament.currentRound += 1;
+    }
+  });
+
   it('returns no matches after round seven', () => {
     const teams = [makeTeam('A'), makeTeam('B')];
     const tournament = baseTournament(teams);
