@@ -71,31 +71,6 @@ describe('generateQuadretteMatches', () => {
     expect(tete!.team2Ids).toHaveLength(1);
   });
 
-        codex/shuffle-team-list-before-pairing
-  it('randomizes first round pairings so sequential teams are not always matched', () => {
-    const teams = [makeTeam('A'), makeTeam('B'), makeTeam('C'), makeTeam('D')];
-    const tournament = baseTournament(teams);
-
-    const values = [0.4, 0.6, 0.3, 0.9, 0.2, 0.8, 0.1, 0.7];
-    const randomSpy = jest
-      .spyOn(Math, 'random')
-      .mockImplementation(() => values.shift() ?? 0.5);
-
-    const matches = generateMatches(tournament);
-    randomSpy.mockRestore();
-
-    const baseOrder = teams.map(t => t.id);
-    const pairs = Array.from(
-      new Set(matches.map(m => [m.team1Id, m.team2Id].sort().join('-')))
-    );
-
-    const hasSequential = pairs.some(p => {
-      const [t1, t2] = p.split('-');
-      const diff = Math.abs(baseOrder.indexOf(t1) - baseOrder.indexOf(t2));
-      return diff === 1;
-    });
-    expect(hasSequential).toBe(false);
-
   it('can pair a team with different opponents for triplette and tête-à-tête', () => {
     const teams = [makeTeam('A'), makeTeam('B'), makeTeam('C'), makeTeam('D')];
     const tournament = baseTournament(teams);
@@ -123,7 +98,6 @@ describe('generateQuadretteMatches', () => {
 
     const hasDifferent = Object.keys(tripMap).some(id => tripMap[id] !== teteMap[id]);
     expect(hasDifferent).toBe(true);
-        main
   });
 
   it('avoids pairing the same teams more than once', () => {

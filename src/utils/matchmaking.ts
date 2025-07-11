@@ -182,13 +182,7 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
     });
   });
 
-        codex/shuffle-team-list-before-pairing
-  const remaining = [...teams];
-  if (round === 1) {
-    remaining.sort(() => Math.random() - 0.5);
-  }
 
-        codex/extend-generatequadrettematches-functionality
   const pairKey = (a: string, b: string) => [a, b].sort().join('-');
 
   function shuffle<T>(arr: T[]): T[] {
@@ -200,19 +194,44 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
     return copy;
   }
 
+  const baseOrder = teams.map(t => t.id);
+
   function makePairings(exclude: Set<string>): [Team, Team][] {
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const order = shuffle(teams);
+      const remain = [...order];
+      const result: [Team, Team][] = [];
+      let valid = true;
+
+      while (remain.length > 1) {
+        const team1 = remain.shift() as Team;
+        let idx = remain.findIndex(
+          t => !haveBaseTeamsPlayedBefore(team1.id, t.id, matches) && !exclude.has(pairKey(team1.id, t.id))
+        );
+        if (idx === -1) idx = 0;
+        const team2 = remain.splice(idx, 1)[0];
+
+        if (round === 1 && Math.abs(baseOrder.indexOf(team1.id) - baseOrder.indexOf(team2.id)) === 1) {
+          valid = false;
+          break;
+        }
+
+        exclude.add(pairKey(team1.id, team2.id));
+        result.push([team1, team2]);
+      }
+
+      if (valid) {
+        return result;
+      }
+    }
+
     const order = shuffle(teams);
     const remain = [...order];
     const result: [Team, Team][] = [];
 
     while (remain.length > 1) {
       const team1 = remain.shift() as Team;
-      let idx = remain.findIndex(
-        t => !haveBaseTeamsPlayedBefore(team1.id, t.id, matches) && !exclude.has(pairKey(team1.id, t.id))
-      );
-      if (idx === -1) {
-        idx = remain.findIndex(t => !exclude.has(pairKey(team1.id, t.id)));
-      }
+      let idx = remain.findIndex(t => !exclude.has(pairKey(team1.id, t.id)));
       if (idx === -1) idx = 0;
       const team2 = remain.splice(idx, 1)[0];
       exclude.add(pairKey(team1.id, team2.id));
@@ -220,18 +239,6 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
     }
 
     return result;
-
-  const remaining = [...teams].sort(() => Math.random() - 0.5);
-        main
-  const pairings: [Team, Team][] = [];
-
-  while (remaining.length > 1) {
-    const team1 = remaining.shift() as Team;
-    let idx = remaining.findIndex(t => !haveBaseTeamsPlayedBefore(team1.id, t.id, matches));
-    if (idx === -1) idx = 0;
-    const team2 = remaining.splice(idx, 1)[0];
-    pairings.push([team1, team2]);
-        main
   }
 
   const usedPairs = new Set<string>();
@@ -288,8 +295,6 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
     newMatches.push(match);
     courtIndex++;
   });
-
-  return newMatches;
 
   return newMatches;
 }
