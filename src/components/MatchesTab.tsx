@@ -29,16 +29,17 @@ export function MatchesTab({
 
   const isSolo = teams.every(t => t.players.length === 1);
 
-  const formatPlayers = (players: Player[], teamNumber?: number) =>
-    players
-      .map((p, idx) => {
-        const label = p.label ? p.label.toLowerCase() : '';
-        const prefix = label
-          ? `${idx === 0 ? `${teamNumber ?? ''}${label}` : label} - `
-          : '';
-        return `${prefix}${p.name}`;
-      })
-      .join(' / ');
+  const formatPlayers = (players: Player[], teamNumber?: number) => {
+    const formatted = players.map((p) => {
+      const label = p.label ? p.label.toUpperCase() : '';
+      const prefix = label ? `${label} - ` : '';
+      return `${prefix}${p.name}`;
+    });
+    if (teamNumber !== undefined) {
+      formatted[0] = `${teamNumber} : ${formatted[0]}`;
+    }
+    return formatted.join(' / ');
+  };
 
   const getTeamDisplay = (teamId: string) => {
     const index = teams.findIndex(t => t.id === teamId);

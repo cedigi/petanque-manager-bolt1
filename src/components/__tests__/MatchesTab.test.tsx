@@ -78,7 +78,12 @@ describe('MatchesTab display', () => {
     // screen.debug();
 
     const text = document.body.textContent || '';
+        codex/modifier-conditionnel-pour-getgrouplabel
     expect(text).toContain('1a - T1-A');
     expect(text).toContain('2a - T2-A');
+
+    expect(text).toContain('1 : A - T1-A');
+    expect(text).toContain('2 : A - T2-A');
+        main
   });
 });
