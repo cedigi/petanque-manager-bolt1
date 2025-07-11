@@ -71,14 +71,27 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
         <body>
           <h1>Liste des ${isSolo ? 'Joueurs' : 'Équipes'}</h1>
           <div class="teams">
-            ${teams
-              .map(
-                (team, idx) =>
-                  `<div class="team">${idx + 1} : ${team.players
-                    .map(p => `${p.name}${p.label ? ` [${p.label}]` : ''}`)
-                    .join(' - ')}</div>`
-              )
-              .join('')}
+            ${
+              tournamentType === 'quadrette'
+                ? teams
+                    .map((team, idx) =>
+                      team.players
+                        .map(
+                          p =>
+                            `<div class="team">${idx + 1} : ${p.name}${p.label ? ` [${p.label}]` : ''}</div>`
+                        )
+                        .join('')
+                    )
+                    .join('')
+                : teams
+                    .map(
+                      (team, idx) =>
+                        `<div class="team">${idx + 1} : ${team.players
+                          .map(p => `${p.name}${p.label ? ` [${p.label}]` : ''}`)
+                          .join(' - ')}</div>`
+                    )
+                    .join('')
+            }
           </div>
         </body>
       </html>

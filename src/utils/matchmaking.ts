@@ -136,14 +136,35 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
   const { teams, matches, currentRound, courts } = tournament;
   const round = currentRound + 1;
 
-  const schedule: { [key: number]: string[] } = {
-    1: ['ABC', 'D'],
-    2: ['AB', 'CD'],
-    3: ['ABD', 'C'],
-    4: ['AC', 'BD'],
-    5: ['ACD', 'B'],
-    6: ['AD', 'BC'],
-    7: ['BCD', 'A'],
+  const schedule: { [key: number]: [string, string][] } = {
+    1: [
+      ['ABC', 'ABC'],
+      ['D', 'D'],
+    ],
+    2: [
+      ['AB', 'AB'],
+      ['CD', 'CD'],
+    ],
+    3: [
+      ['ABD', 'ABD'],
+      ['C', 'C'],
+    ],
+    4: [
+      ['AC', 'AC'],
+      ['BD', 'BD'],
+    ],
+    5: [
+      ['ACD', 'ACD'],
+      ['B', 'B'],
+    ],
+    6: [
+      ['AD', 'AD'],
+      ['BC', 'BC'],
+    ],
+    7: [
+      ['BCD', 'BCD'],
+      ['A', 'A'],
+    ],
   };
 
   if (round > 7) return [];
@@ -176,9 +197,9 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
 
   let courtIndex = 1;
   pairings.forEach(([t1, t2]) => {
-    roundPatterns.forEach(pattern => {
-      const ids1 = pattern.split('').map(l => playerMap[t1.id][l]).filter(Boolean);
-      const ids2 = pattern.split('').map(l => playerMap[t2.id][l]).filter(Boolean);
+    roundPatterns.forEach(([p1, p2]) => {
+      const ids1 = p1.split('').map(l => playerMap[t1.id][l]).filter(Boolean);
+      const ids2 = p2.split('').map(l => playerMap[t2.id][l]).filter(Boolean);
 
       const match: Match = {
         id: generateUuid(),
