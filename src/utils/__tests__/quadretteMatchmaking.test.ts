@@ -71,7 +71,7 @@ describe('generateQuadretteMatches', () => {
 
   it('avoids pairing the same teams more than once', () => {
     const teams = [makeTeam('A'), makeTeam('B'), makeTeam('C'), makeTeam('D')];
-    let tournament = baseTournament(teams);
+    const tournament = baseTournament(teams);
 
     for (let i = 0; i < 3; i++) {
       const newMatches = generateMatches(tournament);
