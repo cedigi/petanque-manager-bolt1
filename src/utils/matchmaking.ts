@@ -182,6 +182,12 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
     });
   });
 
+        codex/shuffle-team-list-before-pairing
+  const remaining = [...teams];
+  if (round === 1) {
+    remaining.sort(() => Math.random() - 0.5);
+  }
+
         codex/extend-generatequadrettematches-functionality
   const pairKey = (a: string, b: string) => [a, b].sort().join('-');
 
@@ -216,6 +222,7 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
     return result;
 
   const remaining = [...teams].sort(() => Math.random() - 0.5);
+        main
   const pairings: [Team, Team][] = [];
 
   while (remaining.length > 1) {

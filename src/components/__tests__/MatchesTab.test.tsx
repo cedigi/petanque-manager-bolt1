@@ -78,6 +78,10 @@ describe('MatchesTab display', () => {
     // screen.debug();
 
     const text = document.body.textContent || '';
+        codex/shuffle-team-list-before-pairing
+    expect(text).toContain('1 : A - T1-A');
+    expect(text).toContain('2 : A - T2-A');
+
         codex/extend-generatequadrettematches-functionality
     expect(text).toContain('1 : A - T1-A');
     expect(text).toContain('2 : A - T2-A');
@@ -93,6 +97,7 @@ describe('MatchesTab display', () => {
         main
     expect(text).toContain('1 : A - T1-A');
     expect(text).toContain('2 : A - T2-A');
+        main
         main
   });
 });
