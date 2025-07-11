@@ -116,11 +116,54 @@ describe('generateQuadretteMatches', () => {
     expect(pairs.size * 2).toBe(tournament.matches.length);
   });
 
+  it('includes every team in each generated round', () => {
+    const teams = [makeTeam('A'), makeTeam('B'), makeTeam('C'), makeTeam('D')];
+    const tournament = baseTournament(teams);
+
+    for (let i = 0; i < 5; i++) {
+      const roundMatches = generateMatches(tournament);
+      const ids = new Set<string>();
+      roundMatches.forEach(m => {
+        ids.add(m.team1Id);
+        ids.add(m.team2Id);
+      });
+      expect(Array.from(ids).sort()).toEqual(teams.map(t => t.id).sort());
+      tournament.matches.push(...roundMatches);
+      tournament.currentRound += 1;
+    }
+  });
+
   it('returns no matches after round seven', () => {
     const teams = [makeTeam('A'), makeTeam('B')];
     const tournament = baseTournament(teams);
     tournament.currentRound = 7;
     const matches = generateMatches(tournament);
     expect(matches).toHaveLength(0);
+  });
+
+  it('generates matches for multiple rounds covering all teams', () => {
+    const teams = [makeTeam('A'), makeTeam('B'), makeTeam('C'), makeTeam('D')];
+    const tournament = baseTournament(teams);
+
+    const patternsPerRound = 2; // schedule defines two match patterns per round
+    const roundsToPlay = 3;
+
+    for (let r = 0; r < roundsToPlay; r++) {
+      const newMatches = generateMatches(tournament);
+
+      // number of matches should equal (team count / 2) * patternsPerRound
+      expect(newMatches).toHaveLength((teams.length / 2) * patternsPerRound);
+
+      // every team should appear in the round's matches
+      teams.forEach(team => {
+        const involved = newMatches.some(
+          m => m.team1Id === team.id || m.team2Id === team.id
+        );
+        expect(involved).toBe(true);
+      });
+
+      tournament.matches.push(...newMatches);
+      tournament.currentRound += 1;
+    }
   });
 });

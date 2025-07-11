@@ -182,6 +182,7 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
     });
   });
 
+        codex/extend-generatequadrettematches-functionality
   const pairKey = (a: string, b: string) => [a, b].sort().join('-');
 
   function shuffle<T>(arr: T[]): T[] {
@@ -213,6 +214,17 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
     }
 
     return result;
+
+  const remaining = [...teams].sort(() => Math.random() - 0.5);
+  const pairings: [Team, Team][] = [];
+
+  while (remaining.length > 1) {
+    const team1 = remaining.shift() as Team;
+    let idx = remaining.findIndex(t => !haveBaseTeamsPlayedBefore(team1.id, t.id, matches));
+    if (idx === -1) idx = 0;
+    const team2 = remaining.splice(idx, 1)[0];
+    pairings.push([team1, team2]);
+        main
   }
 
   const usedPairs = new Set<string>();
