@@ -183,6 +183,9 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
   });
 
   const remaining = [...teams];
+  if (round === 1) {
+    remaining.sort(() => Math.random() - 0.5);
+  }
   const pairings: [Team, Team][] = [];
 
   while (remaining.length > 1) {
