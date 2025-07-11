@@ -182,6 +182,39 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
     });
   });
 
+        codex/extend-generatequadrettematches-functionality
+  const pairKey = (a: string, b: string) => [a, b].sort().join('-');
+
+  function shuffle<T>(arr: T[]): T[] {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function makePairings(exclude: Set<string>): [Team, Team][] {
+    const order = shuffle(teams);
+    const remain = [...order];
+    const result: [Team, Team][] = [];
+
+    while (remain.length > 1) {
+      const team1 = remain.shift() as Team;
+      let idx = remain.findIndex(
+        t => !haveBaseTeamsPlayedBefore(team1.id, t.id, matches) && !exclude.has(pairKey(team1.id, t.id))
+      );
+      if (idx === -1) {
+        idx = remain.findIndex(t => !exclude.has(pairKey(team1.id, t.id)));
+      }
+      if (idx === -1) idx = 0;
+      const team2 = remain.splice(idx, 1)[0];
+      exclude.add(pairKey(team1.id, team2.id));
+      result.push([team1, team2]);
+    }
+
+    return result;
+
   const remaining = [...teams].sort(() => Math.random() - 0.5);
   const pairings: [Team, Team][] = [];
 
@@ -191,33 +224,65 @@ function generateQuadretteMatches(tournament: Tournament): Match[] {
     if (idx === -1) idx = 0;
     const team2 = remaining.splice(idx, 1)[0];
     pairings.push([team1, team2]);
+        main
   }
 
+  const usedPairs = new Set<string>();
+  const triplettePairings = makePairings(usedPairs);
+  const tetePairings = makePairings(usedPairs);
+
   let courtIndex = 1;
-  pairings.forEach(([t1, t2]) => {
-    roundPatterns.forEach(([p1, p2]) => {
-      const ids1 = p1.split('').map(l => playerMap[t1.id][l]).filter(Boolean);
-      const ids2 = p2.split('').map(l => playerMap[t2.id][l]).filter(Boolean);
+  const [triplettePattern, tetePattern] = roundPatterns;
 
-      const match: Match = {
-        id: generateUuid(),
-        round,
-        court: ((courtIndex - 1) % courts) + 1,
-        team1Id: t1.id,
-        team2Id: t2.id,
-        completed: false,
-        isBye: false,
-        battleIntensity: Math.floor(Math.random() * 100) + 50,
-        hackingAttempts: 0,
-      };
+  triplettePairings.forEach(([t1, t2]) => {
+    const [p1, p2] = triplettePattern;
+    const ids1 = p1.split('').map(l => playerMap[t1.id][l]).filter(Boolean);
+    const ids2 = p2.split('').map(l => playerMap[t2.id][l]).filter(Boolean);
 
-      match.team1Ids = ids1;
-      match.team2Ids = ids2;
+    const match: Match = {
+      id: generateUuid(),
+      round,
+      court: ((courtIndex - 1) % courts) + 1,
+      team1Id: t1.id,
+      team2Id: t2.id,
+      completed: false,
+      isBye: false,
+      battleIntensity: Math.floor(Math.random() * 100) + 50,
+      hackingAttempts: 0,
+    };
 
-      newMatches.push(match);
-      courtIndex++;
-    });
+    match.team1Ids = ids1;
+    match.team2Ids = ids2;
+
+    newMatches.push(match);
+    courtIndex++;
   });
+
+  tetePairings.forEach(([t1, t2]) => {
+    const [p1, p2] = tetePattern;
+    const ids1 = p1.split('').map(l => playerMap[t1.id][l]).filter(Boolean);
+    const ids2 = p2.split('').map(l => playerMap[t2.id][l]).filter(Boolean);
+
+    const match: Match = {
+      id: generateUuid(),
+      round,
+      court: ((courtIndex - 1) % courts) + 1,
+      team1Id: t1.id,
+      team2Id: t2.id,
+      completed: false,
+      isBye: false,
+      battleIntensity: Math.floor(Math.random() * 100) + 50,
+      hackingAttempts: 0,
+    };
+
+    match.team1Ids = ids1;
+    match.team2Ids = ids2;
+
+    newMatches.push(match);
+    courtIndex++;
+  });
+
+  return newMatches;
 
   return newMatches;
 }

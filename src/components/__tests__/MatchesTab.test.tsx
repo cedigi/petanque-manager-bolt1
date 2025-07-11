@@ -78,6 +78,10 @@ describe('MatchesTab display', () => {
     // screen.debug();
 
     const text = document.body.textContent || '';
+        codex/extend-generatequadrettematches-functionality
+    expect(text).toContain('1 : A - T1-A');
+    expect(text).toContain('2 : A - T2-A');
+
         codex/modify-generatequadrettematches-logic
 
     expect(text).toContain('1 : A - T1-A');
@@ -89,5 +93,6 @@ describe('MatchesTab display', () => {
         main
     expect(text).toContain('1 : A - T1-A');
     expect(text).toContain('2 : A - T2-A');
+        main
   });
 });
