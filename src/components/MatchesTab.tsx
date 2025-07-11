@@ -300,11 +300,7 @@ export function MatchesTab({
                       </td>
                       <td className="w-4/12 px-4 py-4 whitespace-nowrap text-center">
                           {match.team1Ids ? (
-                            match.team1Ids.length === 1 ? (
-                              <span className="font-bold text-white">{getTeamDisplay(match.team1Id)}</span>
-                            ) : (
-                              <span className="font-bold text-white">{getGroupLabel(match.team1Ids)}</span>
-                            )
+                            <span className="font-bold text-white">{getGroupLabel(match.team1Ids)}</span>
                           ) : (
                             <span className="font-bold text-white">{getTeamDisplay(match.team1Id)}</span>
                           )}
@@ -340,11 +336,7 @@ export function MatchesTab({
                           {match.isBye ? (
                             <span className="text-white/50 italic font-bold">BYE</span>
                           ) : match.team2Ids ? (
-                            match.team2Ids.length === 1 ? (
-                              <span className="font-bold text-white">{getTeamDisplay(match.team2Id)}</span>
-                            ) : (
-                              <span className="font-bold text-white">{getGroupLabel(match.team2Ids)}</span>
-                            )
+                            <span className="font-bold text-white">{getGroupLabel(match.team2Ids)}</span>
                           ) : (
                             <span className="font-bold text-white">{getTeamDisplay(match.team2Id)}</span>
                           )}
