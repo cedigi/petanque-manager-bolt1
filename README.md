@@ -28,7 +28,8 @@ Start a development server with hot reloading:
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser to view the application.
+Open `http://localhost:3000` in your browser to view the application.
+You can also run `npm run dev:electron` to start the Electron app on the same port.
 
 ## Building
 
