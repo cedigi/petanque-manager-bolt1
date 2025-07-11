@@ -29,16 +29,17 @@ export function MatchesTab({
 
   const isSolo = teams.every(t => t.players.length === 1);
 
-  const formatPlayers = (players: Player[], teamNumber?: number) =>
-    players
-      .map((p, idx) => {
-        const label = p.label ? p.label.toLowerCase() : '';
-        const prefix = label
-          ? `${idx === 0 ? `${teamNumber ?? ''}${label}` : label} - `
-          : '';
-        return `${prefix}${p.name}`;
-      })
-      .join(' / ');
+  const formatPlayers = (players: Player[], teamNumber?: number) => {
+    const formatted = players.map((p) => {
+      const label = p.label ? p.label.toUpperCase() : '';
+      const prefix = label ? `${label} - ` : '';
+      return `${prefix}${p.name}`;
+    });
+    if (teamNumber !== undefined) {
+      formatted[0] = `${teamNumber} : ${formatted[0]}`;
+    }
+    return formatted.join(' / ');
+  };
 
   const getTeamDisplay = (teamId: string) => {
     const index = teams.findIndex(t => t.id === teamId);
@@ -300,11 +301,7 @@ export function MatchesTab({
                       </td>
                       <td className="w-4/12 px-4 py-4 whitespace-nowrap text-center">
                           {match.team1Ids ? (
-                            match.team1Ids.length === 1 ? (
-                              <span className="font-bold text-white">{getTeamDisplay(match.team1Id)}</span>
-                            ) : (
-                              <span className="font-bold text-white">{getGroupLabel(match.team1Ids)}</span>
-                            )
+                            <span className="font-bold text-white">{getGroupLabel(match.team1Ids)}</span>
                           ) : (
                             <span className="font-bold text-white">{getTeamDisplay(match.team1Id)}</span>
                           )}
@@ -340,11 +337,7 @@ export function MatchesTab({
                           {match.isBye ? (
                             <span className="text-white/50 italic font-bold">BYE</span>
                           ) : match.team2Ids ? (
-                            match.team2Ids.length === 1 ? (
-                              <span className="font-bold text-white">{getTeamDisplay(match.team2Id)}</span>
-                            ) : (
-                              <span className="font-bold text-white">{getGroupLabel(match.team2Ids)}</span>
-                            )
+                            <span className="font-bold text-white">{getGroupLabel(match.team2Ids)}</span>
                           ) : (
                             <span className="font-bold text-white">{getTeamDisplay(match.team2Id)}</span>
                           )}
