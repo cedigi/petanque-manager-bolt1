@@ -37,7 +37,7 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => app.quit());
 
 ipcMain.handle('print-html', async (_event, html) => {
-  const printWindow = new BrowserWindow({ show: false });
+  const printWindow = new BrowserWindow({ show: true });
   await printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
   return new Promise((resolve) => {
     printWindow.webContents.print({ silent: false }, () => {
