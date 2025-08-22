@@ -29,9 +29,6 @@ export function StandingsTab({ teams }: StandingsTabProps) {
   };
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -93,12 +90,7 @@ export function StandingsTab({ teams }: StandingsTabProps) {
       </html>
     `;
 
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
-    };
+    window.electronAPI.printHtml(printContent);
   };
 
   return (

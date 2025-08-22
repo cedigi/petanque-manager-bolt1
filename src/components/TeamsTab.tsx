@@ -32,9 +32,6 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
   };
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
     const twoColumns = teams.length > 25;
 
     const printContent = `
@@ -83,12 +80,7 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
       </html>
     `;
 
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
-    };
+    window.electronAPI.printHtml(printContent);
   };
 
   return (

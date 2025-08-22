@@ -21,9 +21,6 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
   const [showCategoryB, setShowCategoryB] = useState(false);
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -61,9 +58,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
       </html>
     `;
 
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.print();
+    window.electronAPI.printHtml(printContent);
   };
 
   const generatePoolHTML = (poolTeams: Team[]) => {
@@ -387,9 +382,6 @@ function FinalPhases({ qualifiedTeams, tournament, matches, onUpdateScore, onUpd
   );
 
   const handlePrintFinals = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -427,9 +419,7 @@ function FinalPhases({ qualifiedTeams, tournament, matches, onUpdateScore, onUpd
       </html>
     `;
 
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.print();
+    window.electronAPI.printHtml(printContent);
   };
 
   return (
