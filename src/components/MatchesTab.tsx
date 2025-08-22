@@ -163,7 +163,10 @@ export function MatchesTab({
 
     printWindow.document.write(printContent);
     printWindow.document.close();
-    printWindow.print();
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+    };
   };
 
   const handleDeleteRound = (round: number) => {
