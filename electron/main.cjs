@@ -1,5 +1,5 @@
 // electron/main.cjs
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
 function createWindow() {
@@ -21,7 +21,8 @@ function createWindow() {
       : path.join(appPath, 'public', 'logo.ico'),
     webPreferences: {
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      preload: path.join(__dirname, 'preload.cjs')
     }
   });
 
@@ -34,4 +35,15 @@ function createWindow() {
 
 app.whenReady().then(createWindow);
 app.on('window-all-closed', () => app.quit());
+
+ipcMain.handle('print-html', async (_event, html) => {
+  const printWindow = new BrowserWindow({ show: false });
+  await printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+  return new Promise((resolve) => {
+    printWindow.webContents.print({ silent: false }, () => {
+      printWindow.close();
+      resolve();
+    });
+  });
+});
 

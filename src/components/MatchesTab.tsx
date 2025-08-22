@@ -98,8 +98,6 @@ export function MatchesTab({
 
   const handlePrintRound = (round: number) => {
     const roundMatches = groupedMatches[round];
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
 
     const printContent = `
       <!DOCTYPE html>
@@ -161,12 +159,7 @@ export function MatchesTab({
       </html>
     `;
 
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
-    };
+    window.electronAPI.printHtml(printContent);
   };
 
   const handleDeleteRound = (round: number) => {
