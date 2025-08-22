@@ -85,7 +85,10 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
 
     printWindow.document.write(printContent);
     printWindow.document.close();
-    printWindow.print();
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+    };
   };
 
   return (
