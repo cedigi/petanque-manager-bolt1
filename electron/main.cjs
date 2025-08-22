@@ -37,7 +37,6 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => app.quit());
 
 ipcMain.handle('print-html', async (_event, html) => {
-        codex/update-print-html-handler-logic
   const printWindow = new BrowserWindow({ show: false });
   await printWindow.loadURL(
     `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
@@ -49,15 +48,6 @@ ipcMain.handle('print-html', async (_event, html) => {
       { silent: false, printBackground: true },
       () => printWindow.close()
     );
-
-  const printWindow = new BrowserWindow({ show: true });
-  await printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
-  return new Promise((resolve) => {
-    printWindow.webContents.print({ silent: false }, () => {
-      printWindow.close();
-      resolve();
-    });
-        main
   });
 });
 
