@@ -69,7 +69,7 @@ describe('MatchesTab melee display', () => {
     );
 
     const text = document.body.textContent || '';
-    expect(text).toContain('1 : A - Alice / B - Bob');
-    expect(text).toContain('3 : C - Clara / D - Dan');
+    expect(text).toContain('1 : A - Alice / 2 : B - Bob');
+    expect(text).toContain('3 : C - Clara / 4 : D - Dan');
   });
 });
