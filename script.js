@@ -2,18 +2,28 @@
 const navToggle = document.getElementById('nav-toggle');
 const navMenu = document.getElementById('nav-menu');
 
-navToggle.addEventListener('click', () => {
-    navMenu.classList.toggle('active');
-    navToggle.classList.toggle('active');
-});
-
-// Close mobile menu when clicking on a link
-document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', () => {
-        navMenu.classList.remove('active');
-        navToggle.classList.remove('active');
+if (navToggle && navMenu) {
+    navToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+        navToggle.classList.toggle('active');
     });
-});
+
+    // Close mobile menu when clicking on a link
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            navMenu.classList.remove('active');
+            navToggle.classList.remove('active');
+        });
+    });
+
+    // Keyboard navigation support
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            navMenu.classList.remove('active');
+            navToggle.classList.remove('active');
+        }
+    });
+}
 
 // Smooth scrolling for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -30,16 +40,18 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // Navbar background on scroll
-window.addEventListener('scroll', () => {
-    const navbar = document.querySelector('.navbar');
-    if (window.scrollY > 100) {
-        navbar.style.background = 'rgba(255, 255, 255, 0.98)';
-        navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
-    } else {
-        navbar.style.background = 'rgba(255, 255, 255, 0.95)';
-        navbar.style.boxShadow = 'none';
-    }
-});
+const navbar = document.querySelector('.navbar');
+if (navbar) {
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 100) {
+            navbar.style.background = 'rgba(255, 255, 255, 0.98)';
+            navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
+        } else {
+            navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+            navbar.style.boxShadow = 'none';
+        }
+    });
+}
 
 // Contact form handling
 const contactForm = document.querySelector('.contact-form');
@@ -72,13 +84,16 @@ if (contactForm) {
 document.querySelectorAll('.download-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
         e.preventDefault();
-        const platform = this.querySelector('.platform').textContent;
-        
-        // Simulate download
-        alert(`Téléchargement de Pétanque Manager pour ${platform} commencé !`);
-        
-        // In a real scenario, you would trigger the actual download here
-        // window.location.href = 'path/to/download/file';
+        const platformEl = this.querySelector('.platform');
+        const platform = platformEl ? platformEl.textContent : '';
+
+        if (platform) {
+            // Simulate download
+            alert(`Téléchargement de Pétanque Manager pour ${platform} commencé !`);
+
+            // In a real scenario, you would trigger the actual download here
+            // window.location.href = 'path/to/download/file';
+        }
     });
 });
 
@@ -114,8 +129,13 @@ document.querySelectorAll('.pricing-card .btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
         if (this.textContent.includes('Acheter') || this.textContent.includes('contacter')) {
             e.preventDefault();
-            const plan = this.closest('.pricing-card').querySelector('.pricing-title').textContent;
-            alert(`Vous avez sélectionné le plan ${plan}. Redirection vers le processus d'achat...`);
+            const card = this.closest('.pricing-card');
+            const planEl = card?.querySelector('.pricing-title');
+            const plan = planEl ? planEl.textContent : '';
+
+            if (plan) {
+                alert(`Vous avez sélectionné le plan ${plan}. Redirection vers le processus d'achat...`);
+            }
         }
     });
 });
@@ -250,14 +270,6 @@ document.head.appendChild(style);
 // Add ripple effect to all buttons
 document.querySelectorAll('.btn').forEach(button => {
     button.addEventListener('click', createRipple);
-});
-
-// Keyboard navigation support
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        navMenu.classList.remove('active');
-        navToggle.classList.remove('active');
-    }
 });
 
 // Initialize everything when DOM is loaded
