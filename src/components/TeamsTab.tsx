@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Player, Team, TournamentType } from '../types/tournament';
 import { generateUuid } from '../utils/uuid';
 import { Plus, Trash2, Users, Printer, X, Edit3, Loader2 } from 'lucide-react';
@@ -16,6 +16,14 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [editNames, setEditNames] = useState<string[]>([]);
   const [isPrinting, setIsPrinting] = useState(false);
+
+  useEffect(() => {
+    if (window.electronAPI?.onPrintError) {
+      window.electronAPI.onPrintError((message) => {
+        alert(`Erreur d'impression : ${message}`);
+      });
+    }
+  }, []);
 
   const isSolo = tournamentType === 'melee' || tournamentType === 'tete-a-tete';
 

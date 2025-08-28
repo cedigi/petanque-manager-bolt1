@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Match, Team, Player } from '../types/tournament';
 import { Play, Edit3, MapPin, Trophy, Printer, ChevronDown, Trash2, Loader2 } from 'lucide-react';
 
@@ -27,6 +27,14 @@ export function MatchesTab({
   const [editScores, setEditScores] = useState<{ team1: number; team2: number }>({ team1: 0, team2: 0 });
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
+
+  useEffect(() => {
+    if (window.electronAPI?.onPrintError) {
+      window.electronAPI.onPrintError((message) => {
+        alert(`Erreur d'impression : ${message}`);
+      });
+    }
+  }, []);
 
   const isSolo = teams.every(t => t.players.length === 1);
 

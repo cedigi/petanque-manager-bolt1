@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Team } from '../types/tournament';
 import { Trophy, TrendingUp, TrendingDown, Printer, Loader2 } from 'lucide-react';
 
@@ -29,6 +29,14 @@ export function StandingsTab({ teams }: StandingsTabProps) {
   };
 
   const [isPrinting, setIsPrinting] = useState(false);
+
+  useEffect(() => {
+    if (window.electronAPI?.onPrintError) {
+      window.electronAPI.onPrintError((message) => {
+        alert(`Erreur d'impression : ${message}`);
+      });
+    }
+  }, []);
 
   const handlePrint = async () => {
     setIsPrinting(true);
