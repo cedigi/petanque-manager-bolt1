@@ -53,15 +53,11 @@ export function MatchesTab({
     let teamNumber: number | undefined;
 
     ids.forEach((id, idx) => {
-      for (let i = 0; i < teams.length; i++) {
-        const team = teams[i];
-        const player = team.players.find(p => p.id === id);
-        if (player) {
-          players.push(player);
-          if (idx === 0) {
-            teamNumber = i + 1;
-          }
-          break;
+      const team = teams.find(t => t.id === id);
+      if (team) {
+        players.push(...team.players);
+        if (idx === 0) {
+          teamNumber = teams.indexOf(team) + 1;
         }
       }
     });

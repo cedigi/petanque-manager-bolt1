@@ -4,10 +4,10 @@ import '@testing-library/jest-dom';
 import { MatchesTab } from '../MatchesTab';
 import { Match, Team, Player } from '../../types/tournament';
 
-function makePlayer(id: string, label: string): Player {
+function makePlayer(id: string, name: string, label: string): Player {
   return {
     id,
-    name: id,
+    name,
     label,
     cyberImplants: [],
     neuralScore: 0,
@@ -17,16 +17,11 @@ function makePlayer(id: string, label: string): Player {
   };
 }
 
-function makeTeam(id: string): Team {
+function makeTeam(id: string, playerName: string, label: string): Team {
   return {
     id,
     name: id,
-    players: [
-      makePlayer(`${id}-A`, 'A'),
-      makePlayer(`${id}-B`, 'B'),
-      makePlayer(`${id}-C`, 'C'),
-      makePlayer(`${id}-D`, 'D'),
-    ],
+    players: [makePlayer(`${id}-P`, playerName, label)],
     wins: 0,
     losses: 0,
     pointsFor: 0,
@@ -37,15 +32,23 @@ function makeTeam(id: string): Team {
   };
 }
 
-describe('MatchesTab display', () => {
-  it('shows team numbers in player list', () => {
-    const teams = [makeTeam('T1'), makeTeam('T2')];
+describe('MatchesTab melee display', () => {
+  it('shows combined player names for grouped teams', () => {
+    const teams: Team[] = [
+      makeTeam('T1', 'Alice', 'A'),
+      makeTeam('T2', 'Bob', 'B'),
+      makeTeam('T3', 'Clara', 'C'),
+      makeTeam('T4', 'Dan', 'D'),
+    ];
+
     const match: Match = {
       id: 'm1',
       round: 1,
       court: 1,
       team1Id: 'T1',
-      team2Id: 'T2',
+      team2Id: 'T3',
+      team1Ids: ['T1', 'T2'],
+      team2Ids: ['T3', 'T4'],
       completed: false,
       isBye: false,
       battleIntensity: 0,
@@ -64,8 +67,9 @@ describe('MatchesTab display', () => {
         onUpdateCourt={() => {}}
       />
     );
+
     const text = document.body.textContent || '';
-    expect(text).toContain('1 : A - T1-A');
-    expect(text).toContain('2 : A - T2-A');
+    expect(text).toContain('1 : A - Alice / B - Bob');
+    expect(text).toContain('3 : C - Clara / D - Dan');
   });
 });
