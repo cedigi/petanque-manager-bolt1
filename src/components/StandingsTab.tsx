@@ -40,18 +40,49 @@ export function StandingsTab({ teams }: StandingsTabProps) {
 
   const handlePrint = async () => {
     setIsPrinting(true);
+
+    const tableHtml = `
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align: center;">Position</th>
+            <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
+            <th style="text-align: center;">V</th>
+            <th style="text-align: center;">D</th>
+            <th style="text-align: center;">+</th>
+            <th style="text-align: center;">-</th>
+            <th style="text-align: center;">Différentiel</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sortedTeams.map((team, index) => `
+            <tr class="${index < 3 ? 'podium' : ''}">
+              <td class="position">${index + 1}</td>
+              <td>
+                ${team.name}
+                <br/><small>${team.players.map(player => `${player.label ? `[${player.label}] ` : ''}${player.name}`).join(', ')}</small>
+              </td>
+              <td style="text-align: center;">${team.wins}</td>
+              <td style="text-align: center;">${team.losses}</td>
+              <td style="text-align: center;">${team.pointsFor}</td>
+              <td style="text-align: center;">${team.pointsAgainst}</td>
+              <td style="text-align: center;">${team.performance > 0 ? '+' : ''}${team.performance}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+
     const printContent = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>Classement</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            h1 { text-align: center; margin-bottom: 20px; }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
             table {
               width: 100%;
               border-collapse: collapse;
-              margin-top: 20px;
               border: 1px solid #555;
             }
             th, td {
@@ -67,36 +98,7 @@ export function StandingsTab({ teams }: StandingsTabProps) {
           </style>
         </head>
         <body>
-          <h1>Classement</h1>
-          <table>
-            <thead>
-              <tr>
-                <th style="text-align: center;">Position</th>
-                <th>${isSolo ? 'Joueur' : 'Équipe'}</th>
-                <th style="text-align: center;">V</th>
-                <th style="text-align: center;">D</th>
-                <th style="text-align: center;">+</th>
-                <th style="text-align: center;">-</th>
-                <th style="text-align: center;">Différentiel</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${sortedTeams.map((team, index) => `
-                <tr class="${index < 3 ? 'podium' : ''}">
-                  <td class="position">${index + 1}</td>
-                  <td>
-                    ${team.name}
-                    <br/><small>${team.players.map(player => `${player.label ? `[${player.label}] ` : ''}${player.name}`).join(', ')}</small>
-                  </td>
-                  <td style="text-align: center;">${team.wins}</td>
-                  <td style="text-align: center;">${team.losses}</td>
-                  <td style="text-align: center;">${team.pointsFor}</td>
-                  <td style="text-align: center;">${team.pointsAgainst}</td>
-                  <td style="text-align: center;">${team.performance > 0 ? '+' : ''}${team.performance}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+          ${tableHtml}
         </body>
       </html>
     `;
@@ -105,7 +107,14 @@ export function StandingsTab({ teams }: StandingsTabProps) {
       if (window.electronAPI?.printHtml) {
         await window.electronAPI.printHtml(printContent);
       } else {
-        window.print();
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(printContent);
+          printWindow.document.close();
+          printWindow.focus();
+          printWindow.print();
+          printWindow.close();
+        }
       }
     } finally {
       setIsPrinting(false);
