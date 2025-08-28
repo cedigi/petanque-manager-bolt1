@@ -281,7 +281,9 @@ export function MatchesTab({
                   </tr>
                 </thead>
                 <tbody>
-                  {groupedMatches[round].map((match) => (
+                  {groupedMatches[round].map((match) => {
+                    const canEditScore = editingMatch !== match.id && !match.isBye;
+                    return (
                     <tr key={match.id} className="hover:bg-white/5 transition-colors">
                       <td className="w-1/12 px-2 py-4 whitespace-nowrap">
                         {match.isBye ? (
@@ -324,7 +326,19 @@ export function MatchesTab({
                             <span className="font-bold text-white">{getTeamDisplay(match.team1Id)}</span>
                           )}
                       </td>
-                      <td className="w-2/12 px-2 py-4 whitespace-nowrap text-center">
+                      <td
+                        className={`w-2/12 px-2 py-4 whitespace-nowrap text-center ${
+                          canEditScore ? 'cursor-pointer' : ''
+                        }`}
+                        onClick={canEditScore ? () => handleEditScore(match) : undefined}
+                        role={canEditScore ? 'button' : undefined}
+                        tabIndex={canEditScore ? 0 : undefined}
+                        onKeyDown={canEditScore ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            handleEditScore(match);
+                          }
+                        } : undefined}
+                      >
                         {editingMatch === match.id ? (
                           <div className="flex items-center justify-center space-x-2">
                             <input
@@ -347,7 +361,9 @@ export function MatchesTab({
                           </div>
                         ) : (
                           <span className="text-2xl font-bold text-white">
-                            {match.completed || match.isBye ? `${match.team1Score} - ${match.team2Score}` : '- - -'}
+                            {match.completed || match.isBye
+                              ? `${match.team1Score} - ${match.team2Score}`
+                              : '- - -'}
                           </span>
                         )}
                       </td>
@@ -393,7 +409,8 @@ export function MatchesTab({
                         )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

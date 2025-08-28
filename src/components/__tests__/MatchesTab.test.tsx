@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { render } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MatchesTab } from '../MatchesTab';
 import { Match, Team, Player } from '../../types/tournament';
@@ -68,4 +68,39 @@ describe('MatchesTab display', () => {
     expect(text).toContain('1 : A - T1-A');
     expect(text).toContain('2 : A - T2-A');
   });
+
+  it('enables score editing when clicking the score cell', () => {
+    const teams = [makeTeam('T1'), makeTeam('T2')];
+    const match: Match = {
+      id: 'm1',
+      round: 1,
+      court: 1,
+      team1Id: 'T1',
+      team2Id: 'T2',
+      completed: false,
+      isBye: false,
+      battleIntensity: 0,
+      hackingAttempts: 0,
+    };
+
+    const { getByRole, getAllByRole } = render(
+      <MatchesTab
+        matches={[match]}
+        teams={teams}
+        currentRound={0}
+        courts={1}
+        onGenerateRound={() => {}}
+        onDeleteRound={() => {}}
+        onUpdateScore={() => {}}
+        onUpdateCourt={() => {}}
+      />
+    );
+
+    const scoreCell = getByRole('button', { name: '- - -' });
+    fireEvent.click(scoreCell);
+
+    const inputs = getAllByRole('spinbutton');
+    expect(inputs).toHaveLength(2);
+  });
 });
+
