@@ -6,5 +6,5 @@ interface ElectronAPI {
 }
 
 interface Window {
-  electronAPI: ElectronAPI;
+  electronAPI?: ElectronAPI;
 }

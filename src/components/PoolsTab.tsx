@@ -61,7 +61,11 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
     `;
 
     try {
-      await window.electronAPI.printHtml(printContent);
+      if (window.electronAPI?.printHtml) {
+        await window.electronAPI.printHtml(printContent);
+      } else {
+        window.print();
+      }
     } finally {
       setIsPrinting(false);
     }
@@ -434,7 +438,11 @@ function FinalPhases({ qualifiedTeams, tournament, matches, onUpdateScore, onUpd
     `;
 
     try {
-      await window.electronAPI.printHtml(printContent);
+      if (window.electronAPI?.printHtml) {
+        await window.electronAPI.printHtml(printContent);
+      } else {
+        window.print();
+      }
     } finally {
       setIsPrinting(false);
     }

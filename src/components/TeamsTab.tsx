@@ -83,7 +83,11 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
     `;
 
     try {
-      await window.electronAPI.printHtml(printContent);
+      if (window.electronAPI?.printHtml) {
+        await window.electronAPI.printHtml(printContent);
+      } else {
+        window.print();
+      }
     } finally {
       setIsPrinting(false);
     }

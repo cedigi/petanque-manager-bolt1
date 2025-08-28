@@ -13,6 +13,7 @@ jest.mock('electron', () => {
     show: jest.fn(),
     close: jest.fn(),
     webContents: {
+      once: jest.fn((event, cb) => cb()),
       print: jest.fn(() => {
         throw new Error('boom');
       })
