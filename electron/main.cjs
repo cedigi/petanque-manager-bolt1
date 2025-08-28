@@ -38,16 +38,17 @@ app.on('window-all-closed', () => app.quit());
 
 ipcMain.handle('print-html', async (_event, html) => {
   const printWindow = new BrowserWindow({ show: false });
-  await printWindow.loadURL(
-    `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
-  );
 
-  printWindow.once('ready-to-show', () => {
+  printWindow.webContents.once('did-finish-load', () => {
     printWindow.show();
     printWindow.webContents.print(
       { silent: false, printBackground: true },
       () => printWindow.close()
     );
   });
+
+  await printWindow.loadURL(
+    `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
+  );
 });
 
