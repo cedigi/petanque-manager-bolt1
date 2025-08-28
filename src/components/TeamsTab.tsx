@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Player, Team, TournamentType } from '../types/tournament';
 import { generateUuid } from '../utils/uuid';
-import { Plus, Trash2, Users, Printer, X, Edit3, Loader2 } from 'lucide-react';
+import { Plus, Users, Printer, X, Edit3, Loader2 } from 'lucide-react';
 
 interface TeamsTabProps {
   teams: Team[];
@@ -42,7 +42,22 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
 
   const handlePrint = async () => {
     setIsPrinting(true);
-    const twoColumns = teams.length > 25;
+
+    const leftTeams = teams.slice(0, 25);
+    const rightTeams = teams.slice(25);
+    const maxRows = Math.max(leftTeams.length, rightTeams.length);
+
+    const rowsHtml = Array.from({ length: maxRows }, (_, i) => {
+      const leftTeam = leftTeams[i];
+      const rightTeam = rightTeams[i];
+      const leftText = leftTeam
+        ? `${i + 1} : ${leftTeam.players.map(p => p.name).join(' - ')}`
+        : '';
+      const rightText = rightTeam
+        ? `${i + 26} : ${rightTeam.players.map(p => p.name).join(' - ')}`
+        : '';
+      return `<tr><td>${leftText}</td><td>${rightText}</td></tr>`;
+    }).join('');
 
     const printContent = `
       <!DOCTYPE html>
@@ -52,40 +67,18 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
-            .teams {
-              display: grid;
-              ${twoColumns
-                ? `grid-template-columns: repeat(2, 1fr);
-              grid-template-rows: repeat(25, auto);
-              grid-auto-flow: column;`
-                : `grid-template-columns: 1fr;`}
-              column-gap: 40px;
-              row-gap: 4px;
-            }
-            .team {
-              display: block;
-              margin: 4px 0;
-              padding: 2px 6px;
-              border: 1px solid #ccc;
-              border-radius: 4px;
-              font-size: 14px;
-              break-inside: avoid;
-              -webkit-column-break-inside: avoid;
-            }
+            table { width: 100%; border-collapse: collapse; }
+            td { border: 1px solid #ccc; padding: 4px 8px; }
             @media print { body { margin: 0; } }
           </style>
         </head>
         <body>
           <h1>Liste des ${isSolo ? 'Joueurs' : 'Équipes'}</h1>
-          <div class="teams">
-            ${teams
-              .map((team, idx) =>
-                `<div class="team">${idx + 1} : ${team.players
-                  .map(p => `${p.label ? `${p.label} - ` : ''}${p.name}`)
-                  .join(' / ')}</div>`
-              )
-              .join('')}
-          </div>
+          <table>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
         </body>
       </html>
     `;
@@ -94,7 +87,13 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
       if (window.electronAPI?.printHtml) {
         await window.electronAPI.printHtml(printContent);
       } else {
-        window.print();
+        const printWindow = window.open('', '', 'width=800,height=600');
+        if (printWindow) {
+          printWindow.document.write(printContent);
+          printWindow.document.close();
+          printWindow.focus();
+          printWindow.print();
+        }
       }
     } finally {
       setIsPrinting(false);
@@ -199,7 +198,7 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
                   className="text-red-400 hover:text-red-300 transition-colors p-1 rounded-lg hover:bg-red-400/10"
                   title={isSolo ? 'Supprimer le joueur' : "Supprimer l'équipe"}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
