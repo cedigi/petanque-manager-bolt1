@@ -97,7 +97,7 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
                     key={tournamentType.value}
                     className={`glass-card flex flex-col p-6 cursor-pointer transition-all duration-300 ${
                       type === tournamentType.value
-                        ? 'bg-blue-500/30 border-white/40'
+                        ? 'bg-blue-500/30 border-white/40 hover:bg-blue-500/40 hover:border-white/50'
                         : 'hover:bg-white/10'
                     }`}
                   >
