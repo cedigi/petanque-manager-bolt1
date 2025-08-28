@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Pool, Team, Tournament, Match } from '../types/tournament';
 import { Grid3X3, Trophy, Shuffle, Printer, Crown, X, Edit3, Loader2 } from 'lucide-react';
@@ -20,6 +20,14 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
 
   const [showCategoryB, setShowCategoryB] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+
+  useEffect(() => {
+    if (window.electronAPI?.onPrintError) {
+      window.electronAPI.onPrintError((message) => {
+        alert(`Erreur d'impression : ${message}`);
+      });
+    }
+  }, []);
 
   const handlePrint = async () => {
     setIsPrinting(true);
