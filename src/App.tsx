@@ -35,6 +35,12 @@ function App() {
     setAnimationsPaused(!animationsPaused);
   };
 
+  useEffect(() => {
+    window.electronAPI.onPrintError((message) => {
+      alert(`Erreur d'impression : ${message}`);
+    });
+  }, []);
+
   // Ensure the active tab is valid for the current tournament type
   useEffect(() => {
     if (!tournament) {

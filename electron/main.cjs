@@ -36,15 +36,20 @@ function createWindow() {
 app.whenReady().then(createWindow);
 app.on('window-all-closed', () => app.quit());
 
-ipcMain.handle('print-html', async (_event, html) => {
+ipcMain.handle('print-html', async (event, html) => {
   const printWindow = new BrowserWindow({ show: false });
 
   printWindow.webContents.once('did-finish-load', () => {
     printWindow.show();
-    printWindow.webContents.print(
-      { silent: false, printBackground: true },
-      () => printWindow.close()
-    );
+    try {
+      printWindow.webContents.print(
+        { silent: false, printBackground: true },
+        () => printWindow.close()
+      );
+    } catch (err) {
+      event.sender.send('print-error', err.message);
+      printWindow.close();
+    }
   });
 
   await printWindow.loadURL(
