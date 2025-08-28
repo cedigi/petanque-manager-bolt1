@@ -49,20 +49,16 @@ export function MatchesTab({
   };
 
   const getGroupLabel = (ids: string[]) => {
-    const players: Player[] = [];
-    let teamNumber: number | undefined;
-
-    ids.forEach((id, idx) => {
-      const team = teams.find(t => t.id === id);
-      if (team) {
-        players.push(...team.players);
-        if (idx === 0) {
-          teamNumber = teams.indexOf(team) + 1;
+    return ids
+      .map((id) => {
+        const team = teams.find((t) => t.id === id);
+        if (!team) {
+          return isSolo ? 'Joueur inconnu' : 'Équipe inconnue';
         }
-      }
-    });
-
-    return formatPlayers(players, teamNumber);
+        const num = teams.indexOf(team) + 1;
+        return formatPlayers(team.players, num);
+      })
+      .join(' / ');
   };
 
   const handleEditScore = (match: Match) => {
