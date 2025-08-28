@@ -43,20 +43,38 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
   const handlePrint = async () => {
     setIsPrinting(true);
 
-    const leftTeams = teams.slice(0, 25);
-    const rightTeams = teams.slice(25);
-    const maxRows = Math.max(leftTeams.length, rightTeams.length);
+    const teamsPerPage = 60;
+    const teamsPerColumn = 30;
+    const numPages = Math.ceil(teams.length / teamsPerPage) || 1;
 
-    const rowsHtml = Array.from({ length: maxRows }, (_, i) => {
-      const leftTeam = leftTeams[i];
-      const rightTeam = rightTeams[i];
-      const leftText = leftTeam
-        ? `${i + 1} : ${leftTeam.players.map(p => p.name).join(' - ')}`
-        : '';
-      const rightText = rightTeam
-        ? `${i + 26} : ${rightTeam.players.map(p => p.name).join(' - ')}`
-        : '';
-      return `<tr><td>${leftText}</td><td>${rightText}</td></tr>`;
+    const pagesHtml = Array.from({ length: numPages }, (_, pageIndex) => {
+      const pageStartIndex = pageIndex * teamsPerPage;
+      const pageTeams = teams.slice(pageStartIndex, pageStartIndex + teamsPerPage);
+      const leftTeams = pageTeams.slice(0, teamsPerColumn);
+      const rightTeams = pageTeams.slice(teamsPerColumn);
+
+      const rowsHtml = Array.from({ length: teamsPerColumn }, (_, i) => {
+        const leftTeam = leftTeams[i];
+        const rightTeam = rightTeams[i];
+        const leftText = leftTeam
+          ? `${pageStartIndex + i + 1} : ${leftTeam.players.map(p => p.name).join(' - ')}`
+          : '';
+        const rightText = rightTeam
+          ? `${pageStartIndex + i + 31} : ${rightTeam.players.map(p => p.name).join(' - ')}`
+          : '';
+        return `<tr><td>${leftText}</td><td>${rightText}</td></tr>`;
+      }).join('');
+
+      return `
+        <div class="page">
+          <h1>Liste des ${isSolo ? 'Joueurs' : 'Équipes'}</h1>
+          <table>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+      `;
     }).join('');
 
     const printContent = `
@@ -67,18 +85,15 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; }
-            td { border: 1px solid #ccc; padding: 4px 8px; }
+            table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+            td { border: 1px solid #ccc; padding: 4px 8px; width: 50%; }
+            .page { page-break-after: always; }
+            .page:last-child { page-break-after: auto; }
             @media print { body { margin: 0; } }
           </style>
         </head>
         <body>
-          <h1>Liste des ${isSolo ? 'Joueurs' : 'Équipes'}</h1>
-          <table>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
+          ${pagesHtml}
         </body>
       </html>
     `;
