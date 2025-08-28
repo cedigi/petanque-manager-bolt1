@@ -165,7 +165,14 @@ export function MatchesTab({
       if (window.electronAPI?.printHtml) {
         await window.electronAPI.printHtml(printContent);
       } else {
-        window.print();
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(printContent);
+          printWindow.document.close();
+          printWindow.focus();
+          printWindow.print();
+          printWindow.close();
+        }
       }
     } finally {
       setIsPrinting(false);
