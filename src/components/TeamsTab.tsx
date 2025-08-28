@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Player, Team, TournamentType } from '../types/tournament';
 import { generateUuid } from '../utils/uuid';
-import { Plus, Users, Printer, X, Edit3, Loader2 } from 'lucide-react';
+import { Plus, Users, Printer, X, Edit3, Loader2, Play } from 'lucide-react';
 
 interface TeamsTabProps {
   teams: Team[];
@@ -9,9 +9,11 @@ interface TeamsTabProps {
   onAddTeam: (players: Player[]) => void;
   onRemoveTeam: (teamId: string) => void;
   onUpdateTeam: (teamId: string, players: Player[]) => void;
+  onGenerateRound: () => void;
+  onNavigateToMatches: () => void;
 }
 
-export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpdateTeam }: TeamsTabProps) {
+export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpdateTeam, onGenerateRound, onNavigateToMatches }: TeamsTabProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [editNames, setEditNames] = useState<string[]>([]);
@@ -136,6 +138,17 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
               <span>{isPrinting ? 'Impression…' : 'Imprimer'}</span>
             </button>
           )}
+          <button
+            onClick={() => {
+              onGenerateRound();
+              onNavigateToMatches();
+            }}
+            className="glass-button flex items-center space-x-2 px-6 py-3 font-bold tracking-wide hover:scale-105 transition-all duration-300"
+            disabled={teams.length < 2}
+          >
+            <Play className="w-5 h-5" />
+            <span>Générer tour 1</span>
+          </button>
           <button
             onClick={() => setShowForm(true)}
             className="glass-button flex items-center space-x-2 px-4 py-2 transition-all duration-300 hover:scale-105"

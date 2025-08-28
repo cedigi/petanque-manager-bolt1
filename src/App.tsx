@@ -102,6 +102,8 @@ function App() {
             onAddTeam={addTeam}
             onRemoveTeam={removeTeam}
             onUpdateTeam={updateTeam}
+            onGenerateRound={generateRound}
+            onNavigateToMatches={() => setActiveTab('matches')}
           />
         )}
         {activeTab === 'pools' && isPoolTournament && (
