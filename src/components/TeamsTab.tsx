@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Player, Team, TournamentType } from '../types/tournament';
 import { generateUuid } from '../utils/uuid';
-import { Plus, Trash2, Users, Printer, X, Edit3 } from 'lucide-react';
+import { Plus, Trash2, Users, Printer, X, Edit3, Loader2 } from 'lucide-react';
 
 interface TeamsTabProps {
   teams: Team[];
@@ -15,6 +15,7 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
   const [showForm, setShowForm] = useState(false);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [editNames, setEditNames] = useState<string[]>([]);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   const isSolo = tournamentType === 'melee' || tournamentType === 'tete-a-tete';
 
@@ -31,7 +32,8 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
     }
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    setIsPrinting(true);
     const twoColumns = teams.length > 25;
 
     const printContent = `
@@ -80,7 +82,11 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
       </html>
     `;
 
-    window.electronAPI.printHtml(printContent);
+    try {
+      await window.electronAPI.printHtml(printContent);
+    } finally {
+      setIsPrinting(false);
+    }
   };
 
   return (
@@ -93,10 +99,15 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
           {teams.length > 0 && (
             <button
               onClick={handlePrint}
-              className="glass-button-secondary flex items-center space-x-2 px-4 py-2 transition-all duration-300 hover:scale-105"
+              disabled={isPrinting}
+              className="glass-button-secondary flex items-center space-x-2 px-4 py-2 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Printer className="w-4 h-4" />
-              <span>Imprimer</span>
+              {isPrinting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Printer className="w-4 h-4" />
+              )}
+              <span>{isPrinting ? 'Impression…' : 'Imprimer'}</span>
             </button>
           )}
           <button
