@@ -36,9 +36,11 @@ function App() {
   };
 
   useEffect(() => {
-    window.electronAPI.onPrintError((message) => {
-      alert(`Erreur d'impression : ${message}`);
-    });
+    if (window.electronAPI?.onPrintError) {
+      window.electronAPI.onPrintError((message) => {
+        alert(`Erreur d'impression : ${message}`);
+      });
+    }
   }, []);
 
   // Ensure the active tab is valid for the current tournament type
