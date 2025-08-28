@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Pool, Team, Tournament, Match } from '../types/tournament';
-import { Grid3X3, Trophy, Shuffle, Printer, Crown, X, Edit3 } from 'lucide-react';
+import { Grid3X3, Trophy, Shuffle, Printer, Crown, X, Edit3, Loader2 } from 'lucide-react';
 import { CourtAvailability } from './CourtAvailability';
 import { calculateOptimalPools } from '../utils/poolGeneration';
 
@@ -19,8 +19,10 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
   const [showCatB, setShowCatB] = useState(false);
 
   const [showCategoryB, setShowCategoryB] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    setIsPrinting(true);
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -58,7 +60,11 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
       </html>
     `;
 
-    window.electronAPI.printHtml(printContent);
+    try {
+      await window.electronAPI.printHtml(printContent);
+    } finally {
+      setIsPrinting(false);
+    }
   };
 
   const generatePoolHTML = (poolTeams: Team[]) => {
@@ -187,10 +193,15 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
           {pools.length > 0 && (
             <button
               onClick={handlePrint}
-              className="glass-button-secondary flex items-center space-x-2 px-4 py-2 transition-all duration-300 hover:scale-105"
+              disabled={isPrinting}
+              className="glass-button-secondary flex items-center space-x-2 px-4 py-2 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Printer className="w-4 h-4" />
-              <span>Imprimer</span>
+              {isPrinting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Printer className="w-4 h-4" />
+              )}
+              <span>{isPrinting ? 'Impression…' : 'Imprimer'}</span>
             </button>
           )}
           <button
@@ -381,7 +392,10 @@ function FinalPhases({ qualifiedTeams, tournament, matches, onUpdateScore, onUpd
     m => !m.poolId && m.round >= roundOffset && m.round < roundOffset + 100
   );
 
-  const handlePrintFinals = () => {
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  const handlePrintFinals = async () => {
+    setIsPrinting(true);
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -419,7 +433,11 @@ function FinalPhases({ qualifiedTeams, tournament, matches, onUpdateScore, onUpd
       </html>
     `;
 
-    window.electronAPI.printHtml(printContent);
+    try {
+      await window.electronAPI.printHtml(printContent);
+    } finally {
+      setIsPrinting(false);
+    }
   };
 
   return (
@@ -434,10 +452,15 @@ function FinalPhases({ qualifiedTeams, tournament, matches, onUpdateScore, onUpd
           {finalMatches.length > 0 && (
             <button
               onClick={handlePrintFinals}
-              className="glass-button-secondary flex items-center space-x-2 px-4 py-2 text-sm font-bold tracking-wide hover:scale-105 transition-all"
+              disabled={isPrinting}
+              className="glass-button-secondary flex items-center space-x-2 px-4 py-2 text-sm font-bold tracking-wide hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Printer className="w-4 h-4" />
-              <span>Imprimer</span>
+              {isPrinting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Printer className="w-4 h-4" />
+              )}
+              <span>{isPrinting ? 'Impression…' : 'Imprimer'}</span>
             </button>
           )}
         </div>

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Team } from '../types/tournament';
-import { Trophy, TrendingUp, TrendingDown, Printer } from 'lucide-react';
+import { Trophy, TrendingUp, TrendingDown, Printer, Loader2 } from 'lucide-react';
 
 interface StandingsTabProps {
   teams: Team[];
@@ -28,7 +28,10 @@ export function StandingsTab({ teams }: StandingsTabProps) {
     return <div className="w-5 h-5" />;
   };
 
-  const handlePrint = () => {
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  const handlePrint = async () => {
+    setIsPrinting(true);
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -90,7 +93,11 @@ export function StandingsTab({ teams }: StandingsTabProps) {
       </html>
     `;
 
-    window.electronAPI.printHtml(printContent);
+    try {
+      await window.electronAPI.printHtml(printContent);
+    } finally {
+      setIsPrinting(false);
+    }
   };
 
   return (
@@ -104,10 +111,15 @@ export function StandingsTab({ teams }: StandingsTabProps) {
           {teams.length > 0 && (
             <button
               onClick={handlePrint}
-              className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold tracking-wide hover:scale-105 transition-all duration-300"
+              disabled={isPrinting}
+              className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold tracking-wide hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Printer className="w-4 h-4" />
-              <span>Imprimer</span>
+              {isPrinting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Printer className="w-4 h-4" />
+              )}
+              <span>{isPrinting ? 'Impression…' : 'Imprimer'}</span>
             </button>
           )}
         </div>

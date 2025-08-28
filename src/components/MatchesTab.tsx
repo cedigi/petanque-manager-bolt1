@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Match, Team, Player } from '../types/tournament';
-import { Play, Edit3, MapPin, Trophy, Printer, ChevronDown, Trash2 } from 'lucide-react';
+import { Play, Edit3, MapPin, Trophy, Printer, ChevronDown, Trash2, Loader2 } from 'lucide-react';
 
 interface MatchesTabProps {
   matches: Match[];
@@ -26,6 +26,7 @@ export function MatchesTab({
   const [editingMatch, setEditingMatch] = useState<string | null>(null);
   const [editScores, setEditScores] = useState<{ team1: number; team2: number }>({ team1: 0, team2: 0 });
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   const isSolo = teams.every(t => t.players.length === 1);
 
@@ -88,7 +89,8 @@ export function MatchesTab({
 
   const sortedRounds = Object.keys(groupedMatches).map(Number).sort((a, b) => b - a);
 
-  const handlePrintRound = (round: number) => {
+  const handlePrintRound = async (round: number) => {
+    setIsPrinting(true);
     const roundMatches = groupedMatches[round];
 
     const printContent = `
@@ -151,7 +153,11 @@ export function MatchesTab({
       </html>
     `;
 
-    window.electronAPI.printHtml(printContent);
+    try {
+      await window.electronAPI.printHtml(printContent);
+    } finally {
+      setIsPrinting(false);
+    }
   };
 
   const handleDeleteRound = (round: number) => {
@@ -216,10 +222,15 @@ export function MatchesTab({
               <div className="flex space-x-2">
                 <button
                   onClick={() => handlePrintRound(round)}
-                  className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300"
+                  disabled={isPrinting}
+                  className="glass-button-secondary flex items-center space-x-2 px-4 py-2 font-bold text-sm tracking-wide hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Printer className="w-4 h-4" />
-                  <span>Imprimer</span>
+                  {isPrinting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Printer className="w-4 h-4" />
+                  )}
+                  <span>{isPrinting ? 'Impression…' : 'Imprimer'}</span>
                 </button>
                 <button
                   onClick={() => handleDeleteRound(round)}
