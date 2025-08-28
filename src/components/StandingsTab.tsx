@@ -55,20 +55,23 @@ export function StandingsTab({ teams }: StandingsTabProps) {
           </tr>
         </thead>
         <tbody>
-          ${sortedTeams.map((team, index) => `
+          ${sortedTeams
+            .map((team, index) => {
+              const label = teams.indexOf(team) + 1;
+              const names = team.players.map((p) => p.name).join(' - ');
+              return `
             <tr class="${index < 3 ? 'podium' : ''}">
               <td class="position">${index + 1}</td>
-              <td>
-                ${team.name}
-                <br/><small>${team.players.map(player => `${player.label ? `[${player.label}] ` : ''}${player.name}`).join(', ')}</small>
-              </td>
+              <td>${label} : ${names}</td>
               <td style="text-align: center;">${team.wins}</td>
               <td style="text-align: center;">${team.losses}</td>
               <td style="text-align: center;">${team.pointsFor}</td>
               <td style="text-align: center;">${team.pointsAgainst}</td>
               <td style="text-align: center;">${team.performance > 0 ? '+' : ''}${team.performance}</td>
             </tr>
-          `).join('')}
+          `;
+            })
+            .join('')}
         </tbody>
       </table>
     `;
@@ -175,56 +178,68 @@ export function StandingsTab({ teams }: StandingsTabProps) {
               </tr>
             </thead>
             <tbody>
-              {sortedTeams.map((team, index) => (
-                <tr key={team.id} className={`hover:bg-white/5 transition-colors ${
-                  index < 3 ? 'bg-gradient-to-r from-yellow-400/10 to-transparent' : ''
-                }`}>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <div className="flex items-center justify-center">
-                      {getPositionIcon(index)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="font-bold text-white text-lg">{team.name}</div>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
-                      {team.players.map((player) => (
-                        <div key={player.id} className="flex items-center space-x-2 text-sm text-white/80 font-medium">
-                          {player.label && (
-                            <span className="w-5 h-5 bg-blue-400/20 border border-blue-400 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">
-                              {player.label}
-                            </span>
-                          )}
-                          <span>{player.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className="text-2xl font-bold text-green-400">{team.wins}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className="text-2xl font-bold text-red-400">{team.losses}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className="text-lg font-bold text-white">{team.pointsFor}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className="text-lg font-bold text-white">{team.pointsAgainst}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <div className="flex items-center justify-center space-x-2">
-                      {getPerformanceIcon(team.performance)}
-                      <span className={`text-lg font-bold ${
-                        team.performance > 0 ? 'text-green-400' :
-                        team.performance < 0 ? 'text-red-400' :
-                        'text-white/60'
-                      }`}>
-                        {team.performance > 0 ? '+' : ''}{team.performance}
+              {sortedTeams.map((team, index) => {
+                const label = teams.indexOf(team) + 1;
+                const names = team.players.map((p) => p.name).join(' - ');
+                return (
+                  <tr
+                    key={team.id}
+                    className={`hover:bg-white/5 transition-colors ${
+                      index < 3
+                        ? 'bg-gradient-to-r from-yellow-400/10 to-transparent'
+                        : ''
+                    }`}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="flex items-center justify-center">
+                        {getPositionIcon(index)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="font-bold text-white text-lg">
+                        {label} : {names}
                       </span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <span className="text-2xl font-bold text-green-400">
+                        {team.wins}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <span className="text-2xl font-bold text-red-400">
+                        {team.losses}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <span className="text-lg font-bold text-white">
+                        {team.pointsFor}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <span className="text-lg font-bold text-white">
+                        {team.pointsAgainst}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="flex items-center justify-center space-x-2">
+                        {getPerformanceIcon(team.performance)}
+                        <span
+                          className={`text-lg font-bold ${
+                            team.performance > 0
+                              ? 'text-green-400'
+                              : team.performance < 0
+                                ? 'text-red-400'
+                                : 'text-white/60'
+                          }`}
+                        >
+                          {team.performance > 0 ? '+' : ''}
+                          {team.performance}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
