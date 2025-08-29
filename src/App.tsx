@@ -99,6 +99,7 @@ function App() {
           <TeamsTab
             teams={tournament.teams}
             tournamentType={tournament.type}
+            currentRound={tournament.currentRound}
             onAddTeam={addTeam}
             onRemoveTeam={removeTeam}
             onUpdateTeam={updateTeam}
