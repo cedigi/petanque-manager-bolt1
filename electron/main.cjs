@@ -17,7 +17,7 @@ function createWindow() {
     width: 1024,
     height: 768,
     icon: app.isPackaged
-      ? path.join(process.resourcesPath, 'public', 'logo.ico')
+      ? path.join(process.resourcesPath, 'logo.ico')
       : path.join(appPath, 'public', 'logo.ico'),
     webPreferences: {
       contextIsolation: true,

@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Preload critical images
     const criticalImages = [
-        './logo1.png'
+        './public/logo1.png'
     ];
     
     criticalImages.forEach(src => {

@@ -26,6 +26,10 @@
       "electron/main.cjs",
       "electron/preload.cjs"
     ],
+    "extraResources": [
+      "public/logo1.png",
+      "public/logo.ico"
+    ],
     "win": {
       "icon": "public/logo.ico",
       "target": [
