@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Match, Team, Player } from '../types/tournament';
-import { Play, Edit3, MapPin, Trophy, Printer, ChevronDown, Trash2, Loader2 } from 'lucide-react';
+import { Play, Edit3, MapPin, Printer, ChevronDown, Trash2, Loader2 } from 'lucide-react';
 
 interface MatchesTabProps {
   matches: Match[];
@@ -358,6 +358,12 @@ export function MatchesTab({
                               onChange={(e) => setEditScores({ ...editScores, team2: Number(e.target.value) })}
                               className="glass-input w-16 px-2 py-1 text-center font-bold"
                             />
+                            <button
+                              onClick={() => handleSaveScore(match.id)}
+                              className="glass-button px-2 py-1 text-sm font-bold"
+                            >
+                              Valider
+                            </button>
                           </div>
                         ) : (
                           <span className="text-2xl font-bold text-white">
@@ -380,22 +386,13 @@ export function MatchesTab({
                         {!match.isBye && (
                           <div className="flex justify-center space-x-2">
                             {editingMatch === match.id ? (
-                              <>
-                                <button
-                                  onClick={() => handleSaveScore(match.id)}
-                                  className="text-green-400 hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-400/10"
-                                  title="Sauvegarder"
-                                >
-                                  <Trophy className="w-5 h-5" />
-                                </button>
-                                <button
-                                  onClick={handleCancelEdit}
-                                  className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10 text-xl font-bold"
-                                  title="Annuler"
-                                >
-                                  ×
-                                </button>
-                              </>
+                              <button
+                                onClick={handleCancelEdit}
+                                className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10 text-xl font-bold"
+                                title="Annuler"
+                              >
+                                ×
+                              </button>
                             ) : (
                               <button
                                 onClick={() => handleEditScore(match)}

@@ -101,6 +101,48 @@ describe('MatchesTab display', () => {
 
     const inputs = getAllByRole('spinbutton');
     expect(inputs).toHaveLength(2);
+    expect(getByRole('button', { name: 'Valider' })).toBeInTheDocument();
+  });
+
+  it('calls onUpdateScore when clicking Valider', () => {
+    const teams = [makeTeam('T1'), makeTeam('T2')];
+    const match: Match = {
+      id: 'm1',
+      round: 1,
+      court: 1,
+      team1Id: 'T1',
+      team2Id: 'T2',
+      completed: false,
+      isBye: false,
+      battleIntensity: 0,
+      hackingAttempts: 0,
+    };
+
+    const onUpdateScore = jest.fn();
+    const { getByRole, getAllByRole } = render(
+      <MatchesTab
+        matches={[match]}
+        teams={teams}
+        currentRound={0}
+        courts={1}
+        onGenerateRound={() => {}}
+        onDeleteRound={() => {}}
+        onUpdateScore={onUpdateScore}
+        onUpdateCourt={() => {}}
+      />
+    );
+
+    const scoreCell = getByRole('button', { name: '- - -' });
+    fireEvent.click(scoreCell);
+
+    const inputs = getAllByRole('spinbutton');
+    fireEvent.change(inputs[0], { target: { value: '13' } });
+    fireEvent.change(inputs[1], { target: { value: '7' } });
+
+    const saveButton = getByRole('button', { name: 'Valider' });
+    fireEvent.click(saveButton);
+
+    expect(onUpdateScore).toHaveBeenCalledWith('m1', 13, 7);
   });
 });
 
