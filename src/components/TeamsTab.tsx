@@ -6,6 +6,7 @@ import { Plus, Users, Printer, X, Edit3, Loader2, Play } from 'lucide-react';
 interface TeamsTabProps {
   teams: Team[];
   tournamentType: TournamentType;
+  currentRound: number;
   onAddTeam: (players: Player[]) => void;
   onRemoveTeam: (teamId: string) => void;
   onUpdateTeam: (teamId: string, players: Player[]) => void;
@@ -13,7 +14,7 @@ interface TeamsTabProps {
   onNavigateToMatches: () => void;
 }
 
-export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpdateTeam, onGenerateRound, onNavigateToMatches }: TeamsTabProps) {
+export function TeamsTab({ teams, tournamentType, currentRound, onAddTeam, onRemoveTeam, onUpdateTeam, onGenerateRound, onNavigateToMatches }: TeamsTabProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [editNames, setEditNames] = useState<string[]>([]);
@@ -120,9 +121,24 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-white tracking-wider">
-          {isSolo ? 'Joueurs' : 'Équipes'}
-        </h2>
+        <div className="flex items-center space-x-4">
+          {currentRound === 0 && (
+            <button
+              onClick={() => {
+                onGenerateRound();
+                onNavigateToMatches();
+              }}
+              className="glass-button flex items-center space-x-2 px-6 py-3 font-bold tracking-wide hover:scale-105 transition-all duration-300"
+              disabled={teams.length < 2}
+            >
+              <Play className="w-5 h-5" />
+              <span>Générer tour 1</span>
+            </button>
+          )}
+          <h2 className="text-3xl font-bold text-white tracking-wider">
+            {isSolo ? 'Joueurs' : 'Équipes'}
+          </h2>
+        </div>
         <div className="flex space-x-4">
           {teams.length > 0 && (
             <button
@@ -138,17 +154,6 @@ export function TeamsTab({ teams, tournamentType, onAddTeam, onRemoveTeam, onUpd
               <span>{isPrinting ? 'Impression…' : 'Imprimer'}</span>
             </button>
           )}
-          <button
-            onClick={() => {
-              onGenerateRound();
-              onNavigateToMatches();
-            }}
-            className="glass-button flex items-center space-x-2 px-6 py-3 font-bold tracking-wide hover:scale-105 transition-all duration-300"
-            disabled={teams.length < 2}
-          >
-            <Play className="w-5 h-5" />
-            <span>Générer tour 1</span>
-          </button>
           <button
             onClick={() => setShowForm(true)}
             className="glass-button flex items-center space-x-2 px-4 py-2 transition-all duration-300 hover:scale-105"
