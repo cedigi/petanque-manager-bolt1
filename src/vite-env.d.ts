@@ -3,8 +3,18 @@
 interface ElectronAPI {
   printHtml: (html: string) => Promise<void>;
   onPrintError: (callback: (message: string) => void) => void;
+  getHardwareHash: () => Promise<string | null>;
 }
 
 interface Window {
   electronAPI?: ElectronAPI;
+}
+
+interface ImportMetaEnv {
+  readonly VITE_LICENSE_ACTIVATION_URL?: string;
+  readonly VITE_LICENSE_STATUS_URL?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
 }
