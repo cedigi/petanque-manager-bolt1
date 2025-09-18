@@ -19,7 +19,20 @@ function generateStandardMatches(tournament: Tournament): Match[] {
   const remainingTeams =
     round === 1
       ? [...teams].sort(() => Math.random() - 0.5)
-      : [...teams].sort((a, b) => b.performance - a.performance);
+      : [...teams].sort((a, b) => {
+          if (b.wins !== a.wins) {
+            return b.wins - a.wins;
+          }
+          if (b.performance !== a.performance) {
+            return b.performance - a.performance;
+          }
+          const bPointDiff = b.pointsFor - b.pointsAgainst;
+          const aPointDiff = a.pointsFor - a.pointsAgainst;
+          if (bPointDiff !== aPointDiff) {
+            return bPointDiff - aPointDiff;
+          }
+          return a.name.localeCompare(b.name);
+        });
 
   const newMatches: Match[] = [];
 
