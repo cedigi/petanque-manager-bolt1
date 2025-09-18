@@ -12,8 +12,8 @@ export function Header({ animationsPaused, onToggleAnimations }: HeaderProps) {
       <div className="px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="relative">
-            <Logo className="w-24 h-24 drop-shadow-lg" />
-            <div className="absolute inset-0 w-24 h-24 rounded-full bg-white/20 blur-xl animate-pulse"></div>
+            <Logo className="w-36 h-36 drop-shadow-lg" />
+            <div className="absolute inset-0 w-36 h-36 rounded-full bg-white/20 blur-xl animate-pulse"></div>
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white tracking-wider">
