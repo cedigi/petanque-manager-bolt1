@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { TournamentType } from '../types/tournament';
 import { Users, Target, Trophy, Shield, Grid3X3 } from 'lucide-react';
-import { Logo } from './Logo';
 
 interface TournamentSetupProps {
   onCreateTournament: (type: TournamentType, courts: number) => void;
@@ -71,12 +70,8 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
-        <div className="text-center mb-8">
-          <div className="relative w-24 h-24 mx-auto mb-6">
-            <Logo className="w-24 h-24 drop-shadow-2xl" />
-            <div className="absolute inset-0 w-24 h-24 rounded-full bg-white/30 blur-2xl animate-pulse"></div>
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-4 tracking-wider">
+        <div className="text-center mb-8 space-y-4">
+          <h1 className="text-4xl font-bold text-white tracking-wider">
             Nouveau Tournoi
           </h1>
           <p className="text-white/80 text-lg font-medium tracking-wide">
