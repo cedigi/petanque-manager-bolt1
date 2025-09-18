@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "types": ["node", "jest"],
+    "noEmit": true
+  },
+  "include": [
+    "src",
+    "lib",
+    "api",
+    "db",
+    "electron",
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ]
+}
