@@ -8,6 +8,7 @@ import { MatchesTab } from './components/MatchesTab';
 import { StandingsTab } from './components/StandingsTab';
 import { useTournament } from './hooks/useTournament';
 import { RotateCcw } from 'lucide-react';
+import { LicenseManager } from './components/LicenseManager';
 
 function App() {
   const [animationsPaused, setAnimationsPaused] = useState(false);
@@ -155,6 +156,7 @@ function App() {
       </div>
 
       <Header animationsPaused={animationsPaused} onToggleAnimations={toggleAnimations} />
+      <LicenseManager />
       {content}
     </div>
   );
