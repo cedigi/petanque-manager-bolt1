@@ -30,6 +30,7 @@ export interface Team {
   pointsFor: number;
   pointsAgainst: number;
   performance: number;
+  tieBreakDeltas?: number[];
   teamRating: number;
   synchroLevel: number;
   poolId?: string;
