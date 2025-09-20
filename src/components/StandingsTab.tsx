@@ -12,7 +12,24 @@ export function StandingsTab({ teams }: StandingsTabProps) {
     if (b.wins !== a.wins) {
       return b.wins - a.wins;
     }
-    return b.performance - a.performance;
+    if (b.performance !== a.performance) {
+      return b.performance - a.performance;
+    }
+
+    const tieBreakA = a.tieBreakDeltas ?? [];
+    const tieBreakB = b.tieBreakDeltas ?? [];
+    const maxLength = Math.max(tieBreakA.length, tieBreakB.length);
+
+    for (let i = 0; i < maxLength; i += 1) {
+      const deltaA = tieBreakA[i] ?? 0;
+      const deltaB = tieBreakB[i] ?? 0;
+
+      if (deltaB !== deltaA) {
+        return deltaB - deltaA;
+      }
+    }
+
+    return 0;
   });
 
   const getPositionIcon = (index: number) => {
