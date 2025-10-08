@@ -60,11 +60,18 @@ describe('generatePools', () => {
     expect(sizes).toEqual([3, 3, 4]);
   });
 
-  it('creates a single pool of two when teams modulo three equals two', () => {
+  it('creates pools of four when teams modulo three equals two', () => {
     const teams = makeTeams(8);
     const pools = generatePools(teams, 3);
     const sizes = pools.map(p => p.teamIds.length).sort();
-    expect(sizes).toEqual([2, 3, 3]);
+    expect(sizes).toEqual([4, 4]);
+  });
+
+  it('can create two pools of four to avoid pools of two', () => {
+    const teams = makeTeams(11);
+    const pools = generatePools(teams, 3);
+    const sizes = pools.map(p => p.teamIds.length).sort();
+    expect(sizes).toEqual([3, 4, 4]);
   });
 });
 
@@ -75,7 +82,8 @@ describe('calculateOptimalPools', () => {
   });
 
   it('computes mix for preference three with remainder two', () => {
-    expect(calculateOptimalPools(8, 3)).toEqual({ poolsOf4: 0, poolsOf3: 2, poolsOf2: 1 });
+    expect(calculateOptimalPools(8, 3)).toEqual({ poolsOf4: 2, poolsOf3: 0, poolsOf2: 0 });
+    expect(calculateOptimalPools(11, 3)).toEqual({ poolsOf4: 2, poolsOf3: 1, poolsOf2: 0 });
   });
 
   it('computes mix for preference three with remainder one', () => {

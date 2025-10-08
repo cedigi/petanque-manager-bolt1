@@ -73,25 +73,21 @@ export function calculateOptimalPools(
       return { poolsOf4: 0, poolsOf3: 0, poolsOf2: 0 };
     }
 
-    let poolsOf3 = Math.floor(totalTeams / 3);
-    let remainder = totalTeams - poolsOf3 * 3;
-    let poolsOf4 = 0;
-    let poolsOf2 = 0;
+    const maxPoolsOf3 = Math.floor(totalTeams / 3);
 
-    if (remainder === 1) {
-      if (poolsOf3 > 0) {
-        poolsOf3 -= 1;
-        poolsOf4 = 1;
-      } else {
-        // Cas limite : 4 équipes
-        poolsOf3 = 0;
-        poolsOf4 = 1;
+    for (let poolsOf3 = maxPoolsOf3; poolsOf3 >= 0; poolsOf3--) {
+      const remainingTeams = totalTeams - poolsOf3 * 3;
+
+      if (remainingTeams === 0) {
+        return { poolsOf4: 0, poolsOf3, poolsOf2: 0 };
       }
-    } else if (remainder === 2) {
-      poolsOf2 = 1;
+
+      if (remainingTeams >= 4 && remainingTeams % 4 === 0) {
+        return { poolsOf4: remainingTeams / 4, poolsOf3, poolsOf2: 0 };
+      }
     }
 
-    return { poolsOf4, poolsOf3, poolsOf2 };
+    return { poolsOf4: 0, poolsOf3: 0, poolsOf2: 0 };
   }
 
   // Préférence pour les poules de 4 (comportement d'origine)
