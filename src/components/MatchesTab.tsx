@@ -77,6 +77,21 @@ export function MatchesTab({
 
     const shouldApplyLongNameLayout = parts.length >= 3;
 
+    if (parts.length <= 2) {
+      return (
+        <div className="flex flex-wrap items-center justify-center gap-1 text-center leading-tight">
+          {parts.map((part, index) => (
+            <React.Fragment key={`${part}-${index}`}>
+              <span className={`font-bold ${textClass}`}>{part.trim()}</span>
+              {index < parts.length - 1 && (
+                <span className={`font-bold ${textClass}`}> / </span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      );
+    }
+
     if (!shouldApplyLongNameLayout) {
       return (
         <div className="flex flex-col items-center gap-1 text-center leading-tight">

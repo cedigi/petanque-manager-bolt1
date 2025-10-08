@@ -261,13 +261,19 @@ describe('MatchesTab display', () => {
       />
     );
 
-    expect(
-      container.querySelector('.flex.flex-wrap.items-center.justify-center.gap-1')
-    ).toBeNull();
+    const inlineContainers = container.querySelectorAll(
+      '.flex.flex-wrap.items-center.justify-center.gap-1'
+    );
+    expect(inlineContainers).toHaveLength(2);
 
-    const firstPart = screen.getByText('1 : A - Alex /');
-    const secondPart = screen.getByText(`B - ${longName}`);
-    expect(firstPart.parentElement).toBe(secondPart.parentElement);
+    const firstTeamParts = Array.from(inlineContainers[0].querySelectorAll('span')).map(
+      span => span.textContent
+    );
+    expect(firstTeamParts).toEqual([
+      '1 : A - Alex',
+      ' / ',
+      `B - ${longName}`,
+    ]);
   });
 });
 
