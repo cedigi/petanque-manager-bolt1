@@ -216,8 +216,26 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
         import('jspdf-autotable'),
       ]);
 
-      const JsPDFConstructor = (jsPDFModule.jsPDF ?? jsPDFModule.default) as JsPDFConstructor | undefined;
-      const autoTable = (autoTableModule.default ?? autoTableModule.autoTable) as AutoTableFn | undefined;
+      const jsPdfCandidates = [
+        (jsPDFModule as { jsPDF?: JsPDFConstructor }).jsPDF,
+        typeof jsPDFModule === 'function' ? (jsPDFModule as unknown as JsPDFConstructor) : undefined,
+        (jsPDFModule as { default?: JsPDFConstructor }).default,
+        ((jsPDFModule as { default?: { jsPDF?: JsPDFConstructor } }).default ?? {})
+          .jsPDF,
+        ((jsPDFModule as { default?: { default?: JsPDFConstructor } }).default ?? {})
+          .default,
+      ].filter((candidate): candidate is JsPDFConstructor => typeof candidate === 'function');
+
+      const autoTableCandidates = [
+        (autoTableModule as { default?: AutoTableFn }).default,
+        (autoTableModule as { autoTable?: AutoTableFn }).autoTable,
+        typeof autoTableModule === 'function' ? (autoTableModule as AutoTableFn) : undefined,
+        ((autoTableModule as { default?: { default?: AutoTableFn } }).default ?? {})
+          .default,
+      ].filter((candidate): candidate is AutoTableFn => typeof candidate === 'function');
+
+      const JsPDFConstructor = jsPdfCandidates[0];
+      const autoTable = autoTableCandidates[0];
 
       if (!JsPDFConstructor || !autoTable) {
         throw new Error('Bibliothèques PDF indisponibles');
