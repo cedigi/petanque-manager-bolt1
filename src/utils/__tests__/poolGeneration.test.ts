@@ -41,17 +41,45 @@ describe('generatePools', () => {
   });
 
   it('returns an empty array for invalid team counts', () => {
-    // 5 teams cannot be split into pools of 3 and 4
     const teams = makeTeams(5);
     const pools = generatePools(teams);
     expect(pools).toEqual([]);
   });
+
+  it('creates pools of three when requested', () => {
+    const teams = makeTeams(9);
+    const pools = generatePools(teams, 3);
+    const sizes = pools.map(p => p.teamIds.length);
+    expect(sizes).toEqual([3, 3, 3]);
+  });
+
+  it('falls back to a pool of four when needed for preference three', () => {
+    const teams = makeTeams(10);
+    const pools = generatePools(teams, 3);
+    const sizes = pools.map(p => p.teamIds.length).sort();
+    expect(sizes).toEqual([3, 3, 4]);
+  });
+
+  it('creates a single pool of two when teams modulo three equals two', () => {
+    const teams = makeTeams(8);
+    const pools = generatePools(teams, 3);
+    const sizes = pools.map(p => p.teamIds.length).sort();
+    expect(sizes).toEqual([2, 3, 3]);
+  });
 });
 
 describe('calculateOptimalPools', () => {
-  it('returns zero pools when the team count cannot be split', () => {
-    expect(calculateOptimalPools(5)).toEqual({ poolsOf4: 0, poolsOf3: 0 });
-    expect(calculateOptimalPools(2)).toEqual({ poolsOf4: 0, poolsOf3: 0 });
+  it('returns zero pools when the team count cannot be split with preference four', () => {
+    expect(calculateOptimalPools(5)).toEqual({ poolsOf4: 0, poolsOf3: 0, poolsOf2: 0 });
+    expect(calculateOptimalPools(2)).toEqual({ poolsOf4: 0, poolsOf3: 0, poolsOf2: 0 });
+  });
+
+  it('computes mix for preference three with remainder two', () => {
+    expect(calculateOptimalPools(8, 3)).toEqual({ poolsOf4: 0, poolsOf3: 2, poolsOf2: 1 });
+  });
+
+  it('computes mix for preference three with remainder one', () => {
+    expect(calculateOptimalPools(7, 3)).toEqual({ poolsOf4: 1, poolsOf3: 1, poolsOf2: 0 });
   });
 });
 

@@ -20,6 +20,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
 
   const [showCategoryB, setShowCategoryB] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const minimumTeams = tournament.preferredPoolSize === 3 ? 3 : 4;
 
   useEffect(() => {
     if (window.electronAPI?.onPrintError) {
@@ -96,6 +97,13 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
         <div class="team-box">${team1.name}</div>
         <div class="team-box">${team2.name}</div>
         <div class="team-box">${team3.name}</div>
+      `;
+    } else if (poolTeams.length === 2) {
+      const [team1, team2] = poolTeams;
+
+      return `
+        <div class="team-box">${team1.name}</div>
+        <div class="team-box">${team2.name}</div>
       `;
     } else {
       return '<p>Poule incomplète</p>';
@@ -179,7 +187,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
       } else if (poolTeams.length === 3) {
         // Pour une poule de 3
         const completedMatches = poolMatches.filter(m => !m.isBye).length;
-        
+
         if (completedMatches >= 2) {
           // Poule terminée : prendre les 2 premiers
           qualified.push(...teamStats.slice(0, 2).map(stat => stat.team));
@@ -187,6 +195,11 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
           // Premier match terminé : l'équipe avec BYE + le gagnant sont qualifiés
           const teamsWithAtLeastOneWin = teamStats.filter(stat => stat.wins >= 1);
           qualified.push(...teamsWithAtLeastOneWin.slice(0, 2).map(stat => stat.team));
+        }
+      } else if (poolTeams.length === 2) {
+        const matchCompleted = poolMatches.some(m => !m.isBye && m.completed);
+        if (matchCompleted) {
+          qualified.push(...teamStats.map(stat => stat.team));
         }
       }
     });
@@ -219,7 +232,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
           <button
             onClick={onGeneratePools}
             className="glass-button flex items-center space-x-2 px-6 py-3 font-bold tracking-wide hover:scale-105 transition-all duration-300"
-            disabled={teams.length < 4}
+            disabled={teams.length < minimumTeams}
           >
             <Shuffle className="w-5 h-5" />
             <span>Générer les poules</span>
@@ -227,10 +240,11 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
         </div>
       </div>
 
-      {teams.length < 4 && (
+      {teams.length < minimumTeams && (
         <div className="glass-card p-6 mb-8 bg-orange-500/20 border-orange-400/40">
           <p className="text-orange-200 font-medium text-lg">
-            Vous devez inscrire au moins 4 {isSolo ? 'joueurs' : 'équipes'} pour générer des poules.
+            Vous devez inscrire au moins {minimumTeams}{' '}
+            {isSolo ? 'joueurs' : 'équipes'} pour générer des poules.
           </p>
         </div>
       )}
@@ -331,7 +345,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
               <Trophy className="w-5 h-5" />
               <span>Répartition des poules</span>
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
               <div className="glass-card p-4">
                 <div className="text-2xl font-bold text-blue-400">{pools.length}</div>
                 <div className="text-white/70 text-sm">Poules créées</div>
@@ -347,6 +361,12 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
                   {pools.filter(p => p.teamIds.length === 3).length}
                 </div>
                 <div className="text-white/70 text-sm">Poules de 3</div>
+              </div>
+              <div className="glass-card p-4">
+                <div className="text-2xl font-bold text-pink-400">
+                  {pools.filter(p => p.teamIds.length === 2).length}
+                </div>
+                <div className="text-white/70 text-sm">Poules de 2</div>
               </div>
               <div className="glass-card p-4">
                 <div className="text-2xl font-bold text-purple-400">{qualifiedTeams.length}</div>
@@ -384,8 +404,11 @@ interface FinalPhasesProps {
 
 function FinalPhases({ qualifiedTeams, tournament, matches, onUpdateScore, onUpdateCourt, totalTeams, title, roundOffset = 100 }: FinalPhasesProps) {
   // Calculer la structure du tableau en fonction du nombre total d'équipes
-  const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
-  const expectedQualified = (poolsOf4 + poolsOf3) * 2;
+  const { poolsOf4, poolsOf3, poolsOf2 } = calculateOptimalPools(
+    totalTeams,
+    tournament.preferredPoolSize,
+  );
+  const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
   
   // Déterminer les phases nécessaires
   const getPhaseConfiguration = (count: number) => {
@@ -770,6 +793,17 @@ function CompactPool({ pool, teams, matches, onUpdateScore, onUpdateCourt, court
         onUpdateCourt={onUpdateCourt}
       />
     );
+  } else if (poolTeams.length === 2) {
+    return (
+      <CompactTwoTeamPool
+        poolTeams={poolTeams}
+        poolMatches={poolMatches}
+        pool={pool}
+        courts={courts}
+        onUpdateScore={onUpdateScore}
+        onUpdateCourt={onUpdateCourt}
+      />
+    );
   } else {
     return (
       <div className="glass-card p-3">
@@ -1007,6 +1041,42 @@ function CompactThreeTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateSc
             onUpdateCourt={onUpdateCourt}
           />
         )}
+      </div>
+    </div>
+  );
+}
+
+function CompactTwoTeamPool({ poolTeams, poolMatches, pool, courts, onUpdateScore, onUpdateCourt }: {
+  poolTeams: Team[];
+  poolMatches: Match[];
+  pool: Pool;
+  courts: number;
+  onUpdateScore?: (matchId: string, team1Score: number, team2Score: number) => void;
+  onUpdateCourt?: (matchId: string, court: number) => void;
+}) {
+  const [team1, team2] = poolTeams;
+
+  const match = poolMatches.find(m =>
+    !m.isBye &&
+    ((m.team1Id === team1.id && m.team2Id === team2.id) ||
+      (m.team1Id === team2.id && m.team2Id === team1.id))
+  );
+
+  return (
+    <div className="glass-card">
+      <div className="px-3 py-2 border-b border-white/20 bg-white/5">
+        <h3 className="text-sm font-bold text-white">{pool.name}</h3>
+      </div>
+
+      <div className="p-2 space-y-1">
+        <CompactMatchBox
+          team1={team1}
+          team2={team2}
+          match={match}
+          courts={courts}
+          onUpdateScore={onUpdateScore}
+          onUpdateCourt={onUpdateCourt}
+        />
       </div>
     </div>
   );
