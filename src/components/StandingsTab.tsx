@@ -2,6 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Tournament, Team, Match } from '../types/tournament';
 import { Trophy, TrendingUp, TrendingDown, Printer, Loader2, Download } from 'lucide-react';
 
+type JsPDFConstructor = typeof import('jspdf').jsPDF;
+type AutoTableFn = typeof import('jspdf-autotable').default;
+
 interface StandingsTabProps {
   tournament: Tournament;
 }
@@ -208,12 +211,19 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
     setIsExporting(true);
 
     try {
-      const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+      const [jsPDFModule, autoTableModule] = await Promise.all([
         import('jspdf'),
         import('jspdf-autotable'),
       ]);
 
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+      const JsPDFConstructor = (jsPDFModule.jsPDF ?? jsPDFModule.default) as JsPDFConstructor | undefined;
+      const autoTable = (autoTableModule.default ?? autoTableModule.autoTable) as AutoTableFn | undefined;
+
+      if (!JsPDFConstructor || !autoTable) {
+        throw new Error('Bibliothèques PDF indisponibles');
+      }
+
+      const doc = new JsPDFConstructor({ orientation: 'portrait', unit: 'pt', format: 'a4' });
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
@@ -368,6 +378,9 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
 
       const fileName = `${sanitizeFileName(name)}-tournoi.pdf`;
       doc.save(fileName);
+    } catch (error) {
+      console.error('Erreur lors de la génération du PDF', error);
+      alert("Impossible de générer le PDF. Veuillez réessayer.");
     } finally {
       setIsExporting(false);
     }
