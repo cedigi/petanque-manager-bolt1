@@ -208,12 +208,12 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
     setIsExporting(true);
 
     try {
-      const [{ default: JsPDF }, { default: autoTable }] = await Promise.all([
+      const [{ jsPDF }, { default: autoTable }] = await Promise.all([
         import('jspdf'),
         import('jspdf-autotable'),
       ]);
 
-      const doc = new JsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
