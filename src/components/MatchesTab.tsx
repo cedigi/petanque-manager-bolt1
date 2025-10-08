@@ -70,6 +70,23 @@ export function MatchesTab({
       .join(' / ');
   };
 
+  const renderTeamLabel = (label: string, options: { italic?: boolean } = {}) => {
+    const { italic } = options;
+    const textClass = italic ? 'text-white/80 italic' : 'text-white';
+    return (
+      <div className="flex flex-col items-center gap-1 text-center leading-tight">
+        {label.split(' / ').map((part, index) => (
+          <span
+            key={`${part}-${index}`}
+            className={`font-bold ${textClass}`}
+          >
+            {part.trim()}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   const handleEditScore = (match: Match) => {
     setEditingMatch(match.id);
     setEditScores({
@@ -319,12 +336,10 @@ export function MatchesTab({
                           </div>
                         )}
                       </td>
-                      <td className="w-4/12 px-4 py-4 whitespace-nowrap text-center">
-                          {match.team1Ids ? (
-                            <span className="font-bold text-white">{getGroupLabel(match.team1Ids)}</span>
-                          ) : (
-                            <span className="font-bold text-white">{getTeamDisplay(match.team1Id)}</span>
-                          )}
+                      <td className="w-4/12 px-4 py-4 text-center align-top">
+                        {match.team1Ids
+                          ? renderTeamLabel(getGroupLabel(match.team1Ids))
+                          : renderTeamLabel(getTeamDisplay(match.team1Id))}
                       </td>
                       <td
                         className={`w-2/12 px-2 py-4 whitespace-nowrap text-center ${
@@ -373,14 +388,12 @@ export function MatchesTab({
                           </span>
                         )}
                       </td>
-                      <td className="w-4/12 px-4 py-4 whitespace-nowrap text-center">
-                          {match.isBye ? (
-                            <span className="text-white/50 italic font-bold">BYE</span>
-                          ) : match.team2Ids ? (
-                            <span className="font-bold text-white">{getGroupLabel(match.team2Ids)}</span>
-                          ) : (
-                            <span className="font-bold text-white">{getTeamDisplay(match.team2Id)}</span>
-                          )}
+                      <td className="w-4/12 px-4 py-4 text-center align-top">
+                        {match.isBye
+                          ? renderTeamLabel('BYE', { italic: true })
+                          : match.team2Ids
+                            ? renderTeamLabel(getGroupLabel(match.team2Ids))
+                            : renderTeamLabel(getTeamDisplay(match.team2Id))}
                       </td>
                       <td className="w-1/12 px-2 py-4 whitespace-nowrap text-center">
                         {!match.isBye && (
