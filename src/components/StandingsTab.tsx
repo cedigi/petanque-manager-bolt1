@@ -267,7 +267,7 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
       cursorY = ((doc as any).lastAutoTable?.finalY || cursorY) + 30;
 
       // Section matchs
-      const allMatches: Match[] = [...matches, ...matchesB];
+      const allMatches: Match[] = [...matches, ...matchesB].filter((match) => match.completed);
       if (allMatches.length > 0) {
         cursorY = ensureSpace(cursorY);
         cursorY = addSectionTitle('Liste des matchs', cursorY);
@@ -282,6 +282,12 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
         const sortedRounds = Object.keys(matchesByRound)
           .map(Number)
           .sort((a, b) => a - b);
+
+        const marginX = 40;
+        const availableWidth = pageWidth - marginX * 2;
+        const terrainColumnWidth = 60;
+        const scoreColumnWidth = 80;
+        const teamColumnWidth = (availableWidth - terrainColumnWidth - scoreColumnWidth) / 2;
 
         sortedRounds.forEach((round, roundIndex) => {
           const roundMatches = matchesByRound[round];
@@ -302,18 +308,16 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
             body: roundMatches.map((match) => [
               match.isBye ? '—' : `${match.court}`,
               getMatchTeamLabel(match, 'team1'),
-              match.completed
-                ? `${match.team1Score ?? 0} - ${match.team2Score ?? 0}`
-                : 'À jouer',
+              match.isBye ? '—' : `${match.team1Score ?? 0} - ${match.team2Score ?? 0}`,
               getMatchTeamLabel(match, 'team2'),
             ]),
             styles: { fontSize: 10, cellPadding: 6, valign: 'middle' },
             headStyles: { fillColor: [41, 50, 60], textColor: 255 },
             columnStyles: {
-              0: { halign: 'center', cellWidth: 60 },
-              1: { cellWidth: 200 },
-              2: { halign: 'center', cellWidth: 80 },
-              3: { cellWidth: 200 },
+              0: { halign: 'center', cellWidth: terrainColumnWidth },
+              1: { cellWidth: teamColumnWidth, halign: 'center' },
+              2: { halign: 'center', cellWidth: scoreColumnWidth },
+              3: { cellWidth: teamColumnWidth, halign: 'center' },
             },
             didDrawPage: (data) => {
               cursorY = data.cursor.y + 20;
