@@ -1,16 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Tournament, Team, Match } from '../types/tournament';
+import React, { useState, useEffect } from 'react';
+import { Tournament } from '../types/tournament';
 import { Trophy, TrendingUp, TrendingDown, Printer, Loader2, Download } from 'lucide-react';
-
-type JsPDFConstructor = typeof import('jspdf').jsPDF;
-type AutoTableFn = typeof import('jspdf-autotable').default;
+import { exportTournamentToPDF } from '../utils/pdfExport';
 
 interface StandingsTabProps {
   tournament: Tournament;
 }
 
 export function StandingsTab({ tournament }: StandingsTabProps) {
-  const { teams, matches, matchesB, name, type, currentRound, courts } = tournament;
+  const { teams } = tournament;
   const isSolo = teams.every(t => t.players.length === 1);
   const sortedTeams = [...teams].sort((a, b) => {
     if (b.wins !== a.wins) {
@@ -51,21 +49,6 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
 
   const [isPrinting, setIsPrinting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-
-  const teamLookup = useMemo(() => {
-    return teams.reduce<Record<string, { label: string; team: Team }>>((acc, team, index) => {
-      acc[team.id] = {
-        label: `${index + 1}`,
-        team,
-      };
-      return acc;
-    }, {});
-  }, [teams]);
-
-  const formatTournamentType = () => {
-    const formatted = type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ');
-    return formatted;
-  };
 
   useEffect(() => {
     if (window.electronAPI?.onPrintError) {
@@ -161,246 +144,15 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
     }
   };
 
-  const getMatchTeamLabel = (match: Match, teamKey: 'team1' | 'team2') => {
-    if (match.isBye) {
-      return 'Exempt';
-    }
-
-    const teamIds = teamKey === 'team1' ? match.team1Ids : match.team2Ids;
-    const singleTeamId = teamKey === 'team1' ? match.team1Id : match.team2Id;
-
-    if (teamIds && teamIds.length > 0) {
-      return teamIds
-        .map((id) => {
-          const entry = teamLookup[id];
-          if (!entry) {
-            return 'Inconnu';
-          }
-          const playerNames = entry.team.players.map((player) => player.name).join(' / ');
-          return `${entry.label} - ${playerNames || entry.team.name || 'Équipe'}`;
-        })
-        .join('\n');
-    }
-
-    if (!singleTeamId) {
-      return 'Inconnu';
-    }
-
-    const entry = teamLookup[singleTeamId];
-    if (!entry) {
-      return 'Inconnu';
-    }
-
-    const playerNames = entry.team.players.map((player) => player.name).join(' / ');
-    const fallbackName = entry.team.name || `Équipe ${entry.label}`;
-    return `${entry.label} - ${playerNames || fallbackName}`;
-  };
-
-  const sanitizeFileName = (title: string) => {
-    const sanitized = title
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-zA-Z0-9-_\s]/g, '')
-      .trim()
-      .replace(/\s+/g, '-')
-      .toLowerCase();
-    return sanitized || 'tournoi';
-  };
-
   const handleExportPdf = async () => {
     setIsExporting(true);
 
     try {
-      const [jsPDFModule, autoTableModule] = await Promise.all([
-        import('jspdf'),
-        import('jspdf-autotable'),
-      ]);
-
-      const jsPdfCandidates = [
-        (jsPDFModule as { jsPDF?: JsPDFConstructor }).jsPDF,
-        typeof jsPDFModule === 'function' ? (jsPDFModule as unknown as JsPDFConstructor) : undefined,
-        (jsPDFModule as { default?: JsPDFConstructor }).default,
-        ((jsPDFModule as { default?: { jsPDF?: JsPDFConstructor } }).default ?? {})
-          .jsPDF,
-        ((jsPDFModule as { default?: { default?: JsPDFConstructor } }).default ?? {})
-          .default,
-      ].filter((candidate): candidate is JsPDFConstructor => typeof candidate === 'function');
-
-      const autoTableCandidates = [
-        (autoTableModule as { default?: AutoTableFn }).default,
-        (autoTableModule as { autoTable?: AutoTableFn }).autoTable,
-        typeof autoTableModule === 'function' ? (autoTableModule as AutoTableFn) : undefined,
-        ((autoTableModule as { default?: { default?: AutoTableFn } }).default ?? {})
-          .default,
-      ].filter((candidate): candidate is AutoTableFn => typeof candidate === 'function');
-
-      const JsPDFConstructor = jsPdfCandidates[0];
-      const autoTable = autoTableCandidates[0];
-
-      if (!JsPDFConstructor || !autoTable) {
-        throw new Error('Bibliothèques PDF indisponibles');
-      }
-
-      const doc = new JsPDFConstructor({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-
-      const addSectionTitle = (title: string, y: number) => {
-        doc.setFontSize(16);
-        doc.text(title, 40, y);
-        return y + 12;
-      };
-
-      const ensureSpace = (currentY: number, requiredSpace = 80) => {
-        if (currentY + requiredSpace > pageHeight - 40) {
-          doc.addPage();
-          return 60;
-        }
-        return currentY;
-      };
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(20);
-      doc.text('Rapport du tournoi', pageWidth / 2, 50, { align: 'center' });
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(14);
-      doc.text(`Nom : ${name}`, 40, 90);
-      doc.text(`Type : ${formatTournamentType()}`, 40, 110);
-      doc.text(`Terrains : ${courts}`, 40, 130);
-      doc.text(`Tour actuel : ${currentRound}`, 40, 150);
-
-      let cursorY = 190;
-
-      // Section équipes
-      cursorY = addSectionTitle('Liste des équipes', cursorY);
-      cursorY = ensureSpace(cursorY, 120);
-      doc.setFontSize(12);
-      autoTable(doc, {
-        startY: cursorY,
-        head: [['#', "Nom de l'équipe", 'Joueurs']],
-        body: teams.map((team, index) => [
-          `${index + 1}`,
-          team.name || `Équipe ${index + 1}`,
-          team.players.map((player) => player.name).join('\n') || '—',
-        ]),
-        styles: { fontSize: 10, cellPadding: 6 },
-        headStyles: { fillColor: [41, 50, 60], textColor: 255 },
-        columnStyles: {
-          0: { halign: 'center', cellWidth: 40 },
-          1: { cellWidth: 200 },
-          2: { cellWidth: 280 },
-        },
-      });
-      const teamsTableFinalY = (
-        (doc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? cursorY
-      );
-      cursorY = teamsTableFinalY + 30;
-
-      // Section matchs
-      const safeMatches = Array.isArray(matches) ? matches : [];
-      const safeMatchesB = Array.isArray(matchesB) ? matchesB : [];
-      const allMatches: Match[] = [...safeMatches, ...safeMatchesB].filter(
-        (match) => match.completed && match.round < 200,
-      );
-      if (allMatches.length > 0) {
-        cursorY = ensureSpace(cursorY);
-        cursorY = addSectionTitle('Liste des matchs', cursorY);
-        const matchesByRound = allMatches.reduce<Record<number, Match[]>>((acc, match) => {
-          if (!acc[match.round]) {
-            acc[match.round] = [];
-          }
-          acc[match.round].push(match);
-          return acc;
-        }, {});
-
-        const sortedRounds = Object.keys(matchesByRound)
-          .map(Number)
-          .sort((a, b) => a - b);
-
-        const marginX = 40;
-        const availableWidth = pageWidth - marginX * 2;
-        const terrainColumnWidth = 60;
-        const scoreColumnWidth = 80;
-        const teamColumnWidth = (availableWidth - terrainColumnWidth - scoreColumnWidth) / 2;
-
-        sortedRounds.forEach((round, roundIndex) => {
-          const roundMatches = matchesByRound[round];
-          if (!roundMatches || roundMatches.length === 0) {
-            return;
-          }
-
-          cursorY = ensureSpace(cursorY);
-          doc.setFontSize(13);
-          doc.setFont('helvetica', 'bold');
-          doc.text(`Tour ${round}`, 40, cursorY);
-          cursorY += 10;
-
-          doc.setFont('helvetica', 'normal');
-          const matchTableDoc = autoTable(doc, {
-            startY: cursorY,
-            margin: { left: marginX, right: marginX },
-            tableWidth: availableWidth,
-            head: [['Terrain', "Équipe 1", 'Score', "Équipe 2"]],
-            body: roundMatches.map((match) => [
-              match.isBye ? '—' : `${match.court}`,
-              getMatchTeamLabel(match, 'team1'),
-              match.isBye ? '—' : `${match.team1Score ?? 0} - ${match.team2Score ?? 0}`,
-              getMatchTeamLabel(match, 'team2'),
-            ]),
-            styles: { fontSize: 10, cellPadding: 6, valign: 'middle' },
-            headStyles: { fillColor: [41, 50, 60], textColor: 255 },
-            columnStyles: {
-              0: { halign: 'center', cellWidth: terrainColumnWidth },
-              1: { cellWidth: teamColumnWidth, halign: 'center' },
-              2: { halign: 'center', cellWidth: scoreColumnWidth },
-              3: { cellWidth: teamColumnWidth, halign: 'center' },
-            },
-            didDrawPage: (data) => {
-              cursorY = data.cursor.y + 20;
-            },
-          });
-
-          const matchesTableFinalY = (
-            (matchTableDoc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? cursorY
-          );
-          cursorY = matchesTableFinalY + (roundIndex === sortedRounds.length - 1 ? 30 : 20);
-        });
-      }
-
-      // Section classement
-      cursorY = ensureSpace(cursorY);
-      cursorY = addSectionTitle('Classement', cursorY);
-      autoTable(doc, {
-        startY: cursorY,
-        head: [['Position', isSolo ? 'Joueur' : 'Équipe', 'V', 'D', '+', '-', 'Diff.']],
-        body: sortedTeams.map((team, index) => [
-          `${index + 1}`,
-          team.players.map((player) => player.name).join(' - ') || team.name || `Équipe ${index + 1}`,
-          `${team.wins}`,
-          `${team.losses}`,
-          `${team.pointsFor}`,
-          `${team.pointsAgainst}`,
-          `${team.performance > 0 ? '+' : ''}${team.performance}`,
-        ]),
-        styles: { fontSize: 10, cellPadding: 6 },
-        headStyles: { fillColor: [41, 50, 60], textColor: 255 },
-        columnStyles: {
-          0: { halign: 'center', cellWidth: 70 },
-          1: { cellWidth: 220 },
-          2: { halign: 'center', cellWidth: 40 },
-          3: { halign: 'center', cellWidth: 40 },
-          4: { halign: 'center', cellWidth: 40 },
-          5: { halign: 'center', cellWidth: 40 },
-          6: { halign: 'center', cellWidth: 60 },
-        },
-      });
-
-      const fileName = `${sanitizeFileName(name)}-tournoi.pdf`;
-      doc.save(fileName);
+      await exportTournamentToPDF(tournament);
     } catch (error) {
       console.error('Erreur lors de la génération du PDF', error);
-      alert("Impossible de générer le PDF. Veuillez réessayer.");
+      const message = error instanceof Error ? error.message : 'Veuillez réessayer.';
+      alert(`Impossible de générer le PDF : ${message}`);
     } finally {
       setIsExporting(false);
     }
