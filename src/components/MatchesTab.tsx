@@ -75,6 +75,22 @@ export function MatchesTab({
     const textClass = italic ? 'text-white/80 italic' : 'text-white';
     const parts = label.split(' / ').filter(Boolean);
 
+        codex/adjust-player-name-display-based-on-length-xe5kv1
+    const shouldApplyLongNameLayout = parts.length >= 3;
+
+    if (!shouldApplyLongNameLayout) {
+      return (
+        <div className="flex flex-col items-center gap-1 text-center leading-tight">
+          {parts.map((part, index) => (
+            <span key={`${part}-${index}`} className={`font-bold ${textClass}`}>
+              {index < parts.length - 1 ? `${part.trim()} / ` : part.trim()}
+            </span>
+          ))}
+        </div>
+      );
+    }
+
+        main
     const getPlayerName = (part: string) => {
       const hyphenIndex = part.lastIndexOf(' - ');
       if (hyphenIndex !== -1) {
