@@ -1,19 +1,23 @@
 import { Team, Pool, Match } from '../types/tournament';
 import { generateUuid } from './uuid';
 
-export function generatePools(teams: Team[]): Pool[] {
+export function generatePools(teams: Team[], preferredPoolSize: 3 | 4 = 4): Pool[] {
   const totalTeams = teams.length;
-  
-  if (totalTeams < 4) {
+
+  const minimumTeams = preferredPoolSize === 3 ? 3 : 4;
+  if (totalTeams < minimumTeams) {
     return [];
   }
 
-  // Calculer le nombre optimal de poules de 4 et de 3
-  const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
-  
+  // Calculer le nombre optimal de poules selon la préférence
+  const { poolsOf4, poolsOf3, poolsOf2 } = calculateOptimalPools(
+    totalTeams,
+    preferredPoolSize,
+  );
+
   // Mélanger les équipes aléatoirement
   const shuffledTeams = [...teams].sort(() => Math.random() - 0.5);
-  
+
   const pools: Pool[] = [];
   let teamIndex = 0;
 
@@ -41,16 +45,59 @@ export function generatePools(teams: Team[]): Pool[] {
     teamIndex += 3;
   }
 
+  // Créer les poules de 2 (uniquement pour la préférence poules de 3)
+  for (let i = 0; i < poolsOf2; i++) {
+    const poolTeams = shuffledTeams.slice(teamIndex, teamIndex + 2);
+    pools.push({
+      id: generateUuid(),
+      name: `Poule ${poolsOf4 + poolsOf3 + i + 1}`,
+      teamIds: poolTeams.map(t => t.id),
+      matches: []
+    });
+    teamIndex += 2;
+  }
+
   return pools;
 }
 
-export function calculateOptimalPools(totalTeams: number): {
+export function calculateOptimalPools(
+  totalTeams: number,
+  preferredPoolSize: 3 | 4 = 4,
+): {
   poolsOf4: number;
   poolsOf3: number;
+  poolsOf2: number;
 } {
-  // Try to maximise pools of 4 while ensuring the remainder can form pools of 3
+  if (preferredPoolSize === 3) {
+    if (totalTeams < 3) {
+      return { poolsOf4: 0, poolsOf3: 0, poolsOf2: 0 };
+    }
+
+    let poolsOf3 = Math.floor(totalTeams / 3);
+    let remainder = totalTeams - poolsOf3 * 3;
+    let poolsOf4 = 0;
+    let poolsOf2 = 0;
+
+    if (remainder === 1) {
+      if (poolsOf3 > 0) {
+        poolsOf3 -= 1;
+        poolsOf4 = 1;
+      } else {
+        // Cas limite : 4 équipes
+        poolsOf3 = 0;
+        poolsOf4 = 1;
+      }
+    } else if (remainder === 2) {
+      poolsOf2 = 1;
+    }
+
+    return { poolsOf4, poolsOf3, poolsOf2 };
+  }
+
+  // Préférence pour les poules de 4 (comportement d'origine)
   let poolsOf4 = Math.floor(totalTeams / 4);
   let poolsOf3 = 0;
+  const poolsOf2 = 0;
 
   while (poolsOf4 >= 0) {
     const remaining = totalTeams - poolsOf4 * 4;
@@ -61,13 +108,12 @@ export function calculateOptimalPools(totalTeams: number): {
     poolsOf4 -= 1;
   }
 
-  // If we could not find a valid combination, return zero to signal invalid
   if (poolsOf4 < 0) {
     poolsOf4 = 0;
     poolsOf3 = 0;
   }
 
-  return { poolsOf4, poolsOf3 };
+  return { poolsOf4, poolsOf3, poolsOf2 };
 }
 
 export function generatePoolMatches(pool: Pool, teams: Team[]): Match[] {

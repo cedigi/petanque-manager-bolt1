@@ -1,18 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TournamentType } from '../types/tournament';
 import { Users, Target, Trophy, Shield, Grid3X3 } from 'lucide-react';
 
 interface TournamentSetupProps {
-  onCreateTournament: (type: TournamentType, courts: number) => void;
+  onCreateTournament: (
+    type: TournamentType,
+    courts: number,
+    preferredPoolSize?: 3 | 4,
+  ) => void;
 }
 
 export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
   const [type, setType] = useState<TournamentType>('doublette');
   const [courts, setCourts] = useState(4);
+  const [poolSize, setPoolSize] = useState<3 | 4>(4);
+
+  const isPoolType = type === 'doublette-poule' || type === 'triplette-poule';
+
+  useEffect(() => {
+    if (!isPoolType && poolSize !== 4) {
+      setPoolSize(4);
+    }
+  }, [isPoolType, poolSize]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCreateTournament(type, courts);
+    onCreateTournament(type, courts, isPoolType ? poolSize : undefined);
   };
 
   const tournamentTypes = [
@@ -120,6 +133,25 @@ export function TournamentSetup({ onCreateTournament }: TournamentSetupProps) {
                 );
               })}
             </div>
+            {isPoolType && (
+              <div className="mt-6">
+                <label className="block text-sm font-semibold text-white mb-2 tracking-wide">
+                  Taille des poules
+                </label>
+                <select
+                  value={poolSize}
+                  onChange={e => setPoolSize(Number(e.target.value) as 3 | 4)}
+                  className="glass-select w-full px-4 py-3 text-lg font-medium tracking-wide focus:outline-none"
+                >
+                  <option value={4} className="bg-slate-800">
+                    Poules de 4 équipes
+                  </option>
+                  <option value={3} className="bg-slate-800">
+                    Poules de 3 équipes
+                  </option>
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="glass-card p-6">

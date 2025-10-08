@@ -75,4 +75,5 @@ export interface Tournament {
   securityLevel: number;
   networkStatus: 'online' | 'offline' | 'compromised';
   poolsGenerated: boolean;
+  preferredPoolSize?: 3 | 4;
 }

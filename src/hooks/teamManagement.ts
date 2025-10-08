@@ -1,7 +1,11 @@
 import { Tournament, TournamentType, Player, Team } from '../types/tournament';
 import { generateUuid } from '../utils/uuid';
 
-export function createTournamentData(type: TournamentType, courts: number): Tournament {
+export function createTournamentData(
+  type: TournamentType,
+  courts: number,
+  preferredPoolSize?: 3 | 4,
+): Tournament {
   const defaultName = `Tournoi ${new Date().toLocaleDateString()}`;
   return {
     id: generateUuid(),
@@ -18,6 +22,7 @@ export function createTournamentData(type: TournamentType, courts: number): Tour
     securityLevel: 1,
     networkStatus: 'online',
     poolsGenerated: false,
+    preferredPoolSize,
   };
 }
 

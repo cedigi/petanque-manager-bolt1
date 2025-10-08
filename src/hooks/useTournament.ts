@@ -29,7 +29,11 @@ const STORAGE_KEY = 'petanque-tournament';
 
 export interface UseTournamentReturn {
   tournament: Tournament | null;
-  createTournament: (type: TournamentType, courts: number) => void;
+  createTournament: (
+    type: TournamentType,
+    courts: number,
+    preferredPoolSize?: 3 | 4,
+  ) => void;
   addTeam: (players: Player[]) => void;
   removeTeam: (teamId: string) => void;
   updateTeam: (teamId: string, players: Player[], name?: string) => void;
@@ -71,8 +75,12 @@ export function useTournament(): UseTournamentReturn {
     setTournament(t);
   };
 
-  const createTournament = (type: TournamentType, courts: number): void => {
-    const newTournament = createTournamentData(type, courts);
+  const createTournament = (
+    type: TournamentType,
+    courts: number,
+    preferredPoolSize?: 3 | 4,
+  ): void => {
+    const newTournament = createTournamentData(type, courts, preferredPoolSize);
     saveTournament(newTournament);
   };
 
@@ -115,8 +123,11 @@ export function useTournament(): UseTournamentReturn {
     const t = updated;
     const bottomTeams = getCurrentBottomTeams(t);
     const bottomIds = new Set(bottomTeams.map(bt => bt.id));
-    const { poolsOf4, poolsOf3 } = calculateOptimalPools(t.teams.length);
-    const expectedQualified = (poolsOf4 + poolsOf3) * 2;
+    const { poolsOf4, poolsOf3, poolsOf2 } = calculateOptimalPools(
+      t.teams.length,
+      t.preferredPoolSize,
+    );
+    const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
     const bottomCount = t.teams.length - expectedQualified;
 
     if (bottomTeams.length === t.teams.length || bottomCount <= 1) {
@@ -126,7 +137,12 @@ export function useTournament(): UseTournamentReturn {
 
     let matchesB = t.matchesB;
     if (matchesB.length === 0) {
-      matchesB = createEmptyFinalPhasesB(t.teams.length, t.courts, t.pools.length * 2 + 1);
+      matchesB = createEmptyFinalPhasesB(
+        t.teams.length,
+        t.courts,
+        t.pools.length * 2 + 1,
+        t.preferredPoolSize,
+      );
     }
 
     matchesB = matchesB.map(match => {

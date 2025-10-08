@@ -8,10 +8,14 @@ export function createEmptyFinalPhases(
   totalTeams: number,
   courts: number,
   startCourt = 1,
+  preferredPoolSize?: 3 | 4,
 ): Match[] {
   const matches: Match[] = [];
-  const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
-  const expectedQualified = (poolsOf4 + poolsOf3) * 2;
+  const { poolsOf4, poolsOf3, poolsOf2 } = calculateOptimalPools(
+    totalTeams,
+    preferredPoolSize,
+  );
+  const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
   if (expectedQualified <= 1) return matches;
 
   const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
@@ -45,9 +49,13 @@ export function createEmptyFinalPhasesB(
   totalTeams: number,
   courts: number,
   startCourt = 1,
+  preferredPoolSize?: 3 | 4,
 ): Match[] {
-  const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
-  const expectedQualified = (poolsOf4 + poolsOf3) * 2;
+  const { poolsOf4, poolsOf3, poolsOf2 } = calculateOptimalPools(
+    totalTeams,
+    preferredPoolSize,
+  );
+  const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
   const bottomTeams = totalTeams - expectedQualified;
   const matches: Match[] = [];
   if (bottomTeams <= 1) return matches;
@@ -137,6 +145,11 @@ export function getCurrentQualifiedTeams(tournament: Tournament): Team[] {
     } else if (poolTeams.length === 3) {
       const teamsWithTwoWins = teamStats.filter(stat => stat.wins >= 2);
       qualified.push(...teamsWithTwoWins.map(stat => stat.team));
+    } else if (poolTeams.length === 2) {
+      const allTeamsPlayed = teamStats.every(stat => stat.matches > 0);
+      if (allTeamsPlayed) {
+        qualified.push(...teamStats.map(stat => stat.team));
+      }
     }
   });
   return qualified;
@@ -253,8 +266,11 @@ export function initializeCategoryBBracket(
 export function updateCategoryBPhases(t: Tournament): Tournament {
   const bottomTeams = getCurrentBottomTeams(t);
   const bottomIds = new Set(bottomTeams.map(bt => bt.id));
-  const { poolsOf4, poolsOf3 } = calculateOptimalPools(t.teams.length);
-  const expectedQualified = (poolsOf4 + poolsOf3) * 2;
+  const { poolsOf4, poolsOf3, poolsOf2 } = calculateOptimalPools(
+    t.teams.length,
+    t.preferredPoolSize,
+  );
+  const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
   const bottomCount = t.teams.length - expectedQualified;
   // If no team has qualified yet, don't populate category B
   if (bottomTeams.length === t.teams.length) {
@@ -270,6 +286,7 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
       t.teams.length,
       t.courts,
       t.pools.length * 2 + 1,
+      t.preferredPoolSize,
     );
   }
 
@@ -377,8 +394,11 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
 
   const qualifiedTeams = getCurrentQualifiedTeams(updatedTournament);
   const totalTeams = updatedTournament.teams.length;
-  const { poolsOf4, poolsOf3 } = calculateOptimalPools(totalTeams);
-  const expectedQualified = (poolsOf4 + poolsOf3) * 2;
+  const { poolsOf4, poolsOf3, poolsOf2 } = calculateOptimalPools(
+    totalTeams,
+    updatedTournament.preferredPoolSize,
+  );
+  const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
 
   const finalMatches = updatedTournament.matches.filter(m => m.round >= 100);
   const poolMatches = updatedTournament.matches.filter(m => m.poolId);
