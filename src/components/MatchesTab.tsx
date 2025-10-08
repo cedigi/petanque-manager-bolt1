@@ -73,15 +73,53 @@ export function MatchesTab({
   const renderTeamLabel = (label: string, options: { italic?: boolean } = {}) => {
     const { italic } = options;
     const textClass = italic ? 'text-white/80 italic' : 'text-white';
-    const parts = label.split(' / ');
+    const parts = label.split(' / ').filter(Boolean);
+
+    const getPlayerName = (part: string) => {
+      const hyphenIndex = part.lastIndexOf(' - ');
+      if (hyphenIndex !== -1) {
+        return part.slice(hyphenIndex + 3).trim();
+      }
+
+      const colonIndex = part.lastIndexOf(':');
+      if (colonIndex !== -1) {
+        return part.slice(colonIndex + 1).trim();
+      }
+
+      return part.trim();
+    };
+
+    const isLongName = (part: string) => {
+      const playerName = getPlayerName(part);
+      const lettersOnly = playerName.replace(/[^A-Za-zÀ-ÿ]/g, '');
+      return lettersOnly.length > 15;
+    };
+
+    const inlineParts = parts.filter(part => !isLongName(part));
+    const stackedParts = parts.filter(part => isLongName(part));
+
     return (
       <div className="flex flex-col items-center gap-1 text-center leading-tight">
-        {parts.map((part, index) => (
-          <span
-            key={`${part}-${index}`}
-            className={`font-bold ${textClass}`}
-          >
-            {index < parts.length - 1 ? `${part.trim()} / ` : part.trim()}
+        {inlineParts.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-1">
+            {inlineParts.map((part, index) => (
+              <React.Fragment key={`${part}-${index}`}>
+                <span className={`font-bold ${textClass}`}>
+                  {part.trim()}
+                </span>
+                {index < inlineParts.length - 1 && (
+                  <span className={`font-bold ${textClass}`}> / </span>
+                )}
+              </React.Fragment>
+            ))}
+            {stackedParts.length > 0 && (
+              <span className={`font-bold ${textClass}`}> / </span>
+            )}
+          </div>
+        )}
+        {stackedParts.map((part, index) => (
+          <span key={`stacked-${part}-${index}`} className={`font-bold ${textClass}`}>
+            {index < stackedParts.length - 1 ? `${part.trim()} / ` : part.trim()}
           </span>
         ))}
       </div>
