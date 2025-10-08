@@ -199,15 +199,15 @@ export function MatchesTab({
             th { background-color: #f2f2f2; font-weight: bold; }
             th.terrain, td.terrain { width: 10%; text-align: center; }
         th.team1, td.team1 { width: 35%; text-align: center; }
-        th.team2, td.team2 { width: 45%; text-align: center; }
-        th.score { width: 10%; text-align: center; font-size: 18px; font-weight: bold; }
-        td.score { width: 10%; text-align: center; font-size: 18px; font-weight: bold; position: relative; padding: 0; }
+        th.team2, td.team2 { width: 43%; text-align: center; }
+        th.score { width: 12%; text-align: center; font-size: 18px; font-weight: bold; }
+        td.score { width: 12%; text-align: center; font-size: 18px; font-weight: bold; position: relative; padding: 0; }
         td.score::after { content: ''; position: absolute; top: 4px; bottom: 4px; left: 50%; border-left: 1px solid #000; }
 
 
         th.team1, td.team1 { width: 35%; }
-        th.team2, td.team2 { width: 45%; }
-        th.score, td.score { width: 10%; text-align: center; font-size: 18px; font-weight: bold; position: relative; }
+        th.team2, td.team2 { width: 43%; }
+        th.score, td.score { width: 12%; text-align: center; font-size: 18px; font-weight: bold; position: relative; }
             td.score { padding: 0; }
             td.score::after { content: ''; position: absolute; top: 4px; bottom: 4px; left: 50%; border-left: 1px solid #000; }
             td.score .score-box { display: flex; height: 100%; }
