@@ -304,6 +304,11 @@ export async function exportTournamentToPDF(tournament: Tournament) {
         2: { cellWidth: 190 },
         3: { halign: 'center', cellWidth: 80 },
       },
+      didParseCell: (data) => {
+        if (data.column.index === 3) {
+          data.cell.styles.halign = 'center';
+        }
+      },
       margin: { left: marginX, right: marginX },
       tableLineColor: [120, 120, 120],
       tableLineWidth: 0.5,
