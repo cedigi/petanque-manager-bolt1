@@ -280,7 +280,9 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
       cursorY = teamsTableFinalY + 30;
 
       // Section matchs
-      const allMatches: Match[] = [...matches, ...matchesB].filter(
+      const safeMatches = Array.isArray(matches) ? matches : [];
+      const safeMatchesB = Array.isArray(matchesB) ? matchesB : [];
+      const allMatches: Match[] = [...safeMatches, ...safeMatchesB].filter(
         (match) => match.completed && match.round < 200,
       );
       if (allMatches.length > 0) {
