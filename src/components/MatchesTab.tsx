@@ -354,7 +354,7 @@ export function MatchesTab({
                     <th className="w-4/12 px-4 py-4 text-center font-bold tracking-wider">
                       {isSolo ? 'Joueur' : 'Équipe'}
                     </th>
-                    <th className="w-2/12 px-2 py-4 text-center font-bold tracking-wider">
+                    <th className="w-2/12 px-2 py-4 text-center font-bold tracking-wider score-column-header">
                       Score
                     </th>
                     <th className="w-4/12 px-4 py-4 text-center font-bold tracking-wider">
@@ -368,6 +368,12 @@ export function MatchesTab({
                 <tbody>
                   {groupedMatches[round].map((match) => {
                     const canEditScore = editingMatch !== match.id && !match.isBye;
+                    const hasRecordedScore =
+                      (match.completed || match.isBye) &&
+                      match.team1Score != null &&
+                      match.team2Score != null;
+                    const displayTeam1Score = hasRecordedScore ? String(match.team1Score) : '–';
+                    const displayTeam2Score = hasRecordedScore ? String(match.team2Score) : '–';
                     return (
                     <tr key={match.id} className="hover:bg-white/5 transition-colors">
                       <td className="w-1/12 px-2 py-4 whitespace-nowrap">
@@ -410,7 +416,7 @@ export function MatchesTab({
                           : renderTeamLabel(getTeamDisplay(match.team1Id))}
                       </td>
                       <td
-                        className={`w-2/12 px-2 py-4 whitespace-nowrap text-center ${
+                        className={`w-2/12 px-2 py-4 whitespace-nowrap text-center score-column-cell ${
                           canEditScore ? 'cursor-pointer' : ''
                         }`}
                         onClick={canEditScore ? () => handleEditScore(match) : undefined}
@@ -449,11 +455,10 @@ export function MatchesTab({
                             </button>
                           </div>
                         ) : (
-                          <span className="text-2xl font-bold text-white">
-                            {match.completed || match.isBye
-                              ? `${match.team1Score} - ${match.team2Score}`
-                              : '- - -'}
-                          </span>
+                          <div className="score-display">
+                            <span>{displayTeam1Score}</span>
+                            <span>{displayTeam2Score}</span>
+                          </div>
                         )}
                       </td>
                       <td className="w-4/12 px-4 py-4 text-center align-top">
