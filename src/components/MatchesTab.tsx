@@ -73,14 +73,15 @@ export function MatchesTab({
   const renderTeamLabel = (label: string, options: { italic?: boolean } = {}) => {
     const { italic } = options;
     const textClass = italic ? 'text-white/80 italic' : 'text-white';
+    const parts = label.split(' / ');
     return (
       <div className="flex flex-col items-center gap-1 text-center leading-tight">
-        {label.split(' / ').map((part, index) => (
+        {parts.map((part, index) => (
           <span
             key={`${part}-${index}`}
             className={`font-bold ${textClass}`}
           >
-            {part.trim()}
+            {index < parts.length - 1 ? `${part.trim()} / ` : part.trim()}
           </span>
         ))}
       </div>
