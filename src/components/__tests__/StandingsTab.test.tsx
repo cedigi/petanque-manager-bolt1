@@ -126,6 +126,7 @@ describe('StandingsTab tie-break sorting', () => {
 
     const tournament = createTournament(teams, matches, matchesB);
     const teamsWithStats = computeTeamStats(tournament);
+    const tournamentWithStats = { ...tournament, teams: teamsWithStats };
 
     const alpha = teamsWithStats.find(team => team.id === 'alpha');
     const beta = teamsWithStats.find(team => team.id === 'beta');
@@ -133,7 +134,7 @@ describe('StandingsTab tie-break sorting', () => {
     expect(alpha?.tieBreakDeltas).toEqual([8, -6]);
     expect(beta?.tieBreakDeltas).toEqual([6, -4]);
 
-    render(<StandingsTab teams={teamsWithStats} />);
+    render(<StandingsTab tournament={tournamentWithStats} />);
 
     const rows = screen.getAllByRole('row');
     const dataRows = rows.slice(1);
@@ -234,6 +235,7 @@ describe('StandingsTab tie-break sorting', () => {
 
     const tournament = createTournament(teams, matches);
     const teamsWithStats = computeTeamStats(tournament);
+    const tournamentWithStats = { ...tournament, teams: teamsWithStats };
 
     const omega = teamsWithStats.find(team => team.id === 'omega');
     const sigma = teamsWithStats.find(team => team.id === 'sigma');
@@ -241,7 +243,7 @@ describe('StandingsTab tie-break sorting', () => {
     expect(omega?.tieBreakDeltas).toEqual([5, -3, 2]);
     expect(sigma?.tieBreakDeltas).toEqual([5, -2, 1]);
 
-    render(<StandingsTab teams={teamsWithStats} />);
+    render(<StandingsTab tournament={tournamentWithStats} />);
 
     const rows = screen.getAllByRole('row');
     const dataRows = rows.slice(1);
