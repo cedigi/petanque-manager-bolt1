@@ -3,6 +3,35 @@ import autoTable from 'jspdf-autotable';
 import dayjs from 'dayjs';
 import type { Tournament, Team, Match } from '../types/tournament';
 
+const FINALS_PHASE_LABELS = [
+  'Finale',
+  'Demi-finales',
+  'Quarts de finale',
+  '8èmes de finale',
+  '16èmes de finale',
+  '32èmes de finale',
+  '64èmes de finale',
+];
+
+function createFinalsLabelResolver(rounds: number[]) {
+  if (rounds.length === 0) {
+    return (round: number) => `Tour ${round}`;
+  }
+
+  const sortedRounds = [...rounds].sort((a, b) => a - b);
+  const totalRounds = sortedRounds.length;
+
+  return (round: number) => {
+    const roundIndex = sortedRounds.indexOf(round);
+    if (roundIndex === -1) {
+      return `Tour ${round}`;
+    }
+
+    const labelIndex = totalRounds - 1 - roundIndex;
+    return FINALS_PHASE_LABELS[labelIndex] ?? `Phase ${roundIndex + 1}`;
+  };
+}
+
 function teamLabel(team: Team, index: number) {
   const customName = team.name?.trim();
   if (customName) {
@@ -42,6 +71,42 @@ function collectMatches(tournament: Tournament) {
   const primaryMatches = Array.isArray(tournament.matches) ? tournament.matches : [];
   const secondaryMatches = Array.isArray(tournament.matchesB) ? tournament.matchesB : [];
   return [...primaryMatches, ...secondaryMatches];
+}
+
+function hasAssignedTeams(match: Match) {
+  const hasTeam1Ids = Array.isArray(match.team1Ids) && match.team1Ids.length > 0;
+  const hasTeam2Ids = Array.isArray(match.team2Ids) && match.team2Ids.length > 0;
+  const hasTeam1 = hasTeam1Ids || Boolean(match.team1Id);
+  const hasTeam2 = hasTeam2Ids || Boolean(match.team2Id);
+  const hasAnyTeam = hasTeam1 || hasTeam2;
+
+  if (!hasAnyTeam) {
+    return false;
+  }
+
+  if (match.isBye) {
+    return true;
+  }
+
+  return hasTeam1 && hasTeam2;
+}
+
+function formatRoundLabel(
+  round: number,
+  resolveFinalsLabelA: (round: number) => string,
+  resolveFinalsLabelB: (round: number) => string,
+) {
+  if (round >= 200 && round < 300) {
+    const label = resolveFinalsLabelB(round);
+    return `Catégorie B – ${label}`;
+  }
+
+  if (round >= 100 && round < 200) {
+    const label = resolveFinalsLabelA(round);
+    return `Catégorie A – ${label}`;
+  }
+
+  return `Tour ${round}`;
 }
 
 function resolveMatchTeamLabel(match: Match, teamKey: 'team1' | 'team2', teams: Team[], teamLookup: Map<string, Team>) {
@@ -126,11 +191,30 @@ export async function exportTournamentToPDF(tournament: Tournament) {
     throw new Error('Tournoi vide');
   }
 
-  const matches = collectMatches(tournament);
+  const matches = collectMatches(tournament).filter(hasAssignedTeams);
   const teamLookup = teams.reduce<Map<string, Team>>((acc, team) => {
     acc.set(team.id, team);
     return acc;
   }, new Map());
+
+  const categoryAFinalsRounds = Array.from(
+    new Set(
+      matches
+        .filter((match) => typeof match.round === 'number' && match.round >= 100 && match.round < 200)
+        .map((match) => match.round),
+    ),
+  );
+
+  const categoryBFinalsRounds = Array.from(
+    new Set(
+      matches
+        .filter((match) => typeof match.round === 'number' && match.round >= 200 && match.round < 300)
+        .map((match) => match.round),
+    ),
+  );
+
+  const resolveFinalsLabelA = createFinalsLabelResolver(categoryAFinalsRounds);
+  const resolveFinalsLabelB = createFinalsLabelResolver(categoryBFinalsRounds);
 
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
   const marginX = 40;
@@ -179,7 +263,9 @@ export async function exportTournamentToPDF(tournament: Tournament) {
   doc.text('Matchs', marginX, cursorY);
   cursorY += 10;
 
-  const rounds = Array.from(new Set(matches.map((match) => match.round))).filter((round) => typeof round === 'number' && Number.isFinite(round)).sort((a, b) => a - b);
+  const rounds = Array.from(new Set(matches.map((match) => match.round)))
+    .filter((round) => typeof round === 'number' && Number.isFinite(round))
+    .sort((a, b) => a - b);
 
   rounds.forEach((round) => {
     const roundMatches = matches.filter((match) => match.round === round);
@@ -189,7 +275,8 @@ export async function exportTournamentToPDF(tournament: Tournament) {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.text(`Tour ${round}`, marginX, cursorY);
+    const roundLabel = formatRoundLabel(round, resolveFinalsLabelA, resolveFinalsLabelB);
+    doc.text(roundLabel, marginX, cursorY);
 
     const body = roundMatches.map((match) => {
       const court = match.isBye ? '—' : match.court ?? '—';
