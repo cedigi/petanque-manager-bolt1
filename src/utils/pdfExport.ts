@@ -218,6 +218,8 @@ export async function exportTournamentToPDF(tournament: Tournament) {
 
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
   const marginX = 40;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const tableContentWidth = pageWidth - marginX * 2;
   let cursorY = 50;
 
   doc.setFont('helvetica', 'bold');
@@ -251,7 +253,7 @@ export async function exportTournamentToPDF(tournament: Tournament) {
     columnStyles: {
       0: { halign: 'center', cellWidth: 40 },
       1: { cellWidth: 220 },
-      2: { cellWidth: 260 },
+      2: { cellWidth: tableContentWidth - 260 },
     },
     margin: { left: marginX, right: marginX },
     tableLineColor: [120, 120, 120],
@@ -300,8 +302,8 @@ export async function exportTournamentToPDF(tournament: Tournament) {
       bodyStyles: { lineColor: [200, 200, 200], lineWidth: 0.5 },
       columnStyles: {
         0: { halign: 'center', cellWidth: 70 },
-        1: { cellWidth: 190 },
-        2: { cellWidth: 190 },
+        1: { cellWidth: (tableContentWidth - 150) / 2 },
+        2: { cellWidth: (tableContentWidth - 150) / 2 },
         3: { halign: 'center', cellWidth: 80 },
       },
       didParseCell: (data) => {
@@ -349,7 +351,7 @@ export async function exportTournamentToPDF(tournament: Tournament) {
       2: { halign: 'center', cellWidth: 40 },
       3: { halign: 'center', cellWidth: 40 },
       4: { halign: 'center', cellWidth: 50 },
-      5: { halign: 'center', cellWidth: 80 },
+      5: { halign: 'center', cellWidth: tableContentWidth - 390 },
     },
     margin: { left: marginX, right: marginX },
     tableLineColor: [120, 120, 120],
