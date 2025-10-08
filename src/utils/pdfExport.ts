@@ -245,14 +245,17 @@ export async function exportTournamentToPDF(tournament: Tournament) {
     startY: cursorY,
     head: [['#', 'Nom', 'Joueurs']],
     body: teamRows,
-    styles: { font: 'helvetica', fontSize: 10 },
-    headStyles: { fillColor: [45, 55, 72] },
+    styles: { font: 'helvetica', fontSize: 10, lineColor: [180, 180, 180], lineWidth: 0.5 },
+    headStyles: { fillColor: [45, 55, 72], textColor: [255, 255, 255], lineColor: [90, 90, 90], lineWidth: 0.75 },
+    bodyStyles: { lineColor: [200, 200, 200], lineWidth: 0.5 },
     columnStyles: {
       0: { halign: 'center', cellWidth: 40 },
       1: { cellWidth: 220 },
       2: { cellWidth: 260 },
     },
     margin: { left: marginX, right: marginX },
+    tableLineColor: [120, 120, 120],
+    tableLineWidth: 0.5,
   });
 
   cursorY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? cursorY;
@@ -290,10 +293,11 @@ export async function exportTournamentToPDF(tournament: Tournament) {
 
     autoTable(doc, {
       startY: cursorY + 8,
-      head: [['Terrain', 'Équipe A', 'Équipe B', 'Score']],
+      head: [['Terrain', 'Équipe A', 'Équipe B', 'Score (A – B)']],
       body,
-      styles: { font: 'helvetica', fontSize: 10 },
-      headStyles: { fillColor: [45, 55, 72] },
+      styles: { font: 'helvetica', fontSize: 10, lineColor: [180, 180, 180], lineWidth: 0.5 },
+      headStyles: { fillColor: [45, 55, 72], textColor: [255, 255, 255], lineColor: [90, 90, 90], lineWidth: 0.75 },
+      bodyStyles: { lineColor: [200, 200, 200], lineWidth: 0.5 },
       columnStyles: {
         0: { halign: 'center', cellWidth: 70 },
         1: { cellWidth: 190 },
@@ -301,6 +305,8 @@ export async function exportTournamentToPDF(tournament: Tournament) {
         3: { halign: 'center', cellWidth: 80 },
       },
       margin: { left: marginX, right: marginX },
+      tableLineColor: [120, 120, 120],
+      tableLineWidth: 0.5,
     });
 
     cursorY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? cursorY;
@@ -329,8 +335,9 @@ export async function exportTournamentToPDF(tournament: Tournament) {
     startY: cursorY,
     head: [['#', 'Équipe', 'V', 'D', '+/−', 'PF/PA']],
     body: standingBody,
-    styles: { font: 'helvetica', fontSize: 10 },
-    headStyles: { fillColor: [45, 55, 72] },
+    styles: { font: 'helvetica', fontSize: 10, lineColor: [180, 180, 180], lineWidth: 0.5 },
+    headStyles: { fillColor: [45, 55, 72], textColor: [255, 255, 255], lineColor: [90, 90, 90], lineWidth: 0.75 },
+    bodyStyles: { lineColor: [200, 200, 200], lineWidth: 0.5 },
     columnStyles: {
       0: { halign: 'center', cellWidth: 40 },
       1: { cellWidth: 220 },
@@ -340,6 +347,8 @@ export async function exportTournamentToPDF(tournament: Tournament) {
       5: { halign: 'center', cellWidth: 80 },
     },
     margin: { left: marginX, right: marginX },
+    tableLineColor: [120, 120, 120],
+    tableLineWidth: 0.5,
   });
 
   const safeName = sanitizeFileName(tournament.name ?? 'tournoi');
