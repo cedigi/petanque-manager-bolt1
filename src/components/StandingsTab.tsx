@@ -264,10 +264,15 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
           2: { cellWidth: 280 },
         },
       });
-      cursorY = ((doc as any).lastAutoTable?.finalY || cursorY) + 30;
+      const teamsTableFinalY = (
+        (doc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? cursorY
+      );
+      cursorY = teamsTableFinalY + 30;
 
       // Section matchs
-      const allMatches: Match[] = [...matches, ...matchesB].filter((match) => match.completed);
+      const allMatches: Match[] = [...matches, ...matchesB].filter(
+        (match) => match.completed && match.round < 200,
+      );
       if (allMatches.length > 0) {
         cursorY = ensureSpace(cursorY);
         cursorY = addSectionTitle('Liste des matchs', cursorY);
@@ -302,8 +307,10 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
           cursorY += 10;
 
           doc.setFont('helvetica', 'normal');
-          autoTable(doc, {
+          const matchTableDoc = autoTable(doc, {
             startY: cursorY,
+            margin: { left: marginX, right: marginX },
+            tableWidth: availableWidth,
             head: [['Terrain', "Équipe 1", 'Score', "Équipe 2"]],
             body: roundMatches.map((match) => [
               match.isBye ? '—' : `${match.court}`,
@@ -324,7 +331,10 @@ export function StandingsTab({ tournament }: StandingsTabProps) {
             },
           });
 
-          cursorY = ((doc as any).lastAutoTable?.finalY || cursorY) + (roundIndex === sortedRounds.length - 1 ? 30 : 20);
+          const matchesTableFinalY = (
+            (matchTableDoc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? cursorY
+          );
+          cursorY = matchesTableFinalY + (roundIndex === sortedRounds.length - 1 ? 30 : 20);
         });
       }
 
