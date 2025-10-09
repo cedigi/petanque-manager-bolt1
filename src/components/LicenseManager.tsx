@@ -7,6 +7,9 @@ import {
   type LicenseStatus,
   getHashedDeviceId,
 } from '../services/licenseClient';
+import { onAuth } from '../lib/auth';
+import { supabase } from '../lib/supabase';
+import AuthScreen from '../screens/Auth';
 import { LicenseModal } from './LicenseModal';
 
 function maskIdentifier(value?: string): string {
@@ -44,6 +47,8 @@ const STATUS_TEXT: Record<LicenseStatus, string> = {
 };
 
 export function LicenseManager() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [showAuthScreen, setShowAuthScreen] = useState<boolean>(false);
   const [license, setLicense] = useState<LicenseDetails | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +62,18 @@ export function LicenseManager() {
   const loadLicense = useCallback(async () => {
     setLoading(true);
     setError(null);
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      const hashed = await getHashedDeviceId();
+      setDeviceHash(hashed);
+      setLicense(null);
+      setLoading(false);
+      return;
+    }
 
     try {
       const details = await fetchLicenseDetails();
@@ -76,7 +93,53 @@ export function LicenseManager() {
   }, []);
 
   useEffect(() => {
-    void loadLicense();
+    let active = true;
+
+    void (async () => {
+      const hashed = await getHashedDeviceId();
+      if (active) {
+        setDeviceHash((current) => current || hashed);
+      }
+    })();
+
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!active) {
+        return;
+      }
+      setIsAuthenticated(!!session);
+      if (session) {
+        void loadLicense();
+      } else {
+        setLicense(null);
+        setActionMessage(null);
+        setActionError(null);
+        setError(null);
+        setLoading(false);
+      }
+    });
+
+    onAuth((hasSession) => {
+      if (!active) {
+        return;
+      }
+      setIsAuthenticated(hasSession);
+      if (hasSession) {
+        setShowAuthScreen(false);
+        setActionError(null);
+        setActionMessage(null);
+        void loadLicense();
+      } else {
+        setLicense(null);
+        setActionError(null);
+        setActionMessage(null);
+        setError(null);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
   }, [loadLicense]);
 
   const currentStatus: LicenseStatus = license?.status ?? 'unregistered';
@@ -85,6 +148,12 @@ export function LicenseManager() {
 
   const handleSubmit = useCallback(
     async (email: string, licenseKey: string) => {
+      if (!isAuthenticated) {
+        setActionError('Veuillez vous connecter pour gérer votre licence.');
+        setShowAuthScreen(true);
+        return;
+      }
+
       setIsSubmitting(true);
       setActionError(null);
       setActionMessage(null);
@@ -103,11 +172,16 @@ export function LicenseManager() {
         setIsSubmitting(false);
       }
     },
-    []
+    [isAuthenticated]
   );
 
   const handleReset = useCallback(
     async (email: string, licenseKey: string) => {
+      if (!isAuthenticated) {
+        setActionError('Veuillez vous connecter pour demander une réinitialisation.');
+        setShowAuthScreen(true);
+        return;
+      }
       if (!email || !licenseKey) {
         setActionError('Veuillez renseigner votre email et votre clé de licence.');
         return;
@@ -128,10 +202,15 @@ export function LicenseManager() {
         setIsResetting(false);
       }
     },
-    []
+    [isAuthenticated]
   );
 
   const handlePanelReset = useCallback(() => {
+    if (!isAuthenticated) {
+      setActionError('Veuillez vous connecter pour demander une réinitialisation.');
+      setShowAuthScreen(true);
+      return;
+    }
     if (!license?.email || !license.licenseKey) {
       setActionError('Veuillez renseigner vos informations de licence pour demander une réinitialisation.');
       setModalOpen(true);
@@ -139,11 +218,15 @@ export function LicenseManager() {
     }
 
     void handleReset(license.email, license.licenseKey);
-  }, [handleReset, license]);
+  }, [handleReset, isAuthenticated, license]);
 
   const handleRefresh = useCallback(() => {
+    if (!isAuthenticated) {
+      setShowAuthScreen(true);
+      return;
+    }
     void loadLicense();
-  }, [loadLicense]);
+  }, [isAuthenticated, loadLicense]);
 
   useEffect(() => {
     if (modalOpen) {
@@ -152,8 +235,14 @@ export function LicenseManager() {
     }
   }, [modalOpen]);
 
-  const statusBadgeClass = STATUS_BADGES[currentStatus];
-  const statusText = STATUS_TEXT[currentStatus];
+  const statusBadgeClass = isAuthenticated
+    ? STATUS_BADGES[currentStatus]
+    : 'bg-white/10 border border-white/30 text-white/70';
+  const statusText = loading
+    ? 'Chargement…'
+    : isAuthenticated
+    ? STATUS_TEXT[currentStatus]
+    : 'Connexion requise';
 
   return (
     <section className="mx-6 mt-6">
@@ -165,9 +254,14 @@ export function LicenseManager() {
               Gérez votre clé de licence et l'association de cet appareil.
             </p>
             <div className={`mt-3 inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${statusBadgeClass}`}>
-              {loading ? 'Chargement…' : statusText}
+              {statusText}
             </div>
-            {!loading && license?.message && (
+            {!loading && !isAuthenticated && (
+              <p className="mt-2 text-xs text-white/70">
+                Connectez-vous pour gérer votre licence et activer vos clés.
+              </p>
+            )}
+            {!loading && isAuthenticated && license?.message && (
               <p className="mt-2 text-xs text-white/60">{license.message}</p>
             )}
             {error && (
@@ -185,17 +279,27 @@ export function LicenseManager() {
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row">
+            {!isAuthenticated && (
+              <button
+                type="button"
+                onClick={() => setShowAuthScreen(true)}
+                className="glass-button-secondary rounded-lg px-4 py-2 text-sm font-semibold"
+              >
+                Se connecter
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setModalOpen(true)}
-              className="glass-button rounded-lg px-4 py-2 text-sm font-semibold"
+              className="glass-button rounded-lg px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={!isAuthenticated}
             >
               {currentStatus === 'unregistered' ? 'Activer une licence' : 'Mettre à jour la licence'}
             </button>
             <button
               type="button"
               onClick={handlePanelReset}
-              disabled={isResetting}
+              disabled={isResetting || !isAuthenticated}
               className="glass-button-secondary rounded-lg px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isResetting ? 'Demande en cours…' : 'Demander réinitialisation'}
@@ -235,6 +339,23 @@ export function LicenseManager() {
           </div>
         </div>
       </div>
+
+      {showAuthScreen && (
+        <div className="mt-6">
+          <div className="glass-card border border-white/20 bg-black/70 px-4 py-4 shadow-xl">
+            <div className="mb-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowAuthScreen(false)}
+                className="glass-button-secondary rounded-lg px-3 py-1 text-xs font-semibold"
+              >
+                Fermer
+              </button>
+            </div>
+            <AuthScreen />
+          </div>
+        </div>
+      )}
 
       <LicenseModal
         isOpen={modalOpen}
