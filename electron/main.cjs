@@ -7,6 +7,7 @@ const si = require('systeminformation');
 const APP_SALT = process.env.PM_APP_SALT || 'petanque-manager-license-salt';
 
 let cachedHardwareHash = null;
+let mainWindow = null;
 
 async function collectHardwareIdentifiers() {
   const [uuidData, networkInterfaces, biosData, cpuData, diskLayout] = await Promise.all([
@@ -85,7 +86,7 @@ function createWindow() {
     ? path.join(appPath, 'dist', 'index.html')
     : 'http://localhost:3000';
 
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
     icon: app.isPackaged
@@ -104,6 +105,21 @@ function createWindow() {
     mainWindow.loadURL(indexPath);
   }
 }
+
+try { app.setAsDefaultProtocolClient('pm'); } catch {}
+
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) { app.quit(); } else {
+  app.on('second-instance', (_e, argv) => {
+    const link = argv.find(a => a.startsWith('pm://'));
+    if (link && mainWindow) mainWindow.webContents.send('deeplink', link);
+  });
+}
+
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  if (mainWindow) mainWindow.webContents.send('deeplink', url);
+});
 
 app.whenReady().then(createWindow);
 app.on('window-all-closed', () => app.quit());

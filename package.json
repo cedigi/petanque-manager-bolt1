@@ -18,6 +18,9 @@
   "build": {
     "appId": "com.cedigi.petanque-manager",
     "productName": "Pétanque Manager",
+    "protocols": [
+      { "name": "Petanque Manager", "schemes": ["pm"] }
+    ],
     "directories": {
       "output": "release"
     },
@@ -43,6 +46,9 @@
         "portable"
       ],
       "forceCodeSigning": false
+    },
+    "mac": {
+      "category": "public.app-category.productivity"
     }
   },
   "dependencies": {
