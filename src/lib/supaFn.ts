@@ -1,13 +1,17 @@
 import { supabase } from './supabase';
 
-export async function callFn<T=any>(name: string, body?: any): Promise<T> {
-  const { data: { session } } = await supabase.auth.getSession();
-  const r = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${name}`, {
+export async function callFn<T = unknown>(name: string, body?: unknown): Promise<T> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const url = import.meta.env.VITE_SUPABASE_URL!;
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY!;
+  const r = await fetch(`${url}/functions/v1/${name}`, {
     method: body ? 'POST' : 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session?.access_token ?? ''}`,
-      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY!,
+      Authorization: `Bearer ${session?.access_token ?? ''}`,
+      apikey: key,
     },
     body: body ? JSON.stringify(body) : undefined,
   });
