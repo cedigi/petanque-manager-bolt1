@@ -8,6 +8,9 @@ interface ElectronAPI {
 
 interface Window {
   electronAPI?: ElectronAPI;
+  electronAuth?: {
+    onDeepLink: (cb: (url: string) => void) => void;
+  };
 }
 
 interface ImportMetaEnv {

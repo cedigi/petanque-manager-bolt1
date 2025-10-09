@@ -16,10 +16,10 @@
     "test": "jest"
   },
   "build": {
-    "appId": "com.cedigi.petanque-manager",
+    "appId": "com.cedisoft.petanquemanager",
     "productName": "Pétanque Manager",
     "protocols": [
-      { "name": "Petanque Manager", "schemes": ["pm"] }
+      { "name": "Petanque Manager Auth", "schemes": ["pm"] }
     ],
     "directories": {
       "output": "release"
@@ -46,6 +46,9 @@
         "portable"
       ],
       "forceCodeSigning": false
+    },
+    "nsis": {
+      "oneClick": true
     },
     "mac": {
       "category": "public.app-category.productivity"

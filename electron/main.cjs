@@ -12,8 +12,12 @@ let pendingDeepLink = null;
 
 function dispatchDeepLink(url) {
   if (!url) return;
-  if (mainWindow && mainWindow.webContents) {
-    mainWindow.webContents.send('deeplink', url);
+  if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
+    mainWindow.focus();
+    mainWindow.webContents.send('deep-link', url);
   } else {
     pendingDeepLink = url;
   }
@@ -94,21 +98,14 @@ async function getHardwareHash() {
 }
 
 function createWindow() {
-  // Détermine le chemin de l'app (dev versus prod packagée)
-  const appPath = app.isPackaged
-    ? path.join(process.resourcesPath, 'app.asar')
-    : app.getAppPath();
-
-  // Chemin vers index.html dans ou hors ASAR
-  const indexPath = app.isPackaged
-    ? path.join(appPath, 'dist', 'index.html')
-    : 'http://localhost:3000';
+  const appPath = app.getAppPath();
+  const resourcesPath = app.isPackaged ? process.resourcesPath : appPath;
 
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
     icon: app.isPackaged
-      ? path.join(process.resourcesPath, 'logo.ico')
+      ? path.join(resourcesPath, 'logo.ico')
       : path.join(appPath, 'public', 'logo.ico'),
     webPreferences: {
       contextIsolation: true,
@@ -117,16 +114,20 @@ function createWindow() {
     }
   });
 
+  const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:3000';
+  const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
+
   if (app.isPackaged) {
     mainWindow.loadFile(indexPath);
   } else {
-    mainWindow.loadURL(indexPath);
+    mainWindow.loadURL(devServerUrl);
   }
 
   mainWindow.webContents.on('did-finish-load', flushPendingDeepLink);
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
 }
-
-try { app.setAsDefaultProtocolClient('pm'); } catch {}
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) { app.quit(); } else {
@@ -141,7 +142,15 @@ app.on('open-url', (event, url) => {
   dispatchDeepLink(url);
 });
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  try {
+    app.setAsDefaultProtocolClient('pm');
+  } catch (error) {
+    console.warn('Failed to register pm protocol', error);
+  }
+
+  createWindow();
+});
 
 const initialLink = process.argv.find((arg) => arg.startsWith('pm://'));
 dispatchDeepLink(initialLink);

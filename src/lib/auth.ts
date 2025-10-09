@@ -19,20 +19,27 @@ export async function verifyEmailOtp(email: string, token: string) {
   return data.session ?? null;
 }
 
-export async function setSessionFromDeepLink(url: string) {
-  // Format attendu: pm://auth#access_token=...&refresh_token=...
+export function parseTokensFromDeepLink(urlStr: string) {
   try {
-    const u = new URL(url);
+    const u = new URL(urlStr);
     const hash = u.hash.startsWith('#') ? u.hash.slice(1) : u.hash;
     const params = new URLSearchParams(hash);
-    const access_token = params.get('access_token');
-    const refresh_token = params.get('refresh_token');
-    if (access_token && refresh_token) {
-      const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
-      if (error) throw error;
-      return data.session ?? null;
-    }
-  } catch { /* ignore */ }
+    return {
+      access_token: params.get('access_token'),
+      refresh_token: params.get('refresh_token')
+    };
+  } catch {
+    return { access_token: null, refresh_token: null };
+  }
+}
+
+export async function setSessionFromDeepLink(url: string) {
+  const { access_token, refresh_token } = parseTokensFromDeepLink(url);
+  if (access_token && refresh_token) {
+    const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
+    if (error) throw error;
+    return data.session ?? null;
+  }
   return null;
 }
 

@@ -6,8 +6,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getHardwareHash: () => ipcRenderer.invoke('get-hardware-hash')
 });
 
-contextBridge.exposeInMainWorld('deeplink', {
-  onUrl(cb) {
-    ipcRenderer.on('deeplink', (_e, url) => cb(url));
-  }
+contextBridge.exposeInMainWorld('electronAuth', {
+  onDeepLink: (cb) => ipcRenderer.on('deep-link', (_e, url) => cb(url))
 });
