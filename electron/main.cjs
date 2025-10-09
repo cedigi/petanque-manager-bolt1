@@ -8,6 +8,24 @@ const APP_SALT = process.env.PM_APP_SALT || 'petanque-manager-license-salt';
 
 let cachedHardwareHash = null;
 let mainWindow = null;
+let pendingDeepLink = null;
+
+function dispatchDeepLink(url) {
+  if (!url) return;
+  if (mainWindow && mainWindow.webContents) {
+    mainWindow.webContents.send('deeplink', url);
+  } else {
+    pendingDeepLink = url;
+  }
+}
+
+function flushPendingDeepLink() {
+  if (pendingDeepLink) {
+    const url = pendingDeepLink;
+    pendingDeepLink = null;
+    dispatchDeepLink(url);
+  }
+}
 
 async function collectHardwareIdentifiers() {
   const [uuidData, networkInterfaces, biosData, cpuData, diskLayout] = await Promise.all([
@@ -104,6 +122,8 @@ function createWindow() {
   } else {
     mainWindow.loadURL(indexPath);
   }
+
+  mainWindow.webContents.on('did-finish-load', flushPendingDeepLink);
 }
 
 try { app.setAsDefaultProtocolClient('pm'); } catch {}
@@ -112,16 +132,19 @@ const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) { app.quit(); } else {
   app.on('second-instance', (_e, argv) => {
     const link = argv.find(a => a.startsWith('pm://'));
-    if (link && mainWindow) mainWindow.webContents.send('deeplink', link);
+    dispatchDeepLink(link);
   });
 }
 
 app.on('open-url', (event, url) => {
   event.preventDefault();
-  if (mainWindow) mainWindow.webContents.send('deeplink', url);
+  dispatchDeepLink(url);
 });
 
 app.whenReady().then(createWindow);
+
+const initialLink = process.argv.find((arg) => arg.startsWith('pm://'));
+dispatchDeepLink(initialLink);
 app.on('window-all-closed', () => app.quit());
 
 ipcMain.handle('print-html', async (event, html) => {
