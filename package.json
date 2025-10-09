@@ -52,6 +52,7 @@
     }
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.74.0",
     "better-sqlite3": "^12.2.0",
     "dayjs": "^1.11.18",
     "jspdf": "^3.0.3",
