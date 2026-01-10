@@ -163,6 +163,7 @@ export function getCurrentQualifiedTeams(tournament: Tournament): Team[] {
   tournament.pools.forEach(pool => {
     const poolMatches = tournament.matches.filter(m => m.poolId === pool.id && m.completed);
     const poolTeams = pool.teamIds.map(id => tournament.teams.find(t => t.id === id)).filter(Boolean) as Team[];
+    const expectedMatchesPerTeam = Math.max(poolTeams.length - 1, 0);
 
     const teamStats = poolTeams.map(team => {
       const teamMatches = poolMatches.filter(m => !m.isBye && (m.team1Id === team.id || m.team2Id === team.id));
@@ -210,11 +211,15 @@ export function getCurrentQualifiedTeams(tournament: Tournament): Team[] {
     });
 
     if (poolTeams.length === 4) {
-      const teamsWithTwoWins = teamStats.filter(stat => stat.wins >= 2);
-      qualified.push(...teamsWithTwoWins.map(stat => stat.team));
+      const allTeamsPlayed = teamStats.every(stat => stat.matches >= expectedMatchesPerTeam);
+      if (allTeamsPlayed) {
+        qualified.push(...teamStats.slice(0, 2).map(stat => stat.team));
+      }
     } else if (poolTeams.length === 3) {
-      const teamsWithTwoWins = teamStats.filter(stat => stat.wins >= 2);
-      qualified.push(...teamsWithTwoWins.map(stat => stat.team));
+      const allTeamsPlayed = teamStats.every(stat => stat.matches >= expectedMatchesPerTeam);
+      if (allTeamsPlayed) {
+        qualified.push(...teamStats.slice(0, 2).map(stat => stat.team));
+      }
     } else if (poolTeams.length === 2) {
       const allTeamsPlayed = teamStats.every(stat => stat.matches > 0);
       if (allTeamsPlayed) {
@@ -223,6 +228,15 @@ export function getCurrentQualifiedTeams(tournament: Tournament): Team[] {
     }
   });
   return qualified;
+}
+
+function shuffleArray<T>(items: T[]): T[] {
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 export function getCurrentBottomTeams(tournament: Tournament): Team[] {
@@ -408,7 +422,7 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   if (rebuildBracket) {
     const bracketSize = 1 << Math.ceil(Math.log2(bottomCount));
     const byesNeeded = bracketSize - bottomCount;
-    const sorted = [...bottomTeams];
+    const sorted = shuffleArray(bottomTeams);
     let teamIdx = 0;
     for (let i = 0; i < firstRound.length; i++) {
       const match = firstRound[i];
@@ -450,10 +464,11 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
     firstRound.forEach((m, idx) => {
       if (!m.team2Id) positions.push({ matchIndex: idx, position: 'team2' });
     });
-    const newTeams = bottomTeams.filter(bt => !used.has(bt.id));
+    const newTeams = shuffleArray(bottomTeams.filter(bt => !used.has(bt.id)));
+    const shuffledPositions = shuffleArray(positions);
     newTeams.forEach(team => {
-      if (positions.length === 0) return;
-      const pos = positions.shift()!;
+      if (shuffledPositions.length === 0) return;
+      const pos = shuffledPositions.shift()!;
       const match = firstRound[pos.matchIndex];
       firstRound[pos.matchIndex] = {
         ...match,
@@ -548,9 +563,10 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
     }
   });
 
-  const orderedPositions = [...primary, ...secondary];
+  const orderedPositions = shuffleArray([...primary, ...secondary]);
   const updatedFinalMatches = [...firstRoundFinalMatches];
-  newQualifiedTeams.forEach(team => {
+  const randomizedTeams = shuffleArray(newQualifiedTeams);
+  randomizedTeams.forEach(team => {
     let placed = false;
     for (let i = 0; i < orderedPositions.length; i++) {
       const pos = orderedPositions[i];
