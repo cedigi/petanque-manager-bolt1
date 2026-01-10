@@ -388,8 +388,11 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   );
   const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
   const bottomCount = t.teams.length - expectedQualified;
-  if (pendingPoolMatches > 0 && bottomTeams.length < bottomCount) {
+  if (pendingPoolMatches > 0) {
     const clearedMatchesB = t.matchesB.map(match => {
+      if (match.completed) {
+        return match;
+      }
       if (!match.team1Id && !match.team2Id && !match.completed && !match.isBye) {
         return match;
       }
