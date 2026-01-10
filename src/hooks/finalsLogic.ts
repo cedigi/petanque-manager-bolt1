@@ -336,6 +336,24 @@ export function initializeCategoryBBracket(
 export function updateCategoryBPhases(t: Tournament): Tournament {
   const bottomTeams = getCurrentBottomTeams(t);
   const bottomIds = new Set(bottomTeams.map(bt => bt.id));
+  const pendingPoolMatches = t.matches.filter(m => m.poolId && !m.completed).length;
+  if (pendingPoolMatches > 0) {
+    const clearedMatchesB = t.matchesB.map(match => {
+      if (!match.team1Id && !match.team2Id && !match.completed && !match.isBye) {
+        return match;
+      }
+      return {
+        ...match,
+        team1Id: '',
+        team2Id: '',
+        team1Score: undefined,
+        team2Score: undefined,
+        completed: false,
+        isBye: false,
+      };
+    });
+    return assignAvailableFinalCourts({ ...t, matchesB: clearedMatchesB });
+  }
   const { poolsOf4, poolsOf3, poolsOf2 } = calculateOptimalPools(
     t.teams.length,
     t.preferredPoolSize,

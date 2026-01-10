@@ -129,6 +129,26 @@ export function useTournament(): UseTournamentReturn {
     );
     const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
     const bottomCount = t.teams.length - expectedQualified;
+    const pendingPoolMatches = t.matches.filter(m => m.poolId && !m.completed).length;
+
+    if (pendingPoolMatches > 0) {
+      const clearedMatchesB = t.matchesB.map(match => {
+        if (!match.team1Id && !match.team2Id && !match.completed && !match.isBye) {
+          return match;
+        }
+        return {
+          ...match,
+          team1Id: '',
+          team2Id: '',
+          team1Score: undefined,
+          team2Score: undefined,
+          completed: false,
+          isBye: false,
+        };
+      });
+      saveTournament({ ...t, matchesB: clearedMatchesB });
+      return;
+    }
 
     if (bottomTeams.length === t.teams.length || bottomCount <= 1) {
       saveTournament(t);
@@ -264,4 +284,3 @@ export function useTournament(): UseTournamentReturn {
     resetTournament,
   };
 }
-
