@@ -26,17 +26,6 @@ export function applyByeLogic(matches: Match[], qualifiedCount: number, expected
             isBye: true,
           };
         }
-        if (!match.team1Id && !match.team2Id) {
-          return {
-            ...match,
-            team1Id: '',
-            team2Id: '',
-            team1Score: 13,
-            team2Score: 0,
-            completed: true,
-            isBye: true,
-          };
-        }
       }
       return match;
     });
