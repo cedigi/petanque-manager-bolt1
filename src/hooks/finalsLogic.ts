@@ -271,8 +271,101 @@ function shuffleArray<T>(items: T[]): T[] {
 }
 
 export function getCurrentBottomTeams(tournament: Tournament): Team[] {
-  const qualified = new Set(getCurrentQualifiedTeams(tournament).map(t => t.id));
-  return tournament.teams.filter(team => team.poolId && !qualified.has(team.id));
+  const bottomTeams: Team[] = [];
+  const bottomIds = new Set<string>();
+
+  tournament.pools.forEach(pool => {
+    const poolMatches = tournament.matches.filter(m => m.poolId === pool.id && m.completed);
+    const poolTeams = pool.teamIds
+      .map(id => tournament.teams.find(t => t.id === id))
+      .filter(Boolean) as Team[];
+
+    const teamStats = poolTeams.map(team => {
+      const teamMatches = poolMatches.filter(
+        m => !m.isBye && (m.team1Id === team.id || m.team2Id === team.id),
+      );
+      const byeMatches = poolMatches.filter(m =>
+        m.isBye && (m.team1Id === team.id || m.team2Id === team.id) &&
+        ((m.team1Id === team.id && (m.team1Score || 0) > (m.team2Score || 0)) ||
+         (m.team2Id === team.id && (m.team2Score || 0) > (m.team1Score || 0))),
+      );
+
+      let wins = 0;
+      let pointsFor = 0;
+      let pointsAgainst = 0;
+
+      teamMatches.forEach(match => {
+        const isTeam1 = match.team1Id === team.id;
+        const teamScore = isTeam1 ? match.team1Score! : match.team2Score!;
+        const opponentScore = isTeam1 ? match.team2Score! : match.team1Score!;
+        pointsFor += teamScore;
+        pointsAgainst += opponentScore;
+        if (teamScore > opponentScore) wins++;
+      });
+
+      wins += byeMatches.length;
+      byeMatches.forEach(match => {
+        const isTeam1 = match.team1Id === team.id;
+        const teamScore = isTeam1 ? match.team1Score! : match.team2Score!;
+        const opponentScore = isTeam1 ? match.team2Score! : match.team1Score!;
+        pointsFor += teamScore;
+        pointsAgainst += opponentScore;
+      });
+
+      return {
+        team,
+        wins,
+        pointsFor,
+        pointsAgainst,
+        performance: pointsFor - pointsAgainst,
+        matches: teamMatches.length + byeMatches.length,
+      };
+    });
+
+    teamStats.sort((a, b) => {
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      return b.performance - a.performance;
+    });
+
+    const qualifiedIds = new Set<string>();
+
+    if (poolTeams.length === 4) {
+      const completedMatches = poolMatches.length;
+      if (completedMatches >= 4) {
+        teamStats.slice(0, 2).forEach(stat => qualifiedIds.add(stat.team.id));
+      } else if (completedMatches >= 2) {
+        teamStats
+          .filter(stat => stat.wins >= 2)
+          .forEach(stat => qualifiedIds.add(stat.team.id));
+      }
+    } else if (poolTeams.length === 3) {
+      const completedMatches = poolMatches.filter(m => !m.isBye).length;
+      if (completedMatches >= 2) {
+        teamStats.slice(0, 2).forEach(stat => qualifiedIds.add(stat.team.id));
+      } else if (completedMatches >= 1) {
+        teamStats
+          .filter(stat => stat.wins >= 1)
+          .slice(0, 2)
+          .forEach(stat => qualifiedIds.add(stat.team.id));
+      }
+    } else if (poolTeams.length === 2) {
+      const matchCompleted = poolMatches.some(m => !m.isBye && m.completed);
+      if (matchCompleted) {
+        teamStats.forEach(stat => qualifiedIds.add(stat.team.id));
+      }
+    }
+
+    if (qualifiedIds.size >= 2) {
+      teamStats.forEach(stat => {
+        if (!qualifiedIds.has(stat.team.id) && !bottomIds.has(stat.team.id)) {
+          bottomTeams.push(stat.team);
+          bottomIds.add(stat.team.id);
+        }
+      });
+    }
+  });
+
+  return bottomTeams;
 }
 
 export function propagateWinnersList(matches: Match[]): Match[] {
@@ -388,10 +481,6 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   );
   const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
   const bottomCount = t.teams.length - expectedQualified;
-  // If no team has qualified yet, don't populate category B
-  if (bottomTeams.length === t.teams.length) {
-    return assignAvailableFinalCourts(t);
-  }
   if (bottomCount <= 1) return assignAvailableFinalCourts(t);
 
   let matchesB = t.matchesB;
@@ -430,6 +519,10 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
         }
       : match;
   });
+
+  if (bottomTeams.length === 0) {
+    return assignAvailableFinalCourts({ ...t, matchesB });
+  }
 
   const firstRound = matchesB.filter(m => m.round === 200);
   if (rebuildBracket) {
