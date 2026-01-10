@@ -24,7 +24,7 @@ describe('category B finals', () => {
       makeMatch('m3', 't3'),
       makeMatch('m4', 't6'),
     ];
-    const result = applyByeLogic(matches, 6, 6, 0);
+    const result = applyByeLogic(matches, 6, 6);
     const byeMatches = result.filter(m => m.isBye);
     expect(byeMatches).toHaveLength(2);
   });
@@ -82,7 +82,7 @@ describe('category B finals', () => {
       }
     }
 
-    const placed = applyByeLogic(firstRound, teams.length, teams.length, 0);
+    const placed = applyByeLogic(firstRound, teams.length, teams.length);
     const byeMatches = placed.filter(m => m.isBye);
     expect(placed).toHaveLength(16);
     expect(byeMatches).toHaveLength(15);

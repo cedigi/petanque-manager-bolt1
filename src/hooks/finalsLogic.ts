@@ -461,8 +461,7 @@ export function initializeCategoryBBracket(
   bottomTeams: Team[],
   bottomCount: number,
 ): Match[] {
-  const pending = tournament.matches.filter(m => m.poolId && !m.completed).length;
-  const withByes = applyByeLogic(firstRound, bottomTeams.length, bottomCount, pending);
+  const withByes = applyByeLogic(firstRound, bottomTeams.length, bottomCount);
   for (let i = 0; i < firstRound.length; i++) {
     firstRound[i] = withByes[i];
   }
@@ -689,12 +688,10 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
   const newQualifiedTeams = qualifiedTeams.filter(team => !usedTeams.has(team.id));
 
   if (newQualifiedTeams.length === 0) {
-    const pendingPoolMatches = poolMatches.filter(m => !m.completed).length;
     const finalMatchesWithByes = applyByeLogic(
       firstRoundFinalMatches,
       qualifiedTeams.length,
       expectedQualified,
-      pendingPoolMatches,
     );
     const byesById = new Map(finalMatchesWithByes.map(match => [match.id, match]));
     const mergedFinalMatches = cleanedFinalMatches.map(match => byesById.get(match.id) ?? match);
@@ -755,12 +752,10 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
     }
   });
 
-  const pendingPoolMatches = poolMatches.filter(m => !m.completed).length;
   const finalMatchesWithByes = applyByeLogic(
     updatedFinalMatches,
     qualifiedTeams.length,
     expectedQualified,
-    pendingPoolMatches,
   );
   for (let i = 0; i < updatedFinalMatches.length; i++) {
     updatedFinalMatches[i] = finalMatchesWithByes[i];
