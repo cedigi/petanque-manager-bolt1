@@ -1,10 +1,30 @@
-import { Tournament, Team, Match } from '../types/tournament';
+import { Tournament, Team, Match, Pool } from '../types/tournament';
 import { generatePools } from '../utils/poolGeneration';
 import { generateUuid } from '../utils/uuid';
 import { createEmptyFinalPhases, createEmptyFinalPhasesB } from './finalsLogic';
 
+function getPoolCourtAssignments(pools: Pool[], teams: Team[]): {
+  baseCourts: Map<string, number>;
+  totalCourtsUsed: number;
+} {
+  let currentCourt = 1;
+  const baseCourts = new Map<string, number>();
+
+  pools.forEach(pool => {
+    const poolTeams = pool.teamIds
+      .map(id => teams.find(team => team.id === id))
+      .filter(Boolean) as Team[];
+    const courtsNeeded = poolTeams.length === 4 ? 2 : 1;
+    baseCourts.set(pool.id, currentCourt);
+    currentCourt += courtsNeeded;
+  });
+
+  return { baseCourts, totalCourtsUsed: Math.max(0, currentCourt - 1) };
+}
+
 export function generateNextPoolMatches(tournament: Tournament): Match[] {
   const allMatches: Match[] = [...tournament.matches];
+  const { baseCourts } = getPoolCourtAssignments(tournament.pools, tournament.teams);
 
   const resetMatchForTeams = (
     match: Match,
@@ -28,8 +48,8 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
     hackingAttempts: 0,
   });
 
-  tournament.pools.forEach((pool, poolIndex) => {
-    const baseCourt = poolIndex * 2 + 1;
+  tournament.pools.forEach(pool => {
+    const baseCourt = baseCourts.get(pool.id) ?? 1;
     const poolMatches = tournament.matches.filter(m => m.poolId === pool.id);
     const poolTeams = pool.teamIds
       .map(id => tournament.teams.find(t => t.id === id))
@@ -420,6 +440,7 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
 
 export function generateTournamentPools(tournament: Tournament): Tournament {
   const pools = generatePools(tournament.teams, tournament.preferredPoolSize);
+  const { baseCourts, totalCourtsUsed } = getPoolCourtAssignments(pools, tournament.teams);
 
   const updatedTeams = tournament.teams.map(team => {
     const pool = pools.find(p => p.teamIds.includes(team.id));
@@ -428,8 +449,8 @@ export function generateTournamentPools(tournament: Tournament): Tournament {
 
   const allMatches: Match[] = [];
 
-  pools.forEach((pool, index) => {
-    const baseCourt = index * 2 + 1;
+  pools.forEach(pool => {
+    const baseCourt = baseCourts.get(pool.id) ?? 1;
     const poolTeams = pool.teamIds
       .map(id => tournament.teams.find(t => t.id === id))
       .filter(Boolean);
@@ -510,7 +531,7 @@ export function generateTournamentPools(tournament: Tournament): Tournament {
     }
   });
 
-  const finalPhasesStart = pools.length * 2 + 1;
+  const finalPhasesStart = totalCourtsUsed + 1;
   const finals = createEmptyFinalPhases(
     tournament.teams.length,
     tournament.courts,

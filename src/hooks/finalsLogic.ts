@@ -4,6 +4,76 @@ import { applyByeLogic } from '../utils/finals';
 import { generateUuid } from '../utils/uuid';
 import { generateNextPoolMatches } from './poolManagement';
 
+function getPoolCourtUsage(tournament: Tournament): number {
+  let currentCourt = 1;
+  tournament.pools.forEach(pool => {
+    const poolTeams = pool.teamIds
+      .map(id => tournament.teams.find(team => team.id === id))
+      .filter(Boolean) as Team[];
+    const courtsNeeded = poolTeams.length === 4 ? 2 : 1;
+    currentCourt += courtsNeeded;
+  });
+  return Math.max(0, currentCourt - 1);
+}
+
+function assignAvailableFinalCourts(tournament: Tournament): Tournament {
+  const poolMatches = tournament.matches.filter(m => m.poolId);
+  const finalsA = tournament.matches.filter(m => m.round >= 100);
+  const finalsB = tournament.matchesB;
+
+  const activePoolCourts = new Set(
+    poolMatches
+      .filter(match => !match.completed && !match.isBye && match.court > 0)
+      .map(match => match.court),
+  );
+
+  const availableCourts = Array.from({ length: tournament.courts }, (_, i) => i + 1).filter(
+    court => !activePoolCourts.has(court),
+  );
+  const availableSet = new Set(availableCourts);
+  const usedCourts = new Set<number>();
+
+  const assignCourts = (matches: Match[]): Match[] => {
+    const indexed = matches.map((match, index) => ({ match, index }));
+    indexed.sort((a, b) => a.match.round - b.match.round || a.match.court - b.match.court);
+
+    const updated = [...matches];
+
+    indexed.forEach(({ match, index }) => {
+      if (match.completed || match.isBye || !match.team1Id || !match.team2Id) {
+        return;
+      }
+
+      const currentCourt = match.court;
+      if (
+        currentCourt > 0 &&
+        availableSet.has(currentCourt) &&
+        !usedCourts.has(currentCourt)
+      ) {
+        usedCourts.add(currentCourt);
+        return;
+      }
+
+      const nextCourt = availableCourts.find(court => !usedCourts.has(court));
+      if (nextCourt !== undefined) {
+        usedCourts.add(nextCourt);
+        updated[index] = { ...match, court: nextCourt };
+      }
+    });
+
+    return updated;
+  };
+
+  const updatedFinalsA = assignCourts(finalsA);
+  const updatedFinalsB = assignCourts(finalsB);
+
+  return {
+    ...tournament,
+    matches: [...poolMatches, ...updatedFinalsA],
+    matchesB: updatedFinalsB,
+  };
+}
+
 export function createEmptyFinalPhases(
   totalTeams: number,
   courts: number,
@@ -274,9 +344,9 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   const bottomCount = t.teams.length - expectedQualified;
   // If no team has qualified yet, don't populate category B
   if (bottomTeams.length === t.teams.length) {
-    return t;
+    return assignAvailableFinalCourts(t);
   }
-  if (bottomCount <= 1) return t;
+  if (bottomCount <= 1) return assignAvailableFinalCourts(t);
 
   let matchesB = t.matchesB;
   const rebuildBracket =
@@ -285,7 +355,7 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
     matchesB = createEmptyFinalPhasesB(
       t.teams.length,
       t.courts,
-      t.pools.length * 2 + 1,
+      getPoolCourtUsage(t) + 1,
       t.preferredPoolSize,
     );
   }
@@ -382,7 +452,7 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
     bottomTeams,
     bottomCount,
   );
-  return { ...t, matchesB: propagated };
+  return assignAvailableFinalCourts({ ...t, matchesB: propagated });
 }
 
 export function updateFinalPhasesWithQualified(updatedTournament: Tournament): Tournament {
@@ -531,4 +601,3 @@ export function autoGenerateNextMatches(updatedTournament: Tournament): Tourname
   result = updateFinalPhasesWithQualified(result);
   return result;
 }
-
