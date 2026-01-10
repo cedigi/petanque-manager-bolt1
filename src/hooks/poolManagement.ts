@@ -6,6 +6,28 @@ import { createEmptyFinalPhases, createEmptyFinalPhasesB } from './finalsLogic';
 export function generateNextPoolMatches(tournament: Tournament): Match[] {
   const allMatches: Match[] = [...tournament.matches];
 
+  const resetMatchForTeams = (
+    match: Match,
+    team1Id: string,
+    team2Id: string,
+    completed: boolean,
+    isBye: boolean,
+    court: number,
+    team1Score?: number,
+    team2Score?: number,
+  ): Match => ({
+    ...match,
+    team1Id,
+    team2Id,
+    completed,
+    isBye,
+    court,
+    team1Score,
+    team2Score,
+    battleIntensity: isBye ? 0 : match.battleIntensity,
+    hackingAttempts: 0,
+  });
+
   tournament.pools.forEach((pool, poolIndex) => {
     const baseCourt = poolIndex * 2 + 1;
     const poolMatches = tournament.matches.filter(m => m.poolId === pool.id);
@@ -46,20 +68,14 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
         const loser1vs4 = getLoser(match1vs4, team1, team4);
         const loser2vs3 = getLoser(match2vs3, team2, team3);
 
-        const winnersMatchExists = allMatches.some(
-          m =>
-            m.poolId === pool.id &&
-            ((m.team1Id === winner1vs4.id && m.team2Id === winner2vs3.id) ||
-              (m.team1Id === winner2vs3.id && m.team2Id === winner1vs4.id)),
+        const winnersMatch = allMatches.find(
+          m => m.poolId === pool.id && m.round === 2 && !m.isBye && m.court === baseCourt,
         );
-        const losersMatchExists = allMatches.some(
-          m =>
-            m.poolId === pool.id &&
-            ((m.team1Id === loser1vs4.id && m.team2Id === loser2vs3.id) ||
-              (m.team1Id === loser2vs3.id && m.team2Id === loser1vs4.id)),
+        const losersMatch = allMatches.find(
+          m => m.poolId === pool.id && m.round === 2 && !m.isBye && m.court === baseCourt + 1,
         );
 
-        if (!winnersMatchExists) {
+        if (!winnersMatch) {
           allMatches.push({
             id: generateUuid(),
             round: 2,
@@ -72,8 +88,21 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
             battleIntensity: Math.floor(Math.random() * 50) + 25,
             hackingAttempts: 0,
           });
+        } else if (
+          winnersMatch.team1Id !== winner1vs4.id ||
+          winnersMatch.team2Id !== winner2vs3.id
+        ) {
+          const matchIndex = allMatches.findIndex(m => m.id === winnersMatch.id);
+          allMatches[matchIndex] = resetMatchForTeams(
+            winnersMatch,
+            winner1vs4.id,
+            winner2vs3.id,
+            false,
+            false,
+            baseCourt,
+          );
         }
-        if (!losersMatchExists) {
+        if (!losersMatch) {
           allMatches.push({
             id: generateUuid(),
             round: 2,
@@ -86,22 +115,35 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
             battleIntensity: Math.floor(Math.random() * 50) + 25,
             hackingAttempts: 0,
           });
+        } else if (
+          losersMatch.team1Id !== loser1vs4.id ||
+          losersMatch.team2Id !== loser2vs3.id
+        ) {
+          const matchIndex = allMatches.findIndex(m => m.id === losersMatch.id);
+          allMatches[matchIndex] = resetMatchForTeams(
+            losersMatch,
+            loser1vs4.id,
+            loser2vs3.id,
+            false,
+            false,
+            baseCourt + 1,
+          );
         }
 
-        const winnersMatch = allMatches.find(
+        const refreshedWinnersMatch = allMatches.find(
           m =>
             m.poolId === pool.id &&
             ((m.team1Id === winner1vs4.id && m.team2Id === winner2vs3.id) ||
               (m.team1Id === winner2vs3.id && m.team2Id === winner1vs4.id)),
         );
-        const losersMatch = allMatches.find(
+        const refreshedLosersMatch = allMatches.find(
           m =>
             m.poolId === pool.id &&
             ((m.team1Id === loser1vs4.id && m.team2Id === loser2vs3.id) ||
               (m.team1Id === loser2vs3.id && m.team2Id === loser1vs4.id)),
         );
 
-        if (winnersMatch?.completed && losersMatch?.completed) {
+        if (refreshedWinnersMatch?.completed && refreshedLosersMatch?.completed) {
           const allPoolMatches = allMatches.filter(
             m => m.poolId === pool.id && m.completed,
           );
@@ -123,18 +165,12 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
           });
 
           const teamsWithOneWin = teamStats.filter(stat => stat.wins === 1);
-          if (teamsWithOneWin.length === 2) {
-            const barrageExists = allMatches.some(
-              m =>
-                m.poolId === pool.id &&
-                m.round === 3 &&
-                ((m.team1Id === teamsWithOneWin[0].team.id &&
-                  m.team2Id === teamsWithOneWin[1].team.id) ||
-                  (m.team1Id === teamsWithOneWin[1].team.id &&
-                    m.team2Id === teamsWithOneWin[0].team.id)),
-            );
+          const barrageMatch = allMatches.find(
+            m => m.poolId === pool.id && m.round === 3 && !m.isBye && m.court === baseCourt,
+          );
 
-            if (!barrageExists) {
+          if (teamsWithOneWin.length === 2) {
+            if (!barrageMatch) {
               allMatches.push({
                 id: generateUuid(),
                 round: 3,
@@ -147,7 +183,23 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
                 battleIntensity: Math.floor(Math.random() * 50) + 25,
                 hackingAttempts: 0,
               });
+            } else if (
+              barrageMatch.team1Id !== teamsWithOneWin[0].team.id ||
+              barrageMatch.team2Id !== teamsWithOneWin[1].team.id
+            ) {
+              const matchIndex = allMatches.findIndex(m => m.id === barrageMatch.id);
+              allMatches[matchIndex] = resetMatchForTeams(
+                barrageMatch,
+                teamsWithOneWin[0].team.id,
+                teamsWithOneWin[1].team.id,
+                false,
+                false,
+                baseCourt,
+              );
             }
+          } else if (barrageMatch) {
+            const matchIndex = allMatches.findIndex(m => m.id === barrageMatch.id);
+            allMatches.splice(matchIndex, 1);
           }
         }
       }
@@ -179,15 +231,11 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
         const winner = getWinner(firstRoundMatch, team1, team2);
         const loser = getLoser(firstRoundMatch, team1, team2);
 
-        const winnersMatchExists = allMatches.some(
-          m =>
-            m.poolId === pool.id &&
-            m.round === 2 &&
-            ((m.team1Id === winner.id && m.team2Id === team3.id) ||
-              (m.team1Id === team3.id && m.team2Id === winner.id)),
+        const winnersMatch = allMatches.find(
+          m => m.poolId === pool.id && m.round === 2 && !m.isBye && m.court === baseCourt,
         );
 
-        if (!winnersMatchExists) {
+        if (!winnersMatch) {
           allMatches.push({
             id: generateUuid(),
             round: 2,
@@ -200,18 +248,26 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
             battleIntensity: Math.floor(Math.random() * 50) + 25,
             hackingAttempts: 0,
           });
+        } else if (
+          winnersMatch.team1Id !== winner.id ||
+          winnersMatch.team2Id !== team3.id
+        ) {
+          const matchIndex = allMatches.findIndex(m => m.id === winnersMatch.id);
+          allMatches[matchIndex] = resetMatchForTeams(
+            winnersMatch,
+            winner.id,
+            team3.id,
+            false,
+            false,
+            baseCourt,
+          );
         }
 
-        const loserByeExists = allMatches.some(
-          m =>
-            m.poolId === pool.id &&
-            m.round === 2 &&
-            m.isBye &&
-            m.team1Id === loser.id &&
-            m.team2Id === loser.id,
+        const loserByeMatch = allMatches.find(
+          m => m.poolId === pool.id && m.round === 2 && m.isBye,
         );
 
-        if (!loserByeExists) {
+        if (!loserByeMatch) {
           allMatches.push({
             id: generateUuid(),
             round: 2,
@@ -226,6 +282,18 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
             battleIntensity: 0,
             hackingAttempts: 0,
           });
+        } else if (loserByeMatch.team1Id !== loser.id || loserByeMatch.team2Id !== loser.id) {
+          const matchIndex = allMatches.findIndex(m => m.id === loserByeMatch.id);
+          allMatches[matchIndex] = resetMatchForTeams(
+            loserByeMatch,
+            loser.id,
+            loser.id,
+            true,
+            true,
+            0,
+            13,
+            0,
+          );
         }
 
         const finalMatch = allMatches.find(
@@ -283,16 +351,12 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
 
           const teamsWithOneWin = allStats.filter(stat => stat.wins === 1);
 
-          if (teamsWithOneWin.length === 2) {
-            const barrageExists = allMatches.some(
-              m =>
-                m.poolId === pool.id &&
-                m.round === 3 &&
-                ((m.team1Id === teamsWithOneWin[0].team.id && m.team2Id === teamsWithOneWin[1].team.id) ||
-                  (m.team1Id === teamsWithOneWin[1].team.id && m.team2Id === teamsWithOneWin[0].team.id)),
-            );
+          const barrageMatch = allMatches.find(
+            m => m.poolId === pool.id && m.round === 3 && !m.isBye && m.court === baseCourt,
+          );
 
-            if (!barrageExists) {
+          if (teamsWithOneWin.length === 2) {
+            if (!barrageMatch) {
               allMatches.push({
                 id: generateUuid(),
                 round: 3,
@@ -305,7 +369,23 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
                 battleIntensity: Math.floor(Math.random() * 50) + 25,
                 hackingAttempts: 0,
               });
+            } else if (
+              barrageMatch.team1Id !== teamsWithOneWin[0].team.id ||
+              barrageMatch.team2Id !== teamsWithOneWin[1].team.id
+            ) {
+              const matchIndex = allMatches.findIndex(m => m.id === barrageMatch.id);
+              allMatches[matchIndex] = resetMatchForTeams(
+                barrageMatch,
+                teamsWithOneWin[0].team.id,
+                teamsWithOneWin[1].team.id,
+                false,
+                false,
+                baseCourt,
+              );
             }
+          } else if (barrageMatch) {
+            const matchIndex = allMatches.findIndex(m => m.id === barrageMatch.id);
+            allMatches.splice(matchIndex, 1);
           }
         }
       }
@@ -463,4 +543,3 @@ export function generateRound(tournament: Tournament): Tournament {
 
   return { ...tournament, matches: allMatches, currentRound: tournament.currentRound + 1 };
 }
-
