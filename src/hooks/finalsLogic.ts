@@ -491,24 +491,65 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
       if (m.team1Id) used.add(m.team1Id);
       if (m.team2Id) used.add(m.team2Id);
     });
-    const positions: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
-    firstRound.forEach((m, idx) => {
-      if (!m.team1Id) positions.push({ matchIndex: idx, position: 'team1' });
-    });
-    firstRound.forEach((m, idx) => {
-      if (!m.team2Id) positions.push({ matchIndex: idx, position: 'team2' });
-    });
-    const newTeams = shuffleArray(bottomTeams.filter(bt => !used.has(bt.id)));
-    const shuffledPositions = shuffleArray(positions);
-    newTeams.forEach(team => {
-      if (shuffledPositions.length === 0) return;
-      const pos = shuffledPositions.shift()!;
-      const match = firstRound[pos.matchIndex];
-      firstRound[pos.matchIndex] = {
-        ...match,
-        [pos.position + 'Id']: team.id,
-      } as Match;
-    });
+    const canRedistribute =
+      pendingPoolMatches === 0 && firstRound.every(match => !match.completed);
+    if (canRedistribute) {
+      const shuffledTeams = shuffleArray(bottomTeams);
+      for (let i = 0; i < firstRound.length; i++) {
+        const match = firstRound[i];
+        firstRound[i] = {
+          ...match,
+          team1Id: '',
+          team2Id: '',
+          team1Score: undefined,
+          team2Score: undefined,
+          completed: false,
+          isBye: false,
+        } as Match;
+      }
+      let teamIdx = 0;
+      for (let i = 0; i < firstRound.length; i++) {
+        if (teamIdx >= shuffledTeams.length) break;
+        const match = firstRound[i];
+        firstRound[i] = {
+          ...match,
+          team1Id: shuffledTeams[teamIdx++]?.id || '',
+        } as Match;
+      }
+      for (let i = 0; i < firstRound.length; i++) {
+        if (teamIdx >= shuffledTeams.length) break;
+        const match = firstRound[i];
+        firstRound[i] = {
+          ...match,
+          team2Id: shuffledTeams[teamIdx++]?.id || '',
+        } as Match;
+      }
+    } else {
+      const priorityPositions: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
+      const secondaryPositions: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
+      firstRound.forEach((m, idx) => {
+        if (!m.team1Id && !m.team2Id) {
+          priorityPositions.push({ matchIndex: idx, position: 'team1' });
+          secondaryPositions.push({ matchIndex: idx, position: 'team2' });
+        } else if (!m.team1Id) {
+          secondaryPositions.push({ matchIndex: idx, position: 'team1' });
+        } else if (!m.team2Id) {
+          secondaryPositions.push({ matchIndex: idx, position: 'team2' });
+        }
+      });
+      const newTeams = shuffleArray(bottomTeams.filter(bt => !used.has(bt.id)));
+      const shuffledPriority = shuffleArray(priorityPositions);
+      const shuffledSecondary = shuffleArray(secondaryPositions);
+      newTeams.forEach(team => {
+        const pos = shuffledPriority.shift() ?? shuffledSecondary.shift();
+        if (!pos) return;
+        const match = firstRound[pos.matchIndex];
+        firstRound[pos.matchIndex] = {
+          ...match,
+          [pos.position + 'Id']: team.id,
+        } as Match;
+      });
+    }
   }
 
   const others = matchesB.filter(m => m.round > 200);
