@@ -16,7 +16,7 @@ describe('applyByeLogic', () => {
     };
   }
 
-  it('does not assign BYE when pools still have matches', () => {
+  it('assigns BYE even when pools still have matches', () => {
     const matches = [
       makeMatch('m1', 't1'),
       makeMatch('m2', 't2'),
@@ -24,8 +24,13 @@ describe('applyByeLogic', () => {
       makeMatch('m4'),
     ];
 
-    const result = applyByeLogic(matches, 3, 6, 1);
-    expect(result.some(m => m.isBye)).toBe(false);
+    const result = applyByeLogic(matches, 3, 6);
+    const byeMatches = result.filter(m => m.isBye);
+    expect(byeMatches).toHaveLength(2);
+    byeMatches.forEach(m => {
+      expect(m.team1Id).toBe(m.team2Id);
+      expect(m.completed).toBe(true);
+    });
   });
 
   it('assigns BYE after pools conclude', () => {
@@ -36,7 +41,7 @@ describe('applyByeLogic', () => {
       makeMatch('m4', 't6'),
     ];
 
-    const result = applyByeLogic(matches, 6, 6, 0);
+    const result = applyByeLogic(matches, 6, 6);
     const byeMatches = result.filter(m => m.isBye);
     expect(byeMatches).toHaveLength(2);
     byeMatches.forEach(m => {
@@ -57,7 +62,7 @@ describe('applyByeLogic', () => {
       makeMatch('m8', 't12'),
     ];
 
-    const result = applyByeLogic(matches, 12, 12, 0);
+    const result = applyByeLogic(matches, 12, 12);
     const byeMatches = result.filter(m => m.isBye);
     expect(byeMatches).toHaveLength(4);
   });
@@ -117,7 +122,7 @@ describe('applyByeLogic', () => {
     });
 
     const expectedQualified = 12; // from calculateOptimalPools(21)
-    const withByes = applyByeLogic(placed, qualifiedTeams.length, expectedQualified, 0);
+    const withByes = applyByeLogic(placed, qualifiedTeams.length, expectedQualified);
     const byeMatches = withByes.filter(m => m.isBye);
     expect(byeMatches).toHaveLength(4);
   });
@@ -130,7 +135,7 @@ describe('applyByeLogic', () => {
       makeMatch('m4'),
     ];
 
-    const result = applyByeLogic(matches, 3, 6, 0);
+    const result = applyByeLogic(matches, 3, 6);
     const empty = result.filter(m => !m.team1Id && !m.team2Id);
     expect(empty).toHaveLength(2);
     const byeMatches = result.filter(m => m.isBye);

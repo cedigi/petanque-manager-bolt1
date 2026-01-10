@@ -8,10 +8,10 @@ export function countEmptySlots(matches: Match[]): number {
   }, 0);
 }
 
-export function applyByeLogic(matches: Match[], qualifiedCount: number, expectedQualified: number, pendingPoolMatches: number): Match[] {
+export function applyByeLogic(matches: Match[], qualifiedCount: number, expectedQualified: number): Match[] {
   const remainingSlots = countEmptySlots(matches);
 
-  if (pendingPoolMatches === 0 && qualifiedCount + remainingSlots >= expectedQualified) {
+  if (qualifiedCount + remainingSlots >= expectedQualified) {
     return matches.map(match => {
       if (!match.completed) {
         if ((match.team1Id && !match.team2Id) || (!match.team1Id && match.team2Id)) {
