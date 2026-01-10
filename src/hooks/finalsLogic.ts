@@ -388,26 +388,6 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   );
   const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
   const bottomCount = t.teams.length - expectedQualified;
-  if (pendingPoolMatches > 0) {
-    const clearedMatchesB = t.matchesB.map(match => {
-      if (match.completed) {
-        return match;
-      }
-      if (!match.team1Id && !match.team2Id && !match.completed && !match.isBye) {
-        return match;
-      }
-      return {
-        ...match,
-        team1Id: '',
-        team2Id: '',
-        team1Score: undefined,
-        team2Score: undefined,
-        completed: false,
-        isBye: false,
-      };
-    });
-    return assignAvailableFinalCourts({ ...t, matchesB: clearedMatchesB });
-  }
   // If no team has qualified yet, don't populate category B
   if (bottomTeams.length === t.teams.length) {
     return assignAvailableFinalCourts(t);
@@ -415,8 +395,7 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   if (bottomCount <= 1) return assignAvailableFinalCourts(t);
 
   let matchesB = t.matchesB;
-  const rebuildBracket =
-    matchesB.length === 0 || bottomTeams.length !== bottomCount;
+  const rebuildBracket = matchesB.length === 0;
   if (rebuildBracket) {
     matchesB = createEmptyFinalPhasesB(
       t.teams.length,
@@ -465,11 +444,11 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
         firstRound[i] = {
           ...match,
           team1Id: team?.id || '',
-          team2Id: team?.id || '',
-          team1Score: 13,
-          team2Score: 0,
-          completed: true,
-          isBye: true,
+          team2Id: '',
+          team1Score: undefined,
+          team2Score: undefined,
+          completed: false,
+          isBye: false,
         } as Match;
       } else {
         const t1 = sorted[teamIdx++];
