@@ -383,6 +383,30 @@ export function propagateWinnersList(matches: Match[]): Match[] {
     const next = rounds[i + 1];
     const currentMatches = byRound[current].sort((a, b) => a.court - b.court);
     const nextMatches = byRound[next].sort((a, b) => a.court - b.court);
+    nextMatches.forEach(match => {
+      const tIndex = updated.findIndex(x => x.id === match.id);
+      if (tIndex === -1) return;
+      if (!updated[tIndex].completed) {
+        const needsReset =
+          updated[tIndex].team1Id ||
+          updated[tIndex].team2Id ||
+          updated[tIndex].team1Score !== undefined ||
+          updated[tIndex].team2Score !== undefined ||
+          updated[tIndex].isBye;
+        if (needsReset) {
+          updated[tIndex] = {
+            ...updated[tIndex],
+            team1Id: '',
+            team2Id: '',
+            team1Score: undefined,
+            team2Score: undefined,
+            completed: false,
+            isBye: false,
+          };
+          changed = true;
+        }
+      }
+    });
 
     currentMatches.forEach((m, idx) => {
       if (!m.completed) return;
@@ -427,6 +451,30 @@ export function propagateWinnersToNextPhases(tournament: Tournament): Tournament
 
     const currentMatches = matchesByRound[currentRound].sort((a, b) => a.court - b.court);
     const nextMatches = matchesByRound[nextRound].sort((a, b) => a.court - b.court);
+    nextMatches.forEach(match => {
+      const targetIndex = updatedMatches.findIndex(m => m.id === match.id);
+      if (targetIndex === -1) return;
+      if (!updatedMatches[targetIndex].completed) {
+        const needsReset =
+          updatedMatches[targetIndex].team1Id ||
+          updatedMatches[targetIndex].team2Id ||
+          updatedMatches[targetIndex].team1Score !== undefined ||
+          updatedMatches[targetIndex].team2Score !== undefined ||
+          updatedMatches[targetIndex].isBye;
+        if (needsReset) {
+          updatedMatches[targetIndex] = {
+            ...updatedMatches[targetIndex],
+            team1Id: '',
+            team2Id: '',
+            team1Score: undefined,
+            team2Score: undefined,
+            completed: false,
+            isBye: false,
+          };
+          hasChanges = true;
+        }
+      }
+    });
 
     currentMatches.forEach((match, idx) => {
       if (!match.completed) return;
