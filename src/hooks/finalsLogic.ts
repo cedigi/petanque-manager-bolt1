@@ -160,10 +160,10 @@ export function createEmptyFinalPhasesB(
 
 export function getCurrentQualifiedTeams(tournament: Tournament): Team[] {
   const qualified: Team[] = [];
+  const qualifiedIds = new Set<string>();
   tournament.pools.forEach(pool => {
     const poolMatches = tournament.matches.filter(m => m.poolId === pool.id && m.completed);
     const poolTeams = pool.teamIds.map(id => tournament.teams.find(t => t.id === id)).filter(Boolean) as Team[];
-    const expectedMatchesPerTeam = Math.max(poolTeams.length - 1, 0);
 
     const teamStats = poolTeams.map(team => {
       const teamMatches = poolMatches.filter(m => !m.isBye && (m.team1Id === team.id || m.team2Id === team.id));
@@ -211,19 +211,50 @@ export function getCurrentQualifiedTeams(tournament: Tournament): Team[] {
     });
 
     if (poolTeams.length === 4) {
-      const allTeamsPlayed = teamStats.every(stat => stat.matches >= expectedMatchesPerTeam);
-      if (allTeamsPlayed) {
-        qualified.push(...teamStats.slice(0, 2).map(stat => stat.team));
+      const completedMatches = poolMatches.length;
+      if (completedMatches >= 4) {
+        teamStats.slice(0, 2).forEach(stat => {
+          if (!qualifiedIds.has(stat.team.id)) {
+            qualified.push(stat.team);
+            qualifiedIds.add(stat.team.id);
+          }
+        });
+      } else if (completedMatches >= 2) {
+        const teamsWithTwoWins = teamStats.filter(stat => stat.wins >= 2);
+        teamsWithTwoWins.forEach(stat => {
+          if (!qualifiedIds.has(stat.team.id)) {
+            qualified.push(stat.team);
+            qualifiedIds.add(stat.team.id);
+          }
+        });
       }
     } else if (poolTeams.length === 3) {
-      const allTeamsPlayed = teamStats.every(stat => stat.matches >= expectedMatchesPerTeam);
-      if (allTeamsPlayed) {
-        qualified.push(...teamStats.slice(0, 2).map(stat => stat.team));
+      const completedMatches = poolMatches.filter(m => !m.isBye).length;
+      if (completedMatches >= 2) {
+        teamStats.slice(0, 2).forEach(stat => {
+          if (!qualifiedIds.has(stat.team.id)) {
+            qualified.push(stat.team);
+            qualifiedIds.add(stat.team.id);
+          }
+        });
+      } else if (completedMatches >= 1) {
+        const teamsWithAtLeastOneWin = teamStats.filter(stat => stat.wins >= 1);
+        teamsWithAtLeastOneWin.slice(0, 2).forEach(stat => {
+          if (!qualifiedIds.has(stat.team.id)) {
+            qualified.push(stat.team);
+            qualifiedIds.add(stat.team.id);
+          }
+        });
       }
     } else if (poolTeams.length === 2) {
-      const allTeamsPlayed = teamStats.every(stat => stat.matches > 0);
-      if (allTeamsPlayed) {
-        qualified.push(...teamStats.map(stat => stat.team));
+      const matchCompleted = poolMatches.some(m => !m.isBye && m.completed);
+      if (matchCompleted) {
+        teamStats.forEach(stat => {
+          if (!qualifiedIds.has(stat.team.id)) {
+            qualified.push(stat.team);
+            qualifiedIds.add(stat.team.id);
+          }
+        });
       }
     }
   });
@@ -351,7 +382,13 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   const bottomTeams = getCurrentBottomTeams(t);
   const bottomIds = new Set(bottomTeams.map(bt => bt.id));
   const pendingPoolMatches = t.matches.filter(m => m.poolId && !m.completed).length;
-  if (pendingPoolMatches > 0) {
+  const { poolsOf4, poolsOf3, poolsOf2 } = calculateOptimalPools(
+    t.teams.length,
+    t.preferredPoolSize,
+  );
+  const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
+  const bottomCount = t.teams.length - expectedQualified;
+  if (pendingPoolMatches > 0 && bottomTeams.length < bottomCount) {
     const clearedMatchesB = t.matchesB.map(match => {
       if (!match.team1Id && !match.team2Id && !match.completed && !match.isBye) {
         return match;
@@ -368,12 +405,6 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
     });
     return assignAvailableFinalCourts({ ...t, matchesB: clearedMatchesB });
   }
-  const { poolsOf4, poolsOf3, poolsOf2 } = calculateOptimalPools(
-    t.teams.length,
-    t.preferredPoolSize,
-  );
-  const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
-  const bottomCount = t.teams.length - expectedQualified;
   // If no team has qualified yet, don't populate category B
   if (bottomTeams.length === t.teams.length) {
     return assignAvailableFinalCourts(t);
