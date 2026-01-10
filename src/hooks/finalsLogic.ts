@@ -597,7 +597,10 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
     }
   });
 
-  const orderedPositions = shuffleArray([...primary, ...secondary]);
+  const orderedPositions = [
+    ...shuffleArray(primary),
+    ...shuffleArray(secondary),
+  ];
   const updatedFinalMatches = [...firstRoundFinalMatches];
   const randomizedTeams = shuffleArray(newQualifiedTeams);
   randomizedTeams.forEach(team => {

@@ -122,7 +122,7 @@ describe('applyByeLogic', () => {
     expect(byeMatches).toHaveLength(4);
   });
 
-  it('removes empty matches when BYEs can fill remaining slots', () => {
+  it('keeps empty matches when no team can receive a BYE', () => {
     const matches = [
       makeMatch('m1', 't1', 't2'),
       makeMatch('m2'),
@@ -131,9 +131,9 @@ describe('applyByeLogic', () => {
     ];
 
     const result = applyByeLogic(matches, 3, 6, 0);
-    const empty = result.filter(m => !m.team1Id && !m.team2Id && !m.isBye);
-    expect(empty).toHaveLength(0);
+    const empty = result.filter(m => !m.team1Id && !m.team2Id);
+    expect(empty).toHaveLength(2);
     const byeMatches = result.filter(m => m.isBye);
-    expect(byeMatches).toHaveLength(3);
+    expect(byeMatches).toHaveLength(1);
   });
 });
