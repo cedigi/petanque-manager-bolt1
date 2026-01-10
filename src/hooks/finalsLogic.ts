@@ -270,6 +270,20 @@ function shuffleArray<T>(items: T[]): T[] {
   return shuffled;
 }
 
+function getRandomByeIndices(matchCount: number, byesNeeded: number): Set<number> {
+  if (byesNeeded <= 0 || matchCount <= 0) return new Set();
+  const indices = Array.from({ length: matchCount }, (_, i) => i);
+  let candidates = indices;
+  if (matchCount > 2) {
+    const interior = indices.slice(1, -1);
+    if (interior.length >= byesNeeded) {
+      candidates = interior;
+    }
+  }
+  const shuffled = shuffleArray(candidates);
+  return new Set(shuffled.slice(0, byesNeeded));
+}
+
 export function getCurrentBottomTeams(tournament: Tournament): Team[] {
   const bottomTeams: Team[] = [];
   const bottomIds = new Set<string>();
@@ -576,10 +590,11 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
     const bracketSize = 1 << Math.ceil(Math.log2(bottomCount));
     const byesNeeded = bracketSize - bottomCount;
     const sorted = shuffleArray(bottomTeams);
+    const byeIndices = getRandomByeIndices(firstRound.length, byesNeeded);
     let teamIdx = 0;
     for (let i = 0; i < firstRound.length; i++) {
       const match = firstRound[i];
-      if (teamIdx < byesNeeded) {
+      if (byeIndices.has(i)) {
         const team = sorted[teamIdx++];
         firstRound[i] = {
           ...match,
@@ -750,17 +765,35 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
     return updateCategoryBPhases(propagateWinnersToNextPhases(baseTournament));
   }
 
+  const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
+  const byesNeeded = bracketSize - qualifiedTeams.length;
+  const byeIndices =
+    byesNeeded > 0 ? getRandomByeIndices(firstRoundFinalMatches.length, byesNeeded) : new Set();
+  const byeSides = byeIndices.size > 0
+    ? shuffleArray(Array.from(byeIndices)).map(index => ({
+        matchIndex: index,
+        position: Math.random() < 0.5 ? 'team1' : 'team2',
+      }))
+    : [];
+  const byeSideByIndex = new Map(byeSides.map(side => [side.matchIndex, side.position]));
   const primary: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
   const secondary: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
   firstRoundFinalMatches.forEach((match, matchIndex) => {
     const empty1 = !match.team1Id;
     const empty2 = !match.team2Id;
     if (empty1 && empty2) {
-      primary.push({ matchIndex, position: 'team1' });
-      secondary.push({ matchIndex, position: 'team2' });
+      if (byeIndices.has(matchIndex)) {
+        const position = byeSideByIndex.get(matchIndex) ?? 'team1';
+        primary.push({ matchIndex, position });
+      } else {
+        primary.push({ matchIndex, position: 'team1' });
+        secondary.push({ matchIndex, position: 'team2' });
+      }
     } else if (empty1 || empty2) {
       const pos = empty1 ? 'team1' : 'team2';
-      secondary.push({ matchIndex, position: pos });
+      if (!byeIndices.has(matchIndex)) {
+        secondary.push({ matchIndex, position: pos });
+      }
     }
   });
 

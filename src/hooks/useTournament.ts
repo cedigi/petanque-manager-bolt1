@@ -27,6 +27,29 @@ import { calculateOptimalPools } from '../utils/poolGeneration';
 
 const STORAGE_KEY = 'petanque-tournament';
 
+const shuffleArray = <T,>(items: T[]): T[] => {
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+const getRandomByeIndices = (matchCount: number, byesNeeded: number): Set<number> => {
+  if (byesNeeded <= 0 || matchCount <= 0) return new Set();
+  const indices = Array.from({ length: matchCount }, (_, i) => i);
+  let candidates = indices;
+  if (matchCount > 2) {
+    const interior = indices.slice(1, -1);
+    if (interior.length >= byesNeeded) {
+      candidates = interior;
+    }
+  }
+  const shuffled = shuffleArray(candidates);
+  return new Set(shuffled.slice(0, byesNeeded));
+};
+
 export interface UseTournamentReturn {
   tournament: Tournament | null;
   createTournament: (
@@ -195,12 +218,13 @@ export function useTournament(): UseTournamentReturn {
     const bracketSize = 1 << Math.ceil(Math.log2(bottomCount));
     const byesNeeded = bracketSize - bottomCount;
 
-    const sortedTeams = [...bottomTeams];
+    const sortedTeams = shuffleArray(bottomTeams);
+    const byeIndices = getRandomByeIndices(firstRound.length, byesNeeded);
     let teamIdx = 0;
 
     for (let i = 0; i < firstRound.length; i++) {
       const match = firstRound[i];
-      if (teamIdx < byesNeeded) {
+      if (byeIndices.has(i)) {
         const team = sortedTeams[teamIdx++];
         firstRound[i] = {
           ...match,
