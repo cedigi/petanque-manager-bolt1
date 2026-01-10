@@ -165,7 +165,7 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
 
         if (refreshedWinnersMatch?.completed && refreshedLosersMatch?.completed) {
           const allPoolMatches = allMatches.filter(
-            m => m.poolId === pool.id && m.completed,
+            m => m.poolId === pool.id && m.completed && m.round < 3,
           );
 
           const teamStats = [team1, team2, team3, team4].map(team => {
@@ -331,6 +331,7 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
               m =>
                 m.poolId === pool.id &&
                 m.completed &&
+                m.round < 3 &&
                 !m.isBye &&
                 (m.team1Id === team.id || m.team2Id === team.id),
             );
@@ -339,6 +340,7 @@ export function generateNextPoolMatches(tournament: Tournament): Match[] {
               m =>
                 m.poolId === pool.id &&
                 m.completed &&
+                m.round < 3 &&
                 m.isBye &&
                 (m.team1Id === team.id || m.team2Id === team.id) &&
                 ((m.team1Id === team.id && (m.team1Score || 0) > (m.team2Score || 0)) ||
