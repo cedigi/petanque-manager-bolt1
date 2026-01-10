@@ -576,9 +576,18 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
   const newQualifiedTeams = qualifiedTeams.filter(team => !usedTeams.has(team.id));
 
   if (newQualifiedTeams.length === 0) {
+    const pendingPoolMatches = poolMatches.filter(m => !m.completed).length;
+    const finalMatchesWithByes = applyByeLogic(
+      firstRoundFinalMatches,
+      qualifiedTeams.length,
+      expectedQualified,
+      pendingPoolMatches,
+    );
+    const byesById = new Map(finalMatchesWithByes.map(match => [match.id, match]));
+    const mergedFinalMatches = cleanedFinalMatches.map(match => byesById.get(match.id) ?? match);
     const baseTournament = {
       ...updatedTournament,
-      matches: [...poolMatches, ...cleanedFinalMatches],
+      matches: [...poolMatches, ...mergedFinalMatches],
     };
     return updateCategoryBPhases(propagateWinnersToNextPhases(baseTournament));
   }
