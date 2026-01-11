@@ -264,6 +264,55 @@ function getRandomByeIndices(matchCount: number, byesNeeded: number): Set<number
   return new Set(shuffled.slice(0, byesNeeded));
 }
 
+function selectByeIndices(matches: Match[], byesNeeded: number): Set<number> {
+  if (byesNeeded <= 0 || matches.length === 0) return new Set();
+
+  const existingByeIndices = matches
+    .map((match, index) => ({ match, index }))
+    .filter(
+      ({ match }) =>
+        match.isBye || (match.team1Id && match.team2Id && match.team1Id === match.team2Id),
+    )
+    .map(({ index }) => index);
+
+  const partialIndices = matches
+    .map((match, index) => ({ match, index }))
+    .filter(
+      ({ match }) =>
+        (match.team1Id && !match.team2Id) || (!match.team1Id && match.team2Id),
+    )
+    .map(({ index }) => index);
+
+  const emptyIndices = matches
+    .map((match, index) => ({ match, index }))
+    .filter(({ match }) => !match.team1Id && !match.team2Id)
+    .map(({ index }) => index);
+
+  const selected = new Set<number>();
+  for (const index of existingByeIndices) {
+    if (selected.size >= byesNeeded) break;
+    selected.add(index);
+  }
+
+  const remainingCandidates = shuffleArray(
+    [...partialIndices, ...emptyIndices].filter(index => !selected.has(index)),
+  );
+  for (const index of remainingCandidates) {
+    if (selected.size >= byesNeeded) break;
+    selected.add(index);
+  }
+
+  if (selected.size < byesNeeded) {
+    const fallback = getRandomByeIndices(matches.length, byesNeeded);
+    for (const index of fallback) {
+      if (selected.size >= byesNeeded) break;
+      selected.add(index);
+    }
+  }
+
+  return selected;
+}
+
 export function getExpectedQualifiedCounts(tournament: Tournament): {
   expectedQualifiedA: number;
   expectedBottomCount: number;
@@ -798,7 +847,7 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
   const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
   const byesNeeded = bracketSize - expectedQualified;
   const byeIndices =
-    byesNeeded > 0 ? getRandomByeIndices(firstRoundFinalMatches.length, byesNeeded) : new Set();
+    byesNeeded > 0 ? selectByeIndices(firstRoundFinalMatches, byesNeeded) : new Set();
   const byeMatchIds = new Set(
     firstRoundFinalMatches.filter((_, index) => byeIndices.has(index)).map(match => match.id),
   );
