@@ -8,7 +8,49 @@ export function countEmptySlots(matches: Match[]): number {
   }, 0);
 }
 
-export function applyByeLogic(matches: Match[], qualifiedCount: number, expectedQualified: number): Match[] {
+export function applyByeLogic(
+  matches: Match[],
+  qualifiedCount: number,
+  expectedQualified: number,
+  allowedByeMatchIds?: Set<string>,
+): Match[] {
+  const hasAllowedByeSet = allowedByeMatchIds && allowedByeMatchIds.size > 0;
+  if (hasAllowedByeSet) {
+    return matches.map(match => {
+      const isAllowed = allowedByeMatchIds!.has(match.id);
+      const hasDuplicateTeams =
+        match.team1Id && match.team2Id && match.team1Id === match.team2Id;
+      if (!isAllowed) {
+        if (!match.isBye && !hasDuplicateTeams) {
+          return match;
+        }
+        return {
+          ...match,
+          team2Id: hasDuplicateTeams ? '' : match.team2Id,
+          team1Score: undefined,
+          team2Score: undefined,
+          completed: false,
+          isBye: false,
+        };
+      }
+      if (!match.completed) {
+        if ((match.team1Id && !match.team2Id) || (!match.team1Id && match.team2Id)) {
+          const solo = match.team1Id || match.team2Id || '';
+          return {
+            ...match,
+            team1Id: solo,
+            team2Id: solo,
+            team1Score: 13,
+            team2Score: 0,
+            completed: true,
+            isBye: true,
+          };
+        }
+      }
+      return match;
+    });
+  }
+
   if (qualifiedCount < expectedQualified) {
     return matches.map(match => {
       if (!match.isBye && !(match.team1Id && match.team2Id && match.team1Id === match.team2Id)) {
