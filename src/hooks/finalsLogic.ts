@@ -289,9 +289,21 @@ function selectByeIndices(matches: Match[], byesNeeded: number): Set<number> {
     .map(({ index }) => index);
 
   const selected = new Set<number>();
+  const groupCount = Math.ceil(matches.length / 2);
+  const enforceUniqueGroups = byesNeeded <= groupCount;
+  const usedGroups = new Set<number>();
+  const trySelect = (index: number, enforceGroups: boolean): boolean => {
+    if (selected.has(index)) return false;
+    const groupIndex = Math.floor(index / 2);
+    if (enforceGroups && usedGroups.has(groupIndex)) return false;
+    selected.add(index);
+    usedGroups.add(groupIndex);
+    return true;
+  };
+
   for (const index of existingByeIndices) {
     if (selected.size >= byesNeeded) break;
-    selected.add(index);
+    trySelect(index, enforceUniqueGroups);
   }
 
   const remainingCandidates = shuffleArray(
@@ -299,7 +311,17 @@ function selectByeIndices(matches: Match[], byesNeeded: number): Set<number> {
   );
   for (const index of remainingCandidates) {
     if (selected.size >= byesNeeded) break;
-    selected.add(index);
+    trySelect(index, enforceUniqueGroups);
+  }
+
+  if (enforceUniqueGroups && selected.size < byesNeeded) {
+    const relaxedCandidates = shuffleArray(
+      [...existingByeIndices, ...remainingCandidates].filter(index => !selected.has(index)),
+    );
+    for (const index of relaxedCandidates) {
+      if (selected.size >= byesNeeded) break;
+      trySelect(index, false);
+    }
   }
 
   if (selected.size < byesNeeded) {
