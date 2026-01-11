@@ -206,6 +206,7 @@ export function getCurrentQualifiedTeams(tournament: Tournament): Team[] {
         pointsAgainst,
         performance: pointsFor - pointsAgainst,
         matches: teamMatches.length + byeMatches.length,
+        losses: teamMatches.length + byeMatches.length - wins,
       };
     });
 
@@ -214,53 +215,28 @@ export function getCurrentQualifiedTeams(tournament: Tournament): Team[] {
       return b.performance - a.performance;
     });
 
-    if (poolTeams.length === 4) {
-      const completedMatches = poolMatches.length;
-      if (completedMatches >= 4) {
-        teamStats.slice(0, 2).forEach(stat => {
-          if (!qualifiedIds.has(stat.team.id)) {
-            qualified.push(stat.team);
-            qualifiedIds.add(stat.team.id);
-          }
-        });
-      } else if (completedMatches >= 2) {
-        const teamsWithTwoWins = teamStats.filter(stat => stat.wins >= 2);
-        teamsWithTwoWins.forEach(stat => {
-          if (!qualifiedIds.has(stat.team.id)) {
-            qualified.push(stat.team);
-            qualifiedIds.add(stat.team.id);
-          }
-        });
-      }
-    } else if (poolTeams.length === 3) {
-      const completedMatches = poolMatches.filter(m => !m.isBye).length;
-      if (completedMatches >= 2) {
-        teamStats.slice(0, 2).forEach(stat => {
-          if (!qualifiedIds.has(stat.team.id)) {
-            qualified.push(stat.team);
-            qualifiedIds.add(stat.team.id);
-          }
-        });
-      } else if (completedMatches >= 1) {
-        const teamsWithAtLeastOneWin = teamStats.filter(stat => stat.wins >= 1);
-        teamsWithAtLeastOneWin.slice(0, 2).forEach(stat => {
-          if (!qualifiedIds.has(stat.team.id)) {
-            qualified.push(stat.team);
-            qualifiedIds.add(stat.team.id);
-          }
-        });
-      }
-    } else if (poolTeams.length === 2) {
-      const matchCompleted = poolMatches.some(m => !m.isBye && m.completed);
-      if (matchCompleted) {
-        teamStats.forEach(stat => {
-          if (!qualifiedIds.has(stat.team.id)) {
-            qualified.push(stat.team);
-            qualifiedIds.add(stat.team.id);
-          }
-        });
-      }
+    const completedMatches = poolMatches.filter(m => !m.isBye).length;
+    const totalMatches = (poolTeams.length * (poolTeams.length - 1)) / 2;
+    const poolComplete = totalMatches > 0 && completedMatches >= totalMatches;
+
+    if (poolComplete) {
+      teamStats.slice(0, Math.min(2, teamStats.length)).forEach(stat => {
+        if (!qualifiedIds.has(stat.team.id)) {
+          qualified.push(stat.team);
+          qualifiedIds.add(stat.team.id);
+        }
+      });
+      return;
     }
+
+    teamStats
+      .filter(stat => stat.wins >= 2)
+      .forEach(stat => {
+        if (!qualifiedIds.has(stat.team.id)) {
+          qualified.push(stat.team);
+          qualifiedIds.add(stat.team.id);
+        }
+      });
   });
   return qualified;
 }
@@ -368,6 +344,7 @@ export function getCurrentBottomTeams(tournament: Tournament): Team[] {
         pointsAgainst,
         performance: pointsFor - pointsAgainst,
         matches: teamMatches.length + byeMatches.length,
+        losses: teamMatches.length + byeMatches.length - wins,
       };
     });
 
@@ -376,42 +353,29 @@ export function getCurrentBottomTeams(tournament: Tournament): Team[] {
       return b.performance - a.performance;
     });
 
-    const qualifiedIds = new Set<string>();
+    const completedMatches = poolMatches.filter(m => !m.isBye).length;
+    const totalMatches = (poolTeams.length * (poolTeams.length - 1)) / 2;
+    const poolComplete = totalMatches > 0 && completedMatches >= totalMatches;
 
-    if (poolTeams.length === 4) {
-      const completedMatches = poolMatches.length;
-      if (completedMatches >= 4) {
-        teamStats.slice(0, 2).forEach(stat => qualifiedIds.add(stat.team.id));
-      } else if (completedMatches >= 2) {
-        teamStats
-          .filter(stat => stat.wins >= 2)
-          .forEach(stat => qualifiedIds.add(stat.team.id));
-      }
-    } else if (poolTeams.length === 3) {
-      const completedMatches = poolMatches.filter(m => !m.isBye).length;
-      if (completedMatches >= 2) {
-        teamStats.slice(0, 2).forEach(stat => qualifiedIds.add(stat.team.id));
-      } else if (completedMatches >= 1) {
-        teamStats
-          .filter(stat => stat.wins >= 1)
-          .slice(0, 2)
-          .forEach(stat => qualifiedIds.add(stat.team.id));
-      }
-    } else if (poolTeams.length === 2) {
-      const matchCompleted = poolMatches.some(m => !m.isBye && m.completed);
-      if (matchCompleted) {
-        teamStats.forEach(stat => qualifiedIds.add(stat.team.id));
-      }
-    }
-
-    if (qualifiedIds.size >= 2) {
+    if (poolComplete) {
+      const qualifiedIds = new Set(teamStats.slice(0, Math.min(2, teamStats.length)).map(stat => stat.team.id));
       teamStats.forEach(stat => {
         if (!qualifiedIds.has(stat.team.id) && !bottomIds.has(stat.team.id)) {
           bottomTeams.push(stat.team);
           bottomIds.add(stat.team.id);
         }
       });
+      return;
     }
+
+    teamStats
+      .filter(stat => stat.losses >= 2)
+      .forEach(stat => {
+        if (!bottomIds.has(stat.team.id)) {
+          bottomTeams.push(stat.team);
+          bottomIds.add(stat.team.id);
+        }
+      });
   });
 
   return bottomTeams;

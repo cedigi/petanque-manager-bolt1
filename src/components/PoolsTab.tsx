@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Pool, Team, Tournament, Match } from '../types/tournament';
 import { Grid3X3, Trophy, Shuffle, Printer, Crown, X, Edit3, Loader2 } from 'lucide-react';
 import { CourtAvailability } from './CourtAvailability';
+import { getCurrentBottomTeams, getCurrentQualifiedTeams } from '../hooks/finalsLogic';
 import { calculateOptimalPools } from '../utils/poolGeneration';
 
 interface PoolsTabProps {
@@ -110,105 +111,11 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
     }
   };
 
-  // Calculer les équipes actuellement qualifiées (même partiellement)
-  const getCurrentQualifiedTeams = () => {
-    const qualified: Team[] = [];
-    
-    pools.forEach(pool => {
-      const poolMatches = tournament.matches.filter(m => m.poolId === pool.id && m.completed);
-      const poolTeams = pool.teamIds.map(id => teams.find(t => t.id === id)).filter(Boolean) as Team[];
-      
-      // Calculer les statistiques de chaque équipe dans la poule
-      const teamStats = poolTeams.map(team => {
-        const teamMatches = poolMatches.filter(m => 
-          !m.isBye && (m.team1Id === team.id || m.team2Id === team.id)
-        );
+  const qualifiedTeams = getCurrentQualifiedTeams(tournament);
+  const bottomTeams = getCurrentBottomTeams(tournament);
 
-        const byeMatches = poolMatches.filter(m => 
-          m.isBye && (m.team1Id === team.id || m.team2Id === team.id) &&
-          ((m.team1Id === team.id && (m.team1Score || 0) > (m.team2Score || 0)) ||
-           (m.team2Id === team.id && (m.team2Score || 0) > (m.team1Score || 0)))
-        );
-
-        let wins = 0;
-        let pointsFor = 0;
-        let pointsAgainst = 0;
-
-        teamMatches.forEach(match => {
-          const isTeam1 = match.team1Id === team.id;
-          const teamScore = isTeam1 ? match.team1Score! : match.team2Score!;
-          const opponentScore = isTeam1 ? match.team2Score! : match.team1Score!;
-          
-          pointsFor += teamScore;
-          pointsAgainst += opponentScore;
-          
-          if (teamScore > opponentScore) wins++;
-        });
-
-        // Ajouter les victoires BYE
-        wins += byeMatches.length;
-        byeMatches.forEach(match => {
-          const isTeam1 = match.team1Id === team.id;
-          const teamScore = isTeam1 ? match.team1Score! : match.team2Score!;
-          const opponentScore = isTeam1 ? match.team2Score! : match.team1Score!;
-          pointsFor += teamScore;
-          pointsAgainst += opponentScore;
-        });
-
-        return { 
-          team, 
-          wins, 
-          pointsFor, 
-          pointsAgainst, 
-          performance: pointsFor - pointsAgainst,
-          matches: teamMatches.length + byeMatches.length
-        };
-      });
-
-      // Trier par victoires puis par performance
-      teamStats.sort((a, b) => {
-        if (b.wins !== a.wins) return b.wins - a.wins;
-        return b.performance - a.performance;
-      });
-
-      // Déterminer les qualifiés selon l'état de la poule
-      if (poolTeams.length === 4) {
-        // Pour une poule de 4, vérifier l'état d'avancement
-        const completedMatches = poolMatches.length;
-        
-        if (completedMatches >= 4) {
-          // Poule terminée : prendre les 2 premiers
-          qualified.push(...teamStats.slice(0, 2).map(stat => stat.team));
-        } else if (completedMatches >= 2) {
-          // Au moins les 2 premiers matchs : on peut identifier au moins 1 qualifié certain
-          const teamsWithTwoWins = teamStats.filter(stat => stat.wins >= 2);
-          qualified.push(...teamsWithTwoWins.map(stat => stat.team));
-        }
-      } else if (poolTeams.length === 3) {
-        // Pour une poule de 3
-        const completedMatches = poolMatches.filter(m => !m.isBye).length;
-
-        if (completedMatches >= 2) {
-          // Poule terminée : prendre les 2 premiers
-          qualified.push(...teamStats.slice(0, 2).map(stat => stat.team));
-        } else if (completedMatches >= 1) {
-          // Premier match terminé : l'équipe avec BYE + le gagnant sont qualifiés
-          const teamsWithAtLeastOneWin = teamStats.filter(stat => stat.wins >= 1);
-          qualified.push(...teamsWithAtLeastOneWin.slice(0, 2).map(stat => stat.team));
-        }
-      } else if (poolTeams.length === 2) {
-        const matchCompleted = poolMatches.some(m => !m.isBye && m.completed);
-        if (matchCompleted) {
-          qualified.push(...teamStats.map(stat => stat.team));
-        }
-      }
-    });
-
-    return qualified;
-  };
-
-  const qualifiedTeams = getCurrentQualifiedTeams();
-  const bottomTeams = teams.filter(t => t.poolId && !qualifiedTeams.some(q => q.id === t.id));
+  const hasQualifiedA = qualifiedTeams.length > 0;
+  const hasQualifiedB = bottomTeams.length > 0;
 
   return (
     <div className="p-6">
@@ -271,7 +178,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
             matches={showCatB ? tournament.matchesB : tournament.matches}
           />
 
-          {/* Phases finales - TOUJOURS affichées avec remplissage progressif */}
+          {/* Phases finales - affichage conditionnel selon les qualifications */}
           <div className="flex justify-end mb-2">
             <button
               onClick={() => setShowCatB(!showCatB)}
@@ -280,16 +187,18 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
               {showCatB ? 'Voir Catégorie A' : 'Voir Catégorie B'}
             </button>
           </div>
-          <FinalPhases
-            qualifiedTeams={showCatB ? bottomTeams : qualifiedTeams}
-            tournament={tournament}
-            matches={showCatB ? tournament.matchesB : tournament.matches}
-            onUpdateScore={onUpdateScore}
-            onUpdateCourt={onUpdateCourt}
-            totalTeams={teams.length}
-            title={showCatB ? 'Catégorie B' : 'Catégorie A'}
-            roundOffset={showCatB ? 200 : 100}
-          />
+          {(showCatB ? hasQualifiedB : hasQualifiedA) && (
+            <FinalPhases
+              qualifiedTeams={showCatB ? bottomTeams : qualifiedTeams}
+              tournament={tournament}
+              matches={showCatB ? tournament.matchesB : tournament.matches}
+              onUpdateScore={onUpdateScore}
+              onUpdateCourt={onUpdateCourt}
+              totalTeams={teams.length}
+              title={showCatB ? 'Catégorie B' : 'Catégorie A'}
+              roundOffset={showCatB ? 200 : 100}
+            />
+          )}
 
           {/* Catégorie A / B toggle */}
           <div className="flex items-center justify-between my-6">
@@ -309,16 +218,18 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
                 courts={tournament.courts}
                 matches={tournament.matchesB}
               />
-              <FinalPhases
-                qualifiedTeams={qualifiedTeams}
-                tournament={tournament}
-                matches={tournament.matchesB}
-                onUpdateScore={onUpdateScore}
-                onUpdateCourt={onUpdateCourt}
-                totalTeams={teams.length}
-                title="Catégorie B"
-                roundOffset={200}
-              />
+              {hasQualifiedB && (
+                <FinalPhases
+                  qualifiedTeams={bottomTeams}
+                  tournament={tournament}
+                  matches={tournament.matchesB}
+                  onUpdateScore={onUpdateScore}
+                  onUpdateCourt={onUpdateCourt}
+                  totalTeams={teams.length}
+                  title="Catégorie B"
+                  roundOffset={200}
+                />
+              )}
             </>
           ) : (
             <>
@@ -326,16 +237,18 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
                 courts={tournament.courts}
                 matches={tournament.matches}
               />
-              <FinalPhases
-                qualifiedTeams={qualifiedTeams}
-                tournament={tournament}
-                matches={tournament.matches}
-                onUpdateScore={onUpdateScore}
-                onUpdateCourt={onUpdateCourt}
-                totalTeams={teams.length}
-                title="Catégorie A"
-                roundOffset={100}
-              />
+              {hasQualifiedA && (
+                <FinalPhases
+                  qualifiedTeams={qualifiedTeams}
+                  tournament={tournament}
+                  matches={tournament.matches}
+                  onUpdateScore={onUpdateScore}
+                  onUpdateCourt={onUpdateCourt}
+                  totalTeams={teams.length}
+                  title="Catégorie A"
+                  roundOffset={100}
+                />
+              )}
             </>
           )}
 
