@@ -678,7 +678,13 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   const firstRound = matchesB.filter(m => m.round === 200);
   const bracketSize = 1 << Math.ceil(Math.log2(bottomCount));
   const byesNeeded = bracketSize - bottomCount;
+        codex/investigate-tournament-phase-assignment-issue-hr5z8y
   const byeIndices = byesNeeded > 0 ? selectByeIndices(firstRound, byesNeeded) : new Set();
+       
+  const shouldApplyByes = pendingPoolMatches === 0;
+  const byeIndices =
+    shouldApplyByes && byesNeeded > 0 ? selectByeIndices(firstRound, byesNeeded) : new Set();
+        main
   const byeMatchIds = new Set(
     firstRound.filter((_, index) => byeIndices.has(index)).map(match => match.id),
   );
@@ -899,12 +905,42 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
 
   const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
   const pendingPoolMatches = poolMatches.filter(m => !m.completed).length;
+        codex/investigate-tournament-phase-assignment-issue-hr5z8y
   const byesNeeded = bracketSize - expectedQualified;
   const byeIndices = byesNeeded > 0 ? selectByeIndices(firstRoundFinalMatches, byesNeeded) : new Set();
+ 
+  const shouldApplyByes = pendingPoolMatches === 0;
+  const byesNeeded = bracketSize - expectedQualified;
+  const byeIndices =
+    shouldApplyByes && byesNeeded > 0 ? selectByeIndices(firstRoundFinalMatches, byesNeeded) : new Set();
+        main
   const byeMatchIds = new Set(
     firstRoundFinalMatches.filter((_, index) => byeIndices.has(index)).map(match => match.id),
   );
 
+        codex/investigate-tournament-phase-assignment-issue-hr5z8y
+ 
+  if (newQualifiedTeams.length === 0) {
+    const mergedFinalMatches = shouldApplyByes
+      ? (() => {
+          const finalMatchesWithByes = applyByeLogic(
+            firstRoundFinalMatches,
+            qualifiedTeams.length,
+            expectedQualified,
+            byeMatchIds,
+          );
+          const byesById = new Map(finalMatchesWithByes.map(match => [match.id, match]));
+          return cleanedFinalMatches.map(match => byesById.get(match.id) ?? match);
+        })()
+      : cleanedFinalMatches;
+    const baseTournament = {
+      ...updatedTournament,
+      matches: [...poolMatches, ...mergedFinalMatches],
+    };
+    return updateCategoryBPhases(propagateWinnersToNextPhases(baseTournament));
+  }
+
+        main
   const byeSides = byeIndices.size > 0
     ? shuffleArray(Array.from(byeIndices)).map(index => ({
         matchIndex: index,
@@ -1008,6 +1044,7 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
     }
   });
 
+        codex/investigate-tournament-phase-assignment-issue-hr5z8y
   const byeDelay = updatedTournament.finalsByeDelayA ?? 2;
   const partialMatchesCount = updatedFinalMatches.filter(match => {
     const filled = Number(Boolean(match.team1Id)) + Number(Boolean(match.team2Id));
@@ -1037,6 +1074,8 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
     return updateCategoryBPhases(propagateWinnersToNextPhases(baseTournament));
   }
 
+ 
+        main
   if (shouldApplyByes) {
     const finalMatchesWithByes = applyByeLogic(
       updatedFinalMatches,
