@@ -85,6 +85,12 @@ export function useTournament(): UseTournamentReturn {
         if (!parsed.matchesB) {
           parsed.matchesB = [];
         }
+        if (!parsed.finalsByeDelayA) {
+          parsed.finalsByeDelayA = 2 + Math.floor(Math.random() * 3);
+        }
+        if (!parsed.finalsByeDelayB) {
+          parsed.finalsByeDelayB = 2 + Math.floor(Math.random() * 3);
+        }
         setTournament(parsed);
       } catch (e) {
         console.warn('Failed to parse saved tournament:', e);

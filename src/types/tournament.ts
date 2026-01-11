@@ -76,4 +76,6 @@ export interface Tournament {
   networkStatus: 'online' | 'offline' | 'compromised';
   poolsGenerated: boolean;
   preferredPoolSize?: 3 | 4;
+  finalsByeDelayA?: number;
+  finalsByeDelayB?: number;
 }
