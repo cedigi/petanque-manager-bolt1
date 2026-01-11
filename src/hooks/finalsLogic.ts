@@ -521,8 +521,9 @@ export function initializeCategoryBBracket(
   others: Match[],
   bottomTeams: Team[],
   bottomCount: number,
+  byeMatchIds?: Set<string>,
 ): Match[] {
-  const withByes = applyByeLogic(firstRound, bottomTeams.length, bottomCount);
+  const withByes = applyByeLogic(firstRound, bottomTeams.length, bottomCount, byeMatchIds);
   for (let i = 0; i < firstRound.length; i++) {
     firstRound[i] = withByes[i];
   }
@@ -582,11 +583,15 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   }
 
   const firstRound = matchesB.filter(m => m.round === 200);
+  const bracketSize = 1 << Math.ceil(Math.log2(bottomCount));
+  const byesNeeded = bracketSize - bottomCount;
+  const byeIndices =
+    byesNeeded > 0 ? getRandomByeIndices(firstRound.length, byesNeeded) : new Set();
+  const byeMatchIds = new Set(
+    firstRound.filter((_, index) => byeIndices.has(index)).map(match => match.id),
+  );
   if (rebuildBracket) {
-    const bracketSize = 1 << Math.ceil(Math.log2(bottomCount));
-    const byesNeeded = bracketSize - bottomCount;
     const sorted = shuffleArray(bottomTeams);
-    const byeIndices = getRandomByeIndices(firstRound.length, byesNeeded);
     let teamIdx = 0;
     for (let i = 0; i < firstRound.length; i++) {
       const match = firstRound[i];
@@ -648,6 +653,7 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
       }
       for (let i = 0; i < firstRound.length; i++) {
         if (teamIdx >= shuffledTeams.length) break;
+        if (byeIndices.has(i)) continue;
         const match = firstRound[i];
         firstRound[i] = {
           ...match,
@@ -659,25 +665,71 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
       const secondaryPositions: { matchIndex: number; position: 'team1' | 'team2' }[] = [];
       firstRound.forEach((m, idx) => {
         if (!m.team1Id && !m.team2Id) {
-          priorityPositions.push({ matchIndex: idx, position: 'team1' });
-          secondaryPositions.push({ matchIndex: idx, position: 'team2' });
+          if (byeIndices.has(idx)) {
+            priorityPositions.push({ matchIndex: idx, position: 'team1' });
+          } else {
+            priorityPositions.push({ matchIndex: idx, position: 'team1' });
+            secondaryPositions.push({ matchIndex: idx, position: 'team2' });
+          }
         } else if (!m.team1Id) {
-          secondaryPositions.push({ matchIndex: idx, position: 'team1' });
+          if (!byeIndices.has(idx)) {
+            secondaryPositions.push({ matchIndex: idx, position: 'team1' });
+          }
         } else if (!m.team2Id) {
-          secondaryPositions.push({ matchIndex: idx, position: 'team2' });
+          if (!byeIndices.has(idx)) {
+            secondaryPositions.push({ matchIndex: idx, position: 'team2' });
+          }
         }
       });
       const newTeams = shuffleArray(bottomTeams.filter(bt => !used.has(bt.id)));
+      const minPartialMatchesBeforePairing = 3;
+      let partialMatchesCount = firstRound.filter(match => {
+        const filled = Number(Boolean(match.team1Id)) + Number(Boolean(match.team2Id));
+        return filled === 1;
+      }).length;
       const shuffledPriority = shuffleArray(priorityPositions);
       const shuffledSecondary = shuffleArray(secondaryPositions);
       newTeams.forEach(team => {
-        const pos = shuffledPriority.shift() ?? shuffledSecondary.shift();
-        if (!pos) return;
-        const match = firstRound[pos.matchIndex];
-        firstRound[pos.matchIndex] = {
-          ...match,
-          [pos.position + 'Id']: team.id,
-        } as Match;
+        const shouldTryPairingFirst =
+          partialMatchesCount >= minPartialMatchesBeforePairing && shuffledSecondary.length > 0;
+        const positionPools = shouldTryPairingFirst
+          ? [shuffledSecondary, shuffledPriority]
+          : [shuffledPriority, shuffledSecondary];
+        let placed = false;
+        for (const pool of positionPools) {
+          const pos = pool.shift();
+          if (!pos) continue;
+          const match = firstRound[pos.matchIndex];
+          const filledBefore =
+            Number(Boolean(match.team1Id)) + Number(Boolean(match.team2Id));
+          firstRound[pos.matchIndex] = {
+            ...match,
+            [pos.position + 'Id']: team.id,
+          } as Match;
+          if (filledBefore === 0) {
+            partialMatchesCount += 1;
+          } else if (filledBefore === 1) {
+            partialMatchesCount -= 1;
+          }
+          placed = true;
+          break;
+        }
+        if (!placed) {
+          const fallback = shuffledPriority.shift() ?? shuffledSecondary.shift();
+          if (!fallback) return;
+          const match = firstRound[fallback.matchIndex];
+          const filledBefore =
+            Number(Boolean(match.team1Id)) + Number(Boolean(match.team2Id));
+          firstRound[fallback.matchIndex] = {
+            ...match,
+            [fallback.position + 'Id']: team.id,
+          } as Match;
+          if (filledBefore === 0) {
+            partialMatchesCount += 1;
+          } else if (filledBefore === 1) {
+            partialMatchesCount -= 1;
+          }
+        }
       });
     }
   }
@@ -689,6 +741,7 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
     others,
     bottomTeams,
     bottomCount,
+    byeMatchIds,
   );
   return assignAvailableFinalCourts({ ...t, matchesB: propagated });
 }
@@ -742,11 +795,20 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
   });
   const newQualifiedTeams = qualifiedTeams.filter(team => !usedTeams.has(team.id));
 
+  const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
+  const byesNeeded = bracketSize - expectedQualified;
+  const byeIndices =
+    byesNeeded > 0 ? getRandomByeIndices(firstRoundFinalMatches.length, byesNeeded) : new Set();
+  const byeMatchIds = new Set(
+    firstRoundFinalMatches.filter((_, index) => byeIndices.has(index)).map(match => match.id),
+  );
+
   if (newQualifiedTeams.length === 0) {
     const finalMatchesWithByes = applyByeLogic(
       firstRoundFinalMatches,
       qualifiedTeams.length,
       expectedQualified,
+      byeMatchIds,
     );
     const byesById = new Map(finalMatchesWithByes.map(match => [match.id, match]));
     const mergedFinalMatches = cleanedFinalMatches.map(match => byesById.get(match.id) ?? match);
@@ -757,10 +819,6 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
     return updateCategoryBPhases(propagateWinnersToNextPhases(baseTournament));
   }
 
-  const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
-  const byesNeeded = bracketSize - qualifiedTeams.length;
-  const byeIndices =
-    byesNeeded > 0 ? getRandomByeIndices(firstRoundFinalMatches.length, byesNeeded) : new Set();
   const byeSides = byeIndices.size > 0
     ? shuffleArray(Array.from(byeIndices)).map(index => ({
         matchIndex: index,
@@ -789,16 +847,21 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
     }
   });
 
-  const orderedPositions = [
-    ...shuffleArray(primary),
-    ...shuffleArray(secondary),
-  ];
   const updatedFinalMatches = [...firstRoundFinalMatches];
   const randomizedTeams = shuffleArray(newQualifiedTeams);
-  randomizedTeams.forEach(team => {
-    let placed = false;
-    for (let i = 0; i < orderedPositions.length; i++) {
-      const pos = orderedPositions[i];
+  const minPartialMatchesBeforePairing = 3;
+  let partialMatchesCount = updatedFinalMatches.filter(match => {
+    const filled = Number(Boolean(match.team1Id)) + Number(Boolean(match.team2Id));
+    return filled === 1;
+  }).length;
+  const primaryPositions = shuffleArray(primary);
+  const secondaryPositions = shuffleArray(secondary);
+  const tryFindPosition = (
+    positions: { matchIndex: number; position: 'team1' | 'team2' }[],
+    team: Team,
+  ): number => {
+    for (let i = 0; i < positions.length; i++) {
+      const pos = positions[i];
       const match = updatedFinalMatches[pos.matchIndex];
       const otherTeamId = pos.position === 'team1' ? match.team2Id : match.team1Id;
       if (otherTeamId) {
@@ -807,21 +870,55 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
           continue;
         }
       }
+      return i;
+    }
+    return -1;
+  };
+
+  randomizedTeams.forEach(team => {
+    const shouldTryPairingFirst =
+      partialMatchesCount >= minPartialMatchesBeforePairing && secondaryPositions.length > 0;
+    const positionPools = shouldTryPairingFirst
+      ? [secondaryPositions, primaryPositions]
+      : [primaryPositions, secondaryPositions];
+    let placed = false;
+    for (const pool of positionPools) {
+      const index = tryFindPosition(pool, team);
+      if (index === -1) continue;
+      const pos = pool[index];
+      const match = updatedFinalMatches[pos.matchIndex];
+      const filledBefore =
+        Number(Boolean(match.team1Id)) + Number(Boolean(match.team2Id));
       updatedFinalMatches[pos.matchIndex] = {
         ...match,
         [pos.position + 'Id']: team.id,
       } as Match;
-      orderedPositions.splice(i, 1);
+      pool.splice(index, 1);
+      if (filledBefore === 0) {
+        partialMatchesCount += 1;
+      } else if (filledBefore === 1) {
+        partialMatchesCount -= 1;
+      }
       placed = true;
       break;
     }
-    if (!placed && orderedPositions.length > 0) {
-      const pos = orderedPositions.shift()!;
+    if (!placed) {
+      const fallbackPool =
+        primaryPositions.length > 0 ? primaryPositions : secondaryPositions;
+      const pos = fallbackPool.shift();
+      if (!pos) return;
       const match = updatedFinalMatches[pos.matchIndex];
+      const filledBefore =
+        Number(Boolean(match.team1Id)) + Number(Boolean(match.team2Id));
       updatedFinalMatches[pos.matchIndex] = {
         ...match,
         [pos.position + 'Id']: team.id,
       } as Match;
+      if (filledBefore === 0) {
+        partialMatchesCount += 1;
+      } else if (filledBefore === 1) {
+        partialMatchesCount -= 1;
+      }
     }
   });
 
@@ -829,6 +926,7 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
     updatedFinalMatches,
     qualifiedTeams.length,
     expectedQualified,
+    byeMatchIds,
   );
   for (let i = 0; i < updatedFinalMatches.length; i++) {
     updatedFinalMatches[i] = finalMatchesWithByes[i];
