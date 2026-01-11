@@ -678,9 +678,7 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   const firstRound = matchesB.filter(m => m.round === 200);
   const bracketSize = 1 << Math.ceil(Math.log2(bottomCount));
   const byesNeeded = bracketSize - bottomCount;
-  const shouldComputeByeIndices = pendingPoolMatches === 0;
-  const byeIndices =
-    shouldComputeByeIndices && byesNeeded > 0 ? selectByeIndices(firstRound, byesNeeded) : new Set();
+  const byeIndices = byesNeeded > 0 ? selectByeIndices(firstRound, byesNeeded) : new Set();
   const byeMatchIds = new Set(
     firstRound.filter((_, index) => byeIndices.has(index)).map(match => match.id),
   );
@@ -833,9 +831,7 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
     const filled = Number(Boolean(match.team1Id)) + Number(Boolean(match.team2Id));
     return filled === 1;
   }).length;
-  const shouldApplyByes =
-    pendingPoolMatches === 0 &&
-    (partialMatchesCount >= byeDelay || bottomTeams.length >= bottomCount);
+  const shouldApplyByes = partialMatchesCount >= byeDelay || bottomTeams.length >= bottomCount;
 
   const others = matchesB.filter(m => m.round > 200);
   const propagated = initializeCategoryBBracket(
@@ -900,13 +896,9 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
   const newQualifiedTeams = qualifiedTeams.filter(team => !usedTeams.has(team.id));
 
   const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
-  const pendingPoolMatches = poolMatches.filter(m => !m.completed).length;
-  const shouldComputeByeIndices = pendingPoolMatches === 0;
   const byesNeeded = bracketSize - expectedQualified;
   const byeIndices =
-    shouldComputeByeIndices && byesNeeded > 0
-      ? selectByeIndices(firstRoundFinalMatches, byesNeeded)
-      : new Set();
+    byesNeeded > 0 ? selectByeIndices(firstRoundFinalMatches, byesNeeded) : new Set();
   const byeMatchIds = new Set(
     firstRoundFinalMatches.filter((_, index) => byeIndices.has(index)).map(match => match.id),
   );
@@ -1020,8 +1012,7 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
     return filled === 1;
   }).length;
   const shouldApplyByes =
-    pendingPoolMatches === 0 &&
-    (finalPartialMatchesCount >= byeDelay || newQualifiedTeams.length === 0);
+    finalPartialMatchesCount >= byeDelay || newQualifiedTeams.length === 0;
 
   if (newQualifiedTeams.length === 0) {
     const mergedFinalMatches = shouldApplyByes
