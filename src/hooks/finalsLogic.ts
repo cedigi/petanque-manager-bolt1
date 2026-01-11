@@ -678,9 +678,9 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   const firstRound = matchesB.filter(m => m.round === 200);
   const bracketSize = 1 << Math.ceil(Math.log2(bottomCount));
   const byesNeeded = bracketSize - bottomCount;
-  const shouldApplyByes = pendingPoolMatches === 0;
+  const shouldComputeByeIndices = pendingPoolMatches === 0;
   const byeIndices =
-    shouldApplyByes && byesNeeded > 0 ? selectByeIndices(firstRound, byesNeeded) : new Set();
+    shouldComputeByeIndices && byesNeeded > 0 ? selectByeIndices(firstRound, byesNeeded) : new Set();
   const byeMatchIds = new Set(
     firstRound.filter((_, index) => byeIndices.has(index)).map(match => match.id),
   );
@@ -901,10 +901,12 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
 
   const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
   const pendingPoolMatches = poolMatches.filter(m => !m.completed).length;
-  const shouldApplyByes = pendingPoolMatches === 0;
+  const shouldComputeByeIndices = pendingPoolMatches === 0;
   const byesNeeded = bracketSize - expectedQualified;
   const byeIndices =
-    shouldApplyByes && byesNeeded > 0 ? selectByeIndices(firstRoundFinalMatches, byesNeeded) : new Set();
+    shouldComputeByeIndices && byesNeeded > 0
+      ? selectByeIndices(firstRoundFinalMatches, byesNeeded)
+      : new Set();
   const byeMatchIds = new Set(
     firstRoundFinalMatches.filter((_, index) => byeIndices.has(index)).map(match => match.id),
   );
