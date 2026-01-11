@@ -20,10 +20,10 @@ import {
 import {
   createEmptyFinalPhasesB,
   getCurrentBottomTeams,
+  getExpectedQualifiedCounts,
   initializeCategoryBBracket,
   autoGenerateNextMatches,
 } from './finalsLogic';
-import { calculateOptimalPools } from '../utils/poolGeneration';
 
 const STORAGE_KEY = 'petanque-tournament';
 
@@ -146,12 +146,8 @@ export function useTournament(): UseTournamentReturn {
     const t = updated;
     const bottomTeams = getCurrentBottomTeams(t);
     const bottomIds = new Set(bottomTeams.map(bt => bt.id));
-    const { poolsOf4, poolsOf3, poolsOf2 } = calculateOptimalPools(
-      t.teams.length,
-      t.preferredPoolSize,
-    );
-    const expectedQualified = (poolsOf4 + poolsOf3 + poolsOf2) * 2;
-    const bottomCount = t.teams.length - expectedQualified;
+    const { expectedBottomCount } = getExpectedQualifiedCounts(t);
+    const bottomCount = expectedBottomCount;
     const pendingPoolMatches = t.matches.filter(m => m.poolId && !m.completed).length;
 
     if (pendingPoolMatches > 0) {
@@ -185,6 +181,7 @@ export function useTournament(): UseTournamentReturn {
         t.courts,
         t.pools.length * 2 + 1,
         t.preferredPoolSize,
+        bottomCount,
       );
     }
 

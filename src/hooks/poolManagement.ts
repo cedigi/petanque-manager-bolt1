@@ -540,11 +540,17 @@ export function generateTournamentPools(tournament: Tournament): Tournament {
     finalPhasesStart,
     tournament.preferredPoolSize,
   );
+  const expectedBottomCount = pools.reduce((acc, pool) => {
+    if (pool.teamIds.length === 4) return acc + 2;
+    if (pool.teamIds.length === 3) return acc + 1;
+    return acc;
+  }, 0);
   const finalsB = createEmptyFinalPhasesB(
     tournament.teams.length,
     tournament.courts,
     finalPhasesStart,
     tournament.preferredPoolSize,
+    expectedBottomCount,
   );
 
   return {
