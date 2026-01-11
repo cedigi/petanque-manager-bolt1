@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Pool, Team, Tournament, Match } from '../types/tournament';
 import { Grid3X3, Trophy, Shuffle, Printer, Crown, X, Edit3, Loader2 } from 'lucide-react';
 import { CourtAvailability } from './CourtAvailability';
-import { getCurrentBottomTeams, getCurrentQualifiedTeams } from '../hooks/finalsLogic';
+import { getCurrentBottomTeams, getCurrentQualifiedTeams, getExpectedQualifiedCounts } from '../hooks/finalsLogic';
 import { calculateOptimalPools } from '../utils/poolGeneration';
 
 interface PoolsTabProps {
@@ -113,9 +113,10 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
 
   const qualifiedTeams = getCurrentQualifiedTeams(tournament);
   const bottomTeams = getCurrentBottomTeams(tournament);
+  const { expectedQualifiedA, expectedBottomCount } = getExpectedQualifiedCounts(tournament);
 
-  const hasQualifiedA = qualifiedTeams.length > 0;
-  const hasQualifiedB = bottomTeams.length > 0 || tournament.matchesB.length > 0;
+  const hasQualifiedA = qualifiedTeams.length > 0 || expectedQualifiedA > 0;
+  const hasQualifiedB = bottomTeams.length > 0 || expectedBottomCount > 0 || tournament.matchesB.length > 0;
 
   return (
     <div className="p-6">
