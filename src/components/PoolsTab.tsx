@@ -115,7 +115,7 @@ export function PoolsTab({ tournament, teams, pools, onGeneratePools, onUpdateSc
   const bottomTeams = getCurrentBottomTeams(tournament);
 
   const hasQualifiedA = qualifiedTeams.length > 0;
-  const hasQualifiedB = bottomTeams.length > 0;
+  const hasQualifiedB = bottomTeams.length > 0 || tournament.matchesB.length > 0;
 
   return (
     <div className="p-6">
