@@ -264,6 +264,23 @@ function getRandomByeIndices(matchCount: number, byesNeeded: number): Set<number
   return new Set(shuffled.slice(0, byesNeeded));
 }
 
+function orderByeCandidates(candidates: number[], byesNeeded: number): number[] {
+  if (candidates.length <= 1 || byesNeeded <= 1) {
+    return shuffleArray(candidates);
+  }
+  const maxGap = Math.min(4, Math.max(1, Math.floor(candidates.length / byesNeeded)));
+  const remaining = shuffleArray(candidates);
+  const ordered: number[] = [];
+  let cursor = Math.floor(Math.random() * remaining.length);
+  while (remaining.length > 0) {
+    cursor = cursor % remaining.length;
+    ordered.push(remaining.splice(cursor, 1)[0]);
+    const gap = Math.floor(Math.random() * (maxGap + 1));
+    cursor += gap;
+  }
+  return ordered;
+}
+
 function selectByeIndices(matches: Match[], byesNeeded: number): Set<number> {
   if (byesNeeded <= 0 || matches.length === 0) return new Set();
 
@@ -306,8 +323,9 @@ function selectByeIndices(matches: Match[], byesNeeded: number): Set<number> {
     trySelect(index, enforceUniqueGroups);
   }
 
-  const remainingCandidates = shuffleArray(
+  const remainingCandidates = orderByeCandidates(
     [...partialIndices, ...emptyIndices].filter(index => !selected.has(index)),
+    byesNeeded - selected.size,
   );
   for (const index of remainingCandidates) {
     if (selected.size >= byesNeeded) break;
@@ -315,8 +333,9 @@ function selectByeIndices(matches: Match[], byesNeeded: number): Set<number> {
   }
 
   if (enforceUniqueGroups && selected.size < byesNeeded) {
-    const relaxedCandidates = shuffleArray(
+    const relaxedCandidates = orderByeCandidates(
       [...existingByeIndices, ...remainingCandidates].filter(index => !selected.has(index)),
+      byesNeeded - selected.size,
     );
     for (const index of relaxedCandidates) {
       if (selected.size >= byesNeeded) break;
@@ -593,10 +612,13 @@ export function initializeCategoryBBracket(
   bottomTeams: Team[],
   bottomCount: number,
   byeMatchIds?: Set<string>,
+  applyByes = true,
 ): Match[] {
-  const withByes = applyByeLogic(firstRound, bottomTeams.length, bottomCount, byeMatchIds);
-  for (let i = 0; i < firstRound.length; i++) {
-    firstRound[i] = withByes[i];
+  if (applyByes) {
+    const withByes = applyByeLogic(firstRound, bottomTeams.length, bottomCount, byeMatchIds);
+    for (let i = 0; i < firstRound.length; i++) {
+      firstRound[i] = withByes[i];
+    }
   }
 
   const combined = [...firstRound, ...others];
@@ -656,8 +678,7 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   const firstRound = matchesB.filter(m => m.round === 200);
   const bracketSize = 1 << Math.ceil(Math.log2(bottomCount));
   const byesNeeded = bracketSize - bottomCount;
-  const byeIndices =
-    byesNeeded > 0 ? selectByeIndices(firstRound, byesNeeded) : new Set();
+  const byeIndices = byesNeeded > 0 ? selectByeIndices(firstRound, byesNeeded) : new Set();
   const byeMatchIds = new Set(
     firstRound.filter((_, index) => byeIndices.has(index)).map(match => match.id),
   );
@@ -805,6 +826,15 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
     }
   }
 
+  const byeDelay = t.finalsByeDelayB ?? 2;
+  const partialMatchesCount = firstRound.filter(match => {
+    const filled = Number(Boolean(match.team1Id)) + Number(Boolean(match.team2Id));
+    return filled === 1;
+  }).length;
+  const shouldApplyByes =
+    pendingPoolMatches === 0 &&
+    (partialMatchesCount >= byeDelay || bottomTeams.length >= bottomCount);
+
   const others = matchesB.filter(m => m.round > 200);
   const propagated = initializeCategoryBBracket(
     t,
@@ -813,6 +843,7 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
     bottomTeams,
     bottomCount,
     byeMatchIds,
+    shouldApplyByes,
   );
   return assignAvailableFinalCourts({ ...t, matchesB: propagated });
 }
@@ -867,28 +898,12 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
   const newQualifiedTeams = qualifiedTeams.filter(team => !usedTeams.has(team.id));
 
   const bracketSize = 1 << Math.ceil(Math.log2(expectedQualified));
+  const pendingPoolMatches = poolMatches.filter(m => !m.completed).length;
   const byesNeeded = bracketSize - expectedQualified;
-  const byeIndices =
-    byesNeeded > 0 ? selectByeIndices(firstRoundFinalMatches, byesNeeded) : new Set();
+  const byeIndices = byesNeeded > 0 ? selectByeIndices(firstRoundFinalMatches, byesNeeded) : new Set();
   const byeMatchIds = new Set(
     firstRoundFinalMatches.filter((_, index) => byeIndices.has(index)).map(match => match.id),
   );
-
-  if (newQualifiedTeams.length === 0) {
-    const finalMatchesWithByes = applyByeLogic(
-      firstRoundFinalMatches,
-      qualifiedTeams.length,
-      expectedQualified,
-      byeMatchIds,
-    );
-    const byesById = new Map(finalMatchesWithByes.map(match => [match.id, match]));
-    const mergedFinalMatches = cleanedFinalMatches.map(match => byesById.get(match.id) ?? match);
-    const baseTournament = {
-      ...updatedTournament,
-      matches: [...poolMatches, ...mergedFinalMatches],
-    };
-    return updateCategoryBPhases(propagateWinnersToNextPhases(baseTournament));
-  }
 
   const byeSides = byeIndices.size > 0
     ? shuffleArray(Array.from(byeIndices)).map(index => ({
@@ -993,14 +1008,45 @@ export function updateFinalPhasesWithQualified(updatedTournament: Tournament): T
     }
   });
 
-  const finalMatchesWithByes = applyByeLogic(
-    updatedFinalMatches,
-    qualifiedTeams.length,
-    expectedQualified,
-    byeMatchIds,
-  );
-  for (let i = 0; i < updatedFinalMatches.length; i++) {
-    updatedFinalMatches[i] = finalMatchesWithByes[i];
+  const byeDelay = updatedTournament.finalsByeDelayA ?? 2;
+  const partialMatchesCount = updatedFinalMatches.filter(match => {
+    const filled = Number(Boolean(match.team1Id)) + Number(Boolean(match.team2Id));
+    return filled === 1;
+  }).length;
+  const shouldApplyByes =
+    pendingPoolMatches === 0 &&
+    (partialMatchesCount >= byeDelay || newQualifiedTeams.length === 0);
+
+  if (newQualifiedTeams.length === 0) {
+    const mergedFinalMatches = shouldApplyByes
+      ? (() => {
+          const finalMatchesWithByes = applyByeLogic(
+            updatedFinalMatches,
+            qualifiedTeams.length,
+            expectedQualified,
+            byeMatchIds,
+          );
+          const byesById = new Map(finalMatchesWithByes.map(match => [match.id, match]));
+          return cleanedFinalMatches.map(match => byesById.get(match.id) ?? match);
+        })()
+      : cleanedFinalMatches;
+    const baseTournament = {
+      ...updatedTournament,
+      matches: [...poolMatches, ...mergedFinalMatches],
+    };
+    return updateCategoryBPhases(propagateWinnersToNextPhases(baseTournament));
+  }
+
+  if (shouldApplyByes) {
+    const finalMatchesWithByes = applyByeLogic(
+      updatedFinalMatches,
+      qualifiedTeams.length,
+      expectedQualified,
+      byeMatchIds,
+    );
+    for (let i = 0; i < updatedFinalMatches.length; i++) {
+      updatedFinalMatches[i] = finalMatchesWithByes[i];
+    }
   }
 
   const allUpdatedMatches = [

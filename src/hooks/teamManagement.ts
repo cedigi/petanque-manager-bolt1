@@ -7,6 +7,7 @@ export function createTournamentData(
   preferredPoolSize?: 3 | 4,
 ): Tournament {
   const defaultName = `Tournoi ${new Date().toLocaleDateString()}`;
+  const randomByeDelay = (): number => 2 + Math.floor(Math.random() * 3);
   return {
     id: generateUuid(),
     name: defaultName,
@@ -23,6 +24,8 @@ export function createTournamentData(
     networkStatus: 'online',
     poolsGenerated: false,
     preferredPoolSize,
+    finalsByeDelayA: randomByeDelay(),
+    finalsByeDelayB: randomByeDelay(),
   };
 }
 
@@ -82,4 +85,3 @@ export function updateTeam(
 
   return { ...tournament, teams: updatedTeams };
 }
-
