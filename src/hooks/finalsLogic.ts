@@ -635,7 +635,7 @@ export function updateCategoryBPhases(t: Tournament): Tournament {
   const bracketSize = 1 << Math.ceil(Math.log2(bottomCount));
   const byesNeeded = bracketSize - bottomCount;
   const byeIndices =
-    byesNeeded > 0 ? getRandomByeIndices(firstRound.length, byesNeeded) : new Set();
+    byesNeeded > 0 ? selectByeIndices(firstRound, byesNeeded) : new Set();
   const byeMatchIds = new Set(
     firstRound.filter((_, index) => byeIndices.has(index)).map(match => match.id),
   );
